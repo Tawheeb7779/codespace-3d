@@ -14,6 +14,9 @@
     <!-- Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
     
+    <!-- Three.js for 3D visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
     <!-- Tailwind Configuration -->
     <script id="tailwind-config">
         tailwind.config = {
@@ -103,119 +106,4 @@
                         "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
                         "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
                         "code-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
-                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }]
-                    }
-                }
-            }
-        };
-    </script>
-    
-    <!-- Global Styles -->
-    <style>
-        body {
-            background-color: #05070D;
-            color: #dee2f1;
-        }
-        
-        .glass-panel {
-            background-color: #090D16;
-            border: 1px solid rgba(140, 144, 159, 0.08);
-        }
-        
-        .glass-elevated {
-            background-color: #111827;
-            border: 1px solid rgba(140, 144, 159, 0.12);
-            backdrop-filter: blur(12px);
-        }
-        
-        .glow-active:hover {
-            box-shadow: 0 0 8px 0px rgba(173, 198, 255, 0.4);
-            border-color: rgba(173, 198, 255, 0.3);
-        }
-        
-        .progress-ring__circle {
-            transition: stroke-dashoffset 0.35s;
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-        }
-        
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* Hide scrollbar while keeping functionality */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        
-        /* Focus states for accessibility */
-        button:focus-visible,
-        a:focus-visible,
-        input:focus-visible {
-            outline: 2px solid #adc6ff;
-            outline-offset: 2px;
-        }
-        
-        /* Smooth transitions */
-        * {
-            transition-duration: 150ms;
-            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* Prevent transition on certain properties */
-        * {
-            transition-property: background-color, border-color, color, fill, stroke;
-        }
-    </style>
-</head>
-<body class="font-body-md text-body-md bg-background text-on-background min-h-screen flex flex-col">
-    
-    <!-- App Container -->
-    <div id="app" class="flex flex-col min-h-screen">
-        <!-- Top App Bar -->
-        <header id="header" class="fixed top-0 w-full h-14 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 flex justify-between items-center px-lg z-50 transition-all duration-200 ease-in-out">
-            <div class="flex items-center gap-lg">
-                <span class="font-headline-md text-headline-md font-bold tracking-tighter text-on-surface">CodeSpace 3D</span>
-                <nav id="main-nav" class="hidden md:flex gap-md">
-                    <!-- Navigation populated by router -->
-                </nav>
-            </div>
-            <div id="header-actions" class="flex items-center gap-sm">
-                <!-- Header actions populated by router -->
-            </div>
-        </header>
-        
-        <!-- Main Content Area -->
-        <div class="flex flex-1 mt-14">
-            <!-- Sidebar -->
-            <aside id="sidebar" class="fixed left-0 top-14 bottom-0 w-16 md:w-20 bg-surface-container-low border-r border-outline-variant/10 flex flex-col items-center py-md z-40 transition-all duration-200 ease-in-out">
-                <!-- Sidebar content populated by router -->
-            </aside>
-            
-            <!-- View Container -->
-            <main id="view-container" class="flex-1 ml-16 md:ml-20 mb-6 p-lg xl:p-xl overflow-y-auto">
-                <!-- Current view rendered here -->
-            </main>
-        </div>
-        
-        <!-- Footer -->
-        <footer id="footer" class="fixed bottom-0 w-full h-6 bg-surface-container-lowest border-t border-outline-variant/10 flex justify-between items-center px-md z-50 overflow-hidden font-code-sm text-code-sm text-outline">
-            <div>© 2024 CodeSpace 3D | System: Ready</div>
-            <div class="flex gap-md">
-                <a class="hover:text-primary transition-colors cursor-pointer">Logs</a>
-                <a class="hover:text-primary transition-colors cursor-pointer">Status</a>
-                <a class="hover:text-primary transition-colors cursor-pointer">UTF-8</a>
-            </div>
-        </footer>
-    </div>
-    
-    <!-- Application JavaScript -->
-    <script type="module" src="js/app.js"></script>
-</body>
-</html>
+                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }]\n                    }\n                }\n            }\n        };\n    </script>\n    \n    <!-- Global Styles -->\n    <style>\n        body {\n            background-color: #05070D;\n            color: #dee2f1;\n        }\n        \n        .glass-panel {\n            background-color: #090D16;\n            border: 1px solid rgba(140, 144, 159, 0.08);\n        }\n        \n        .glass-elevated {\n            background-color: #111827;\n            border: 1px solid rgba(140, 144, 159, 0.12);\n            backdrop-filter: blur(12px);\n        }\n        \n        .glow-active:hover {\n            box-shadow: 0 0 8px 0px rgba(173, 198, 255, 0.4);\n            border-color: rgba(173, 198, 255, 0.3);\n        }\n        \n        .progress-ring__circle {\n            transition: stroke-dashoffset 0.35s;\n            transform: rotate(-90deg);\n            transform-origin: 50% 50%;\n        }\n        \n        html {\n            scroll-behavior: smooth;\n        }\n        \n        .hide-scrollbar::-webkit-scrollbar {\n            display: none;\n        }\n        \n        .hide-scrollbar {\n            -ms-overflow-style: none;\n            scrollbar-width: none;\n        }\n        \n        button:focus-visible,\n        a:focus-visible,\n        input:focus-visible {\n            outline: 2px solid #adc6ff;\n            outline-offset: 2px;\n        }\n        \n        * {\n            transition-duration: 150ms;\n            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n            transition-property: background-color, border-color, color, fill, stroke;\n        }\n\n        .line-clamp-2 {\n            display: -webkit-box;\n            -webkit-line-clamp: 2;\n            -webkit-box-orient: vertical;\n            overflow: hidden;\n        }\n    </style>\n</head>\n<body class="font-body-md text-body-md bg-background text-on-background min-h-screen flex flex-col">\n    \n    <!-- App Container -->\n    <div id="app" class="flex flex-col min-h-screen">\n        <!-- Top App Bar -->\n        <header id="header" class="fixed top-0 w-full h-14 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 flex justify-between items-center px-lg z-50 transition-all duration-200 ease-in-out">\n            <div class="flex items-center gap-lg">\n                <span class="font-headline-md text-headline-md font-bold tracking-tighter text-on-surface">CodeSpace 3D</span>\n                <nav id="main-nav\" class=\"hidden md:flex gap-md\">\n                    <!-- Navigation populated by router -->\n                </nav>\n            </div>\n            <div id=\"header-actions\" class=\"flex items-center gap-sm\">\n                <!-- Header actions populated by router -->\n            </div>\n        </header>\n        \n        <!-- Main Content Area -->\n        <div class=\"flex flex-1 mt-14\">\n            <!-- Sidebar -->\n            <aside id=\"sidebar\" class=\"fixed left-0 top-14 bottom-0 w-16 md:w-20 bg-surface-container-low border-r border-outline-variant/10 flex flex-col items-center py-md z-40 transition-all duration-200 ease-in-out\">\n                <!-- Sidebar content populated by router -->\n            </aside>\n            \n            <!-- View Container -->\n            <main id=\"view-container\" class=\"flex-1 ml-16 md:ml-20 mb-6 overflow-y-auto\">\n                <!-- Current view rendered here -->\n            </main>\n        </div>\n        \n        <!-- Footer -->\n        <footer id=\"footer\" class=\"fixed bottom-0 w-full h-6 bg-surface-container-lowest border-t border-outline-variant/10 flex justify-between items-center px-md z-50 overflow-hidden font-code-sm text-code-sm text-outline\">\n            <div>© 2024 CodeSpace 3D | System: Ready</div>\n            <div class=\"flex gap-md\">\n                <a class=\"hover:text-primary transition-colors cursor-pointer\">Logs</a>\n                <a class=\"hover:text-primary transition-colors cursor-pointer\">Status</a>\n                <a class=\"hover:text-primary transition-colors cursor-pointer\">UTF-8</a>\n            </div>\n        </footer>\n    </div>\n    \n    <!-- Application JavaScript -->\n    <script type=\"module\" src=\"js/app.js\"></script>\n</body>\n</html>\n
