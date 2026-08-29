@@ -1,3 +1,4 @@
+import '@/lib/bufferPolyfill'
 import type { FileSystemService } from '@/services/FileSystemService'
 import { idbGet, idbSet } from '@/lib/idbStore'
 
@@ -40,10 +41,21 @@ export class GitFsAdapter {
   private readonly projectId: string
   private readonly workingTree: FileSystemService
 
+  /**
+   * isomorphic-git detects a promise-based fs client via
+   * `Object.getOwnPropertyDescriptor(fs, 'promises')` — an own, enumerable
+   * property, NOT a prototype accessor. A `get promises()` class getter
+   * fails that check silently and isomorphic-git falls back to treating
+   * this whole instance as a callback-fs, crashing on `fs.readFile.bind`.
+   * So `promises` is built once and assigned directly in the constructor.
+   */
+  readonly promises: ReturnType<GitFsAdapter['buildPromises']>
+
   constructor(projectId: string, workingTree: FileSystemService) {
     this.projectId = projectId
     this.workingTree = workingTree
     this.loaded = this.load()
+    this.promises = this.buildPromises()
   }
 
   private storageKey() {
@@ -85,7 +97,7 @@ export class GitFsAdapter {
     await this.loaded
   }
 
-  get promises() {
+  private buildPromises() {
     return {
       readFile: async (filepath: string, options?: Encoding): Promise<Uint8Array | string> => {
         await this.ensureLoaded()
@@ -172,6 +184,17 @@ export class GitFsAdapter {
 
       stat: async (filepath: string) => this.statImpl(filepath, true),
       lstat: async (filepath: string) => this.statImpl(filepath, false),
+
+      // The project VFS has no symlinks; isomorphic-git only calls these
+      // when it encounters one, which never happens here. They just need
+      // to exist as functions — isomorphic-git unconditionally binds every
+      // entry in its fs-client method list, symlinks included.
+      readlink: async (filepath: string): Promise<string> => {
+        throw enoent(filepath)
+      },
+      symlink: async (): Promise<void> => {
+        throw new Error('Symlinks are not supported in the project file system.')
+      },
     }
   }
 

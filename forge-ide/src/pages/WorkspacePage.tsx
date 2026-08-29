@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import '@/lib/monacoSetup'
 import { AlertTriangle } from 'lucide-react'
 import { Spinner } from '@/components/ui/misc'
 import { Button } from '@/components/ui/Button'

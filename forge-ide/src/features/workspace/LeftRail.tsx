@@ -14,7 +14,7 @@ export function LeftRail() {
   const toggleLeftPanel = useWorkspaceUiStore((s) => s.toggleLeftPanel)
 
   return (
-    <div className="flex w-11 shrink-0 flex-col items-center gap-1 border-r border-graphite-800 bg-graphite-950 py-2">
+    <div className="relative z-30 flex w-11 shrink-0 flex-col items-center gap-1 border-r border-graphite-800 bg-graphite-950 py-2">
       {ITEMS.map((item) => (
         <button
           key={item.id}

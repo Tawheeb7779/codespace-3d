@@ -1,4 +1,5 @@
 import { Bot, Trash2 } from 'lucide-react'
+import { useShallow } from 'zustand/react/shallow'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/misc'
 import { useRuntimeStore } from '@/stores/runtimeStore'
@@ -9,7 +10,7 @@ function formatTime(ts: number): string {
 }
 
 export function ProblemsPanel() {
-  const { logs, clearLogs } = useRuntimeStore((s) => ({ logs: s.logs, clearLogs: s.clearLogs }))
+  const { logs, clearLogs } = useRuntimeStore(useShallow((s) => ({ logs: s.logs, clearLogs: s.clearLogs })))
   const requestAiAction = useWorkspaceUiStore((s) => s.requestAiAction)
   const errors = logs.filter((l) => l.isError)
 

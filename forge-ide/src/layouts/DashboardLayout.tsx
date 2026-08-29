@@ -1,12 +1,13 @@
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { useShallow } from 'zustand/react/shallow'
 import { Flame, LogOut, Settings, User } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { AuthService } from '@/services/AuthService'
 import { Badge } from '@/components/ui/misc'
 
 export function DashboardLayout() {
-  const { user, status } = useAuthStore((s) => ({ user: s.user, status: s.status }))
+  const { user, status } = useAuthStore(useShallow((s) => ({ user: s.user, status: s.status })))
   const navigate = useNavigate()
 
   async function handleSignOut() {

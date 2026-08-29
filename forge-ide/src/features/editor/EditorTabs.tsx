@@ -1,16 +1,19 @@
 import { X } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useShallow } from 'zustand/react/shallow'
 import { useEditorStore } from '@/stores/editorStore'
 import { basename } from '@/lib/paths'
 import { FileIcon } from '@/lib/fileIcon'
 
 export function EditorTabs() {
-  const { tabs, activePath, setActive, close } = useEditorStore((s) => ({
-    tabs: s.tabs,
-    activePath: s.activePath,
-    setActive: s.setActive,
-    close: s.close,
-  }))
+  const { tabs, activePath, setActive, close } = useEditorStore(
+    useShallow((s) => ({
+      tabs: s.tabs,
+      activePath: s.activePath,
+      setActive: s.setActive,
+      close: s.close,
+    })),
+  )
 
   if (tabs.length === 0) return null
 

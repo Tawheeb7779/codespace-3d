@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as Tabs from '@radix-ui/react-tabs'
+import { useShallow } from 'zustand/react/shallow'
 import { clsx } from 'clsx'
 import { Button } from '@/components/ui/Button'
 import { Input, Label } from '@/components/ui/Input'
@@ -180,7 +181,7 @@ function AiSettingsPanel() {
 }
 
 function AccountSettingsPanel({ onSignedOut }: { onSignedOut: () => void }) {
-  const { user, status } = useAuthStore((s) => ({ user: s.user, status: s.status }))
+  const { user, status } = useAuthStore(useShallow((s) => ({ user: s.user, status: s.status })))
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
 

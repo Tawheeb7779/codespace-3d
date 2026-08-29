@@ -23,13 +23,13 @@ export function DesktopWorkspace() {
       {leftPanel !== 'hidden' && (
         <>
           <div
-            className="fixed inset-y-12 left-11 z-30 w-72 border-r border-graphite-800 bg-graphite-900 lg:static lg:inset-auto lg:z-auto lg:w-64 lg:shrink-0"
+            className="fixed bottom-0 left-11 top-12 z-30 w-72 border-r border-graphite-800 bg-graphite-900 lg:static lg:inset-auto lg:z-auto lg:w-64 lg:shrink-0"
           >
             {leftPanel === 'explorer' && <FileTree />}
             {leftPanel === 'search' && <ProjectSearch />}
             {leftPanel === 'git' && <GitPanel />}
           </div>
-          <div className="fixed inset-0 z-20 bg-black/40 lg:hidden" onClick={() => setLeftPanel('hidden')} />
+          <div className="fixed inset-x-0 bottom-0 top-12 z-20 bg-black/40 lg:hidden" onClick={() => setLeftPanel('hidden')} />
         </>
       )}
 
@@ -44,7 +44,7 @@ export function DesktopWorkspace() {
       <div
         className={clsx(
           'shrink-0 flex-col border-l border-graphite-800 bg-graphite-900 lg:flex lg:w-96',
-          rightPanelOpen ? 'fixed inset-y-12 right-0 z-30 flex w-full max-w-sm lg:static lg:inset-auto lg:z-auto' : 'hidden',
+          rightPanelOpen ? 'fixed bottom-0 right-0 top-12 z-30 flex w-full max-w-sm lg:static lg:inset-auto lg:z-auto' : 'hidden',
         )}
       >
         <div className="h-64 shrink-0 border-b border-graphite-800 lg:h-1/2">

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import Editor from '@monaco-editor/react'
 import type { OnMount } from '@monaco-editor/react'
+import { useShallow } from 'zustand/react/shallow'
 import { useEditorStore } from '@/stores/editorStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useWorkspace } from '@/features/workspace/WorkspaceContext'
@@ -11,12 +12,14 @@ import { FileCode } from 'lucide-react'
 
 export function MonacoEditor() {
   const { fs } = useWorkspace()
-  const { tabs, activePath, updateBuffer, save } = useEditorStore((s) => ({
-    tabs: s.tabs,
-    activePath: s.activePath,
-    updateBuffer: s.updateBuffer,
-    save: s.save,
-  }))
+  const { tabs, activePath, updateBuffer, save } = useEditorStore(
+    useShallow((s) => ({
+      tabs: s.tabs,
+      activePath: s.activePath,
+      updateBuffer: s.updateBuffer,
+      save: s.save,
+    })),
+  )
   const editorSettings = useSettingsStore((s) => s.editor)
   const resolvedTheme = useResolvedTheme()
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)

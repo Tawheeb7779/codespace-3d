@@ -30,7 +30,22 @@ class WebContainerServiceImpl {
       )
     }
     if (!this.bootPromise) {
-      this.bootPromise = WebContainer.boot()
+      // WebContainer.boot() loads a hosted runtime from stackblitz.com. On a
+      // network that can't reach it, the promise can hang indefinitely
+      // instead of rejecting — wrap it in a timeout so callers (terminal,
+      // run, preview) get a real error instead of an endless spinner.
+      this.bootPromise = Promise.race([
+        WebContainer.boot(),
+        new Promise<WebContainer>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Timed out starting the in-browser runtime. It requires network access to stackblitz.com — check your connection or network policy.')),
+            20000,
+          ),
+        ),
+      ])
+      this.bootPromise.catch(() => {
+        this.bootPromise = null // allow retrying (e.g. Run again) instead of caching a dead promise
+      })
     }
     return this.bootPromise
   }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ExternalLink, Monitor, RefreshCw, Smartphone, Tablet } from 'lucide-react'
 import { clsx } from 'clsx'
+import { useShallow } from 'zustand/react/shallow'
 import { Button } from '@/components/ui/Button'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 
@@ -13,11 +14,13 @@ const DEVICE_WIDTH: Record<Device, string> = {
 }
 
 export function Preview() {
-  const { status, previewUrl, errorMessage } = useRuntimeStore((s) => ({
-    status: s.status,
-    previewUrl: s.previewUrl,
-    errorMessage: s.errorMessage,
-  }))
+  const { status, previewUrl, errorMessage } = useRuntimeStore(
+    useShallow((s) => ({
+      status: s.status,
+      previewUrl: s.previewUrl,
+      errorMessage: s.errorMessage,
+    })),
+  )
   const [device, setDevice] = useState<Device>('desktop')
   const [reloadKey, setReloadKey] = useState(0)
 

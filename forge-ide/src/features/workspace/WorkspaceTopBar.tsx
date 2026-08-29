@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Command, Loader2, Monitor, Play, Settings, Square } from 'lucide-react'
-import { clsx } from 'clsx'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/misc'
 import { QuickActions } from '@/features/ai/QuickActions'
@@ -64,15 +63,16 @@ export function WorkspaceTopBar() {
           </Button>
         )}
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => useWorkspaceUiStore.getState().setRightPanelOpen(!useWorkspaceUiStore.getState().rightPanelOpen)}
-          aria-label="Toggle preview & AI panel"
-          className={clsx('hidden md:inline-flex')}
-        >
-          <Monitor size={15} />
-        </Button>
+        <div className="hidden md:block">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => useWorkspaceUiStore.getState().setRightPanelOpen(!useWorkspaceUiStore.getState().rightPanelOpen)}
+            aria-label="Toggle preview & AI panel"
+          >
+            <Monitor size={15} />
+          </Button>
+        </div>
 
         <Link to="/settings">
           <Button variant="ghost" size="icon" aria-label="Settings">
