@@ -23,7 +23,7 @@ export function DesktopWorkspace() {
       {leftPanel !== 'hidden' && (
         <>
           <div
-            className="fixed bottom-0 left-12 top-12 z-30 w-72 border-r border-graphite-800 bg-graphite-900 shadow-2xl shadow-black/30 lg:static lg:inset-auto lg:z-auto lg:w-64 lg:shrink-0 lg:shadow-none"
+            className="fixed bottom-0 left-12 top-12 z-30 w-72 border-r border-hairline bg-surface-raised shadow-2xl shadow-black/30 lg:static lg:inset-auto lg:z-auto lg:w-64 lg:shrink-0 lg:shadow-none"
           >
             {leftPanel === 'explorer' && <FileTree />}
             {leftPanel === 'search' && <ProjectSearch />}
@@ -43,11 +43,11 @@ export function DesktopWorkspace() {
 
       <div
         className={clsx(
-          'shrink-0 flex-col border-l border-graphite-800 bg-graphite-900 lg:flex lg:w-96',
+          'shrink-0 flex-col border-l border-hairline bg-surface-raised lg:flex lg:w-96',
           rightPanelOpen ? 'fixed bottom-0 right-0 top-12 z-30 flex w-full max-w-sm lg:static lg:inset-auto lg:z-auto' : 'hidden',
         )}
       >
-        <div className="h-64 shrink-0 border-b border-graphite-800 lg:h-1/2">
+        <div className="h-64 shrink-0 border-b border-hairline lg:h-1/2">
           <Preview />
         </div>
         <div className="min-h-0 flex-1">

@@ -75,18 +75,33 @@ export function SignupPage() {
   }
 
   return (
-    <AuthLayout title="Create your account" subtitle="Start building for free.">
+    <AuthLayout
+      title="Create your account"
+      subtitle="Start building for free."
+      footer={
+        <p className="type-secondary text-graphite-500">
+          Already have an account?{' '}
+          <Link
+            to="/login"
+            className="rounded font-medium text-graphite-200 transition-colors duration-150 hover:text-ember-400"
+          >
+            Sign in
+          </Link>
+        </p>
+      }
+    >
       <OAuthButtons disabled={loading} />
 
       <AuthDivider />
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
             required
+            placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
@@ -101,6 +116,7 @@ export function SignupPage() {
             type="password"
             required
             minLength={MIN_PASSWORD_LENGTH}
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
@@ -108,7 +124,7 @@ export function SignupPage() {
             aria-describedby={error ? 'signup-error' : 'password-hint'}
           />
           {!error && (
-            <p id="password-hint" className="mt-1.5 text-xs text-graphite-600">
+            <p id="password-hint" className="mt-2 text-[0.8125rem] text-graphite-600">
               At least {MIN_PASSWORD_LENGTH} characters.
             </p>
           )}
@@ -116,17 +132,10 @@ export function SignupPage() {
 
         {error && <FieldError id="signup-error">{error}</FieldError>}
 
-        <Button type="submit" variant="primary" size="lg" touch loading={loading} className="w-full">
+        <Button type="submit" variant="primary" size="xl" loading={loading} className="w-full">
           {loading ? 'Creating account…' : 'Create account'}
         </Button>
       </form>
-
-      <p className="mt-6 text-center text-sm text-graphite-500">
-        Already have an account?{' '}
-        <Link to="/login" className="rounded font-medium text-graphite-200 transition-colors hover:text-ember-400">
-          Sign in
-        </Link>
-      </p>
     </AuthLayout>
   )
 }

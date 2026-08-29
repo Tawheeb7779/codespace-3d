@@ -52,7 +52,7 @@ export function WorkspacePage() {
 
   if (state === 'loading') {
     return (
-      <div className="flex h-screen items-center justify-center bg-graphite-950">
+      <div className="flex h-screen items-center justify-center bg-surface-base">
         <Spinner size={22} />
       </div>
     )
@@ -60,12 +60,25 @@ export function WorkspacePage() {
 
   if (state === 'not-found' || state === 'error') {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-graphite-950 px-4 text-center">
-        <AlertTriangle size={28} className="text-signal-amber" />
-        <p className="text-graphite-300">{state === 'not-found' ? "This project doesn't exist or you don't have access to it." : 'Failed to load this project.'}</p>
-        <Link to="/dashboard">
-          <Button variant="primary">Back to dashboard</Button>
-        </Link>
+      <div className="flex h-screen flex-col items-center justify-center bg-surface-base px-5">
+        <div className="surface-card w-full max-w-sm rounded-modal p-7 text-center">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-signal-amber/10 ring-1 ring-inset ring-signal-amber/20">
+            <AlertTriangle size={24} className="text-signal-amber" />
+          </div>
+          <h1 className="type-title text-graphite-50">
+            {state === 'not-found' ? 'Project not found' : 'Could not open project'}
+          </h1>
+          <p className="type-body mt-2.5 text-graphite-400">
+            {state === 'not-found'
+              ? "This project doesn't exist, or you don't have access to it."
+              : 'Something went wrong while loading this project. Try again from the dashboard.'}
+          </p>
+          <Link to="/dashboard" className="mt-6 block">
+            <Button variant="primary" size="lg" className="w-full">
+              Back to dashboard
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }
@@ -83,7 +96,7 @@ function WorkspaceContent({ project, fs }: { project: Project; fs: FileSystemSer
 
   return (
     <WorkspaceProvider value={{ project, fs, changeTracker }}>
-      <div className="flex h-screen flex-col bg-graphite-950">
+      <div className="flex h-screen flex-col bg-surface-base">
         <WorkspaceTopBar />
         <DesktopWorkspace />
         <MobileWorkspace />

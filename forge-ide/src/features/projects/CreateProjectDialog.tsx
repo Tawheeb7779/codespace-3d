@@ -36,13 +36,18 @@ export function CreateProjectDialog({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] data-[state=closed]:animate-fade-out data-[state=open]:animate-fade-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-graphite-800 bg-graphite-900 p-6 shadow-2xl shadow-black/50 data-[state=closed]:animate-scale-out data-[state=open]:animate-scale-in">
-          <div className="mb-5 flex items-center justify-between">
-            <Dialog.Title className="text-lg font-semibold text-graphite-50">New project</Dialog.Title>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/65 backdrop-blur-[3px] data-[state=closed]:animate-fade-out data-[state=open]:animate-fade-in" />
+        <Dialog.Content className="surface-overlay fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-modal p-6 data-[state=closed]:animate-scale-out data-[state=open]:animate-scale-in sm:p-7">
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <Dialog.Title className="type-title text-graphite-50">New project</Dialog.Title>
+              <Dialog.Description className="type-secondary mt-1 text-graphite-500">
+                Pick a template — it opens straight in the editor.
+              </Dialog.Description>
+            </div>
             <Dialog.Close asChild>
               <button
-                className="-m-1.5 rounded-lg p-1.5 text-graphite-500 transition-colors hover:bg-graphite-800 hover:text-graphite-200"
+                className="-m-1.5 shrink-0 rounded-lg p-1.5 text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
                 aria-label="Close dialog"
               >
                 <X size={18} />
@@ -50,7 +55,7 @@ export function CreateProjectDialog({
             </Dialog.Close>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="project-name">Project name</Label>
               <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="My awesome project" autoFocus />
@@ -64,7 +69,7 @@ export function CreateProjectDialog({
               <div
                 role="radiogroup"
                 aria-label="Project template"
-                className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto scrollbar-thin p-0.5 sm:grid-cols-2"
+                className="grid max-h-[17rem] grid-cols-1 gap-2 overflow-y-auto scrollbar-thin p-0.5 sm:grid-cols-2"
               >
                 {PROJECT_TEMPLATES.map((t) => (
                   <button
@@ -74,24 +79,25 @@ export function CreateProjectDialog({
                     aria-checked={templateId === t.id}
                     onClick={() => setTemplateId(t.id)}
                     className={clsx(
-                      'rounded-lg border p-3 text-left transition-[border-color,background-color,transform] duration-150',
+                      'rounded-control border p-3.5 text-left',
+                      'transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out',
                       'active:scale-[0.99] motion-reduce:active:scale-100',
                       templateId === t.id
-                        ? 'border-ember-500 bg-ember-500/[0.06]'
-                        : 'border-graphite-800 hover:border-graphite-700 hover:bg-graphite-850/50',
+                        ? 'border-ember-500/60 bg-ember-500/[0.08] shadow-[inset_0_1px_0_0_rgb(255_255_255/0.05),0_0_0_1px_var(--color-ember-500)]'
+                        : 'border-hairline bg-surface-raised hover:border-hairline-strong hover:bg-surface-hover',
                     )}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-graphite-100">{t.name}</p>
+                      <p className="text-[0.875rem] font-medium tracking-[-0.008em] text-graphite-100">{t.name}</p>
                       {!t.runnable && <Badge>Edit only</Badge>}
                     </div>
-                    <p className="mt-1 text-xs leading-relaxed text-graphite-500">{t.description}</p>
+                    <p className="mt-1 text-[0.75rem] leading-relaxed text-graphite-500">{t.description}</p>
                   </button>
                 ))}
               </div>
             </div>
 
-            <Button type="submit" variant="primary" size="lg" touch loading={loading} className="w-full">
+            <Button type="submit" variant="primary" size="xl" loading={loading} className="w-full">
               {loading ? 'Creating…' : 'Create project'}
             </Button>
           </form>

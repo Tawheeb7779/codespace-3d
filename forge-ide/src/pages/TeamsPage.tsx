@@ -82,7 +82,7 @@ export function TeamsPage() {
         <div className="mt-6 space-y-2">
           <p className="text-xs font-medium uppercase tracking-wide text-graphite-500">Pending invitations</p>
           {myInvitations.map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between rounded-lg border border-graphite-800 bg-graphite-900/50 px-4 py-2.5">
+            <div key={inv.id} className="flex items-center justify-between rounded-lg border border-hairline bg-surface-raised/50 px-4 py-2.5">
               <p className="text-sm text-graphite-300">
                 Join <span className="font-medium text-graphite-100">{inv.teamName}</span> as {inv.role}
               </p>
@@ -110,7 +110,7 @@ export function TeamsPage() {
               <button
                 key={team.id}
                 onClick={() => setSelected(team)}
-                className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm ${selected?.id === team.id ? 'bg-graphite-800 text-graphite-100' : 'text-graphite-400 hover:bg-graphite-850'}`}
+                className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm ${selected?.id === team.id ? 'bg-surface-hover text-graphite-100' : 'text-graphite-400 hover:bg-surface-raised'}`}
               >
                 {team.name}
               </button>
@@ -169,14 +169,14 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
 
       <div className="space-y-1.5">
         {members.map((m) => (
-          <div key={m.userId} className="flex items-center justify-between rounded-lg border border-graphite-800 px-3 py-2">
+          <div key={m.userId} className="flex items-center justify-between rounded-lg border border-hairline px-3 py-2">
             <span className="text-sm text-graphite-200">{m.displayName}</span>
             <div className="flex items-center gap-2">
               {isOwnerOrAdmin && m.role !== 'owner' ? (
                 <select
                   value={m.role}
                   onChange={(e) => TeamService.updateMemberRole(team.id, m.userId, e.target.value as TeamRole).then(refresh)}
-                  className="rounded border border-graphite-700 bg-graphite-900 px-1.5 py-0.5 text-xs text-graphite-300"
+                  className="rounded border border-hairline-strong bg-surface-raised px-1.5 py-0.5 text-xs text-graphite-300"
                 >
                   <option value="admin">Admin</option>
                   <option value="developer">Developer</option>
@@ -200,7 +200,7 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-graphite-500">Invite a member</p>
           <div className="flex flex-wrap gap-2">
             <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teammate@email.com" type="email" className="max-w-56" />
-            <select value={role} onChange={(e) => setRole(e.target.value as TeamRole)} className="rounded-lg border border-graphite-700 bg-graphite-900 px-2 text-sm text-graphite-300">
+            <select value={role} onChange={(e) => setRole(e.target.value as TeamRole)} className="rounded-lg border border-hairline-strong bg-surface-raised px-2 text-sm text-graphite-300">
               <option value="admin">Admin</option>
               <option value="developer">Developer</option>
               <option value="viewer">Viewer</option>
@@ -213,7 +213,7 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
           {invitations.length > 0 && (
             <div className="mt-4 space-y-1.5">
               {invitations.map((inv) => (
-                <div key={inv.id} className="flex items-center justify-between rounded-lg bg-graphite-900/50 px-3 py-2 text-sm text-graphite-400">
+                <div key={inv.id} className="flex items-center justify-between rounded-lg bg-surface-raised/50 px-3 py-2 text-sm text-graphite-400">
                   <span className="flex items-center gap-1.5">
                     <Mail size={13} /> {inv.email} · {inv.role}
                   </span>

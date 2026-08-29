@@ -69,9 +69,9 @@ export function CommandPalette() {
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60" />
-        <Dialog.Content className="fixed left-1/2 top-24 z-50 w-full max-w-lg -translate-x-1/2 overflow-hidden rounded-xl border border-graphite-800 bg-graphite-900 shadow-2xl">
+        <Dialog.Content className="fixed left-1/2 top-24 z-50 w-full max-w-lg -translate-x-1/2 overflow-hidden rounded-xl border border-hairline bg-surface-raised shadow-2xl">
           <Dialog.Title className="sr-only">Command palette</Dialog.Title>
-          <div className="flex items-center gap-2 border-b border-graphite-800 px-3 py-2.5">
+          <div className="flex items-center gap-2 border-b border-hairline px-3 py-2.5">
             <Search size={15} className="text-graphite-500" />
             <input
               autoFocus
@@ -80,14 +80,14 @@ export function CommandPalette() {
               placeholder="Type a command or search files…"
               className="flex-1 bg-transparent text-sm text-graphite-100 outline-none placeholder:text-graphite-500"
             />
-            <kbd className="rounded bg-graphite-800 px-1.5 py-0.5 text-[10px] text-graphite-500">Esc</kbd>
+            <kbd className="rounded bg-surface-hover px-1.5 py-0.5 text-[10px] text-graphite-500">Esc</kbd>
           </div>
           <div className="max-h-80 overflow-y-auto scrollbar-thin p-1.5">
             {filteredFiles.map((f) => (
               <button
                 key={f.path}
                 onClick={() => runCommand(() => useEditorStore.getState().open(fs, f.path))}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-graphite-300 hover:bg-graphite-800"
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-graphite-300 hover:bg-surface-hover"
               >
                 <File size={14} className="text-graphite-500" /> {f.path}
               </button>
@@ -96,7 +96,7 @@ export function CommandPalette() {
               <button
                 key={c.id}
                 onClick={() => runCommand(c.run)}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-graphite-300 hover:bg-graphite-800"
+                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-graphite-300 hover:bg-surface-hover"
               >
                 {c.label}
               </button>

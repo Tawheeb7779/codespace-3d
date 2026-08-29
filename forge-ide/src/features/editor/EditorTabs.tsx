@@ -18,16 +18,22 @@ export function EditorTabs() {
   if (tabs.length === 0) return null
 
   return (
-    <div className="flex items-stretch overflow-x-auto border-b border-graphite-800 bg-graphite-900 scrollbar-thin">
+    <div className="flex items-stretch overflow-x-auto border-b border-hairline bg-surface-raised scrollbar-thin">
       {tabs.map((tab) => {
         const active = tab.path === activePath
         return (
+          // The active tab drops to the editor's own surface and carries a
+          // top accent, so it reads as physically connected to the content
+          // below it rather than as a highlighted list row.
           <div
             key={tab.path}
             onClick={() => setActive(tab.path)}
             className={clsx(
-              'group flex shrink-0 cursor-pointer items-center gap-2 border-r border-graphite-800 px-3 py-2 text-sm',
-              active ? 'bg-graphite-950 text-graphite-100' : 'text-graphite-500 hover:bg-graphite-850 hover:text-graphite-300',
+              'group relative flex shrink-0 cursor-pointer items-center gap-2 border-r border-hairline px-3.5 py-2.5 text-[0.8125rem]',
+              'transition-colors duration-150',
+              active
+                ? 'bg-surface-base text-graphite-50 before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-ember-500'
+                : 'text-graphite-500 hover:bg-surface-hover hover:text-graphite-200',
             )}
           >
             <FileIcon path={tab.path} size={13} />
@@ -43,7 +49,7 @@ export function EditorTabs() {
                   close(tab.path)
                 }}
                 className={clsx(
-                  'reveal-on-hover-flex absolute inset-0 hidden items-center justify-center rounded transition-colors hover:bg-graphite-700 group-hover:flex',
+                  'reveal-on-hover-flex absolute inset-0 hidden items-center justify-center rounded transition-colors hover:bg-surface-overlay group-hover:flex',
                   !tab.dirty && 'flex',
                 )}
                 aria-label={`Close ${basename(tab.path)}`}

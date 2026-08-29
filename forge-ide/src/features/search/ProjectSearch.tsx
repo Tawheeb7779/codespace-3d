@@ -59,7 +59,7 @@ export function ProjectSearch() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="space-y-2 border-b border-graphite-800 p-3">
+      <div className="space-y-2 border-b border-hairline p-3">
         <div className="relative">
           <SearchIcon size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-graphite-500" />
           <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search across files…" className="h-8 pl-8 text-xs" />
@@ -84,7 +84,7 @@ export function ProjectSearch() {
                 onClick={() => {
                   openTab(fs, hit.path)
                 }}
-                className="block w-full truncate px-3 py-1 text-left text-xs text-graphite-500 hover:bg-graphite-850 hover:text-graphite-300"
+                className="block w-full truncate px-3 py-1 text-left text-xs text-graphite-500 hover:bg-surface-raised hover:text-graphite-300"
               >
                 <span className="mr-2 text-graphite-600">{hit.line}</span>
                 {hit.text}
@@ -104,7 +104,7 @@ function ToggleChip({ active, onClick, label, title }: { active: boolean; onClic
       title={title}
       className={clsx(
         'rounded px-1.5 py-0.5 font-mono',
-        active ? 'bg-ember-500/20 text-ember-400' : 'bg-graphite-800 text-graphite-500 hover:text-graphite-300',
+        active ? 'bg-ember-500/20 text-ember-400' : 'bg-surface-hover text-graphite-500 hover:text-graphite-300',
       )}
     >
       {label}

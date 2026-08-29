@@ -20,7 +20,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
 
   if (status === 'loading') {
     return (
-      <div className="flex h-screen items-center justify-center bg-graphite-950">
+      <div className="flex h-screen items-center justify-center bg-surface-base">
         <Spinner size={24} />
       </div>
     )

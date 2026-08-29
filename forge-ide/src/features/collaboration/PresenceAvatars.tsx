@@ -13,13 +13,13 @@ export function PresenceAvatars({ users }: { users: PresentUser[] }) {
         <div
           key={u.userId}
           title={u.activeFile ? `${u.displayName} — ${u.activeFile}` : u.displayName}
-          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-graphite-900 bg-signal-violet/20 text-[10px] font-medium text-signal-violet"
+          className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-hairline bg-signal-violet/20 text-[10px] font-medium text-signal-violet"
         >
           {initials(u.displayName)}
         </div>
       ))}
       {users.length > 4 && (
-        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-graphite-900 bg-graphite-800 text-[10px] text-graphite-400">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-hairline bg-surface-hover text-[10px] text-graphite-400">
           +{users.length - 4}
         </div>
       )}

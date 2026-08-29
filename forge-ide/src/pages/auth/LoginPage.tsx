@@ -56,18 +56,33 @@ export function LoginPage() {
   }
 
   return (
-    <AuthLayout title="Sign in" subtitle="Welcome back to Forge IDE.">
+    <AuthLayout
+      title="Sign in"
+      subtitle="Welcome back to Forge IDE."
+      footer={
+        <p className="type-secondary text-graphite-500">
+          No account?{' '}
+          <Link
+            to="/signup"
+            className="rounded font-medium text-graphite-200 transition-colors duration-150 hover:text-ember-400"
+          >
+            Sign up
+          </Link>
+        </p>
+      }
+    >
       <OAuthButtons disabled={loading} />
 
       <AuthDivider />
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div>
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
             required
+            placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
@@ -76,19 +91,20 @@ export function LoginPage() {
           />
         </div>
         <div>
-          <div className="flex items-baseline justify-between">
+          <div className="flex items-baseline justify-between gap-3">
             <Label htmlFor="password">Password</Label>
             <Link
               to="/forgot-password"
-              className="mb-1.5 rounded text-xs text-graphite-500 transition-colors hover:text-graphite-300"
+              className="mb-2 rounded text-[0.8125rem] text-graphite-500 transition-colors duration-150 hover:text-graphite-200"
             >
-              Forgot password?
+              Forgot?
             </Link>
           </div>
           <Input
             id="password"
             type="password"
             required
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
@@ -99,17 +115,10 @@ export function LoginPage() {
 
         {error && <FieldError id="login-error">{error}</FieldError>}
 
-        <Button type="submit" variant="primary" size="lg" touch loading={loading} className="w-full">
+        <Button type="submit" variant="primary" size="xl" loading={loading} className="w-full">
           {loading ? 'Signing in…' : 'Sign in'}
         </Button>
       </form>
-
-      <p className="mt-6 text-center text-sm text-graphite-500">
-        No account?{' '}
-        <Link to="/signup" className="rounded font-medium text-graphite-200 transition-colors hover:text-ember-400">
-          Sign up
-        </Link>
-      </p>
     </AuthLayout>
   )
 }

@@ -107,58 +107,71 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-7xl px-5 py-10 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-graphite-50">Projects</h1>
-          <p className="mt-1 text-sm text-graphite-500">{projects.length} project{projects.length === 1 ? '' : 's'}</p>
+          <h1 className="type-display text-graphite-50">Projects</h1>
+          <p className="type-body mt-1.5 text-graphite-500">
+            <span data-numeric>{projects.length}</span> project{projects.length === 1 ? '' : 's'}
+          </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2.5">
           <input ref={fileInputRef} type="file" accept=".zip" className="hidden" onChange={handleImport} />
-          <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="outline" size="lg" onClick={() => fileInputRef.current?.click()}>
             <Upload size={16} /> Import
           </Button>
-          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+          <Button variant="primary" size="lg" onClick={() => setCreateOpen(true)}>
             <FolderPlus size={16} /> New Project
           </Button>
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="mt-8 flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-graphite-500" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search projects…" className="pl-9" />
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-graphite-500" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search projects…"
+            className="pl-10"
+            aria-label="Search projects"
+          />
         </div>
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="h-9 rounded-lg border border-graphite-700 bg-graphite-900 px-3 text-sm text-graphite-300"
+          aria-label="Sort projects"
+          className="h-11 rounded-control border border-hairline bg-surface-raised px-3.5 text-sm text-graphite-300 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.04)] outline-none transition-colors hover:border-hairline-strong hover:text-graphite-100 focus:ring-[3.5px] focus:ring-ember-500/20 sm:w-44"
         >
           <option value="updated">Last modified</option>
           <option value="name">Name</option>
         </select>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-7">
         {loading ? (
-          <div className="flex justify-center py-16">
+          <div className="flex justify-center py-20">
             <Spinner size={22} />
           </div>
         ) : visible.length === 0 ? (
           <EmptyState
             icon={FolderPlus}
             title={projects.length === 0 ? 'No projects yet' : 'No projects match your search'}
-            description={projects.length === 0 ? 'Create your first project to get started.' : undefined}
+            description={
+              projects.length === 0
+                ? 'Create your first project to get started — pick a template and it opens straight in the editor.'
+                : `Nothing matches “${query}”. Try a different search.`
+            }
             action={
               projects.length === 0 ? (
-                <Button variant="primary" onClick={() => setCreateOpen(true)}>
+                <Button variant="primary" size="lg" onClick={() => setCreateOpen(true)}>
                   <FolderPlus size={16} /> New Project
                 </Button>
               ) : undefined
             }
           />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visible.map((project) => (
               <ProjectCard
                 key={project.id}

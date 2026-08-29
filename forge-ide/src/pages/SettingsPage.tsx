@@ -24,7 +24,7 @@ export function SettingsPage() {
       <h1 className="text-2xl font-semibold text-graphite-50">Settings</h1>
 
       <Tabs.Root defaultValue="editor" className="mt-6">
-        <Tabs.List className="flex gap-1 border-b border-graphite-800">
+        <Tabs.List className="flex gap-1 border-b border-hairline">
           {TABS.map((tab) => (
             <Tabs.Trigger
               key={tab}
@@ -110,7 +110,7 @@ function AppearanceSettingsPanel() {
           onClick={() => setTheme(option)}
           className={clsx(
             'flex-1 rounded-lg border px-4 py-3 text-sm capitalize',
-            theme === option ? 'border-ember-500 bg-ember-500/[0.06] text-graphite-100' : 'border-graphite-800 text-graphite-400 hover:border-graphite-700',
+            theme === option ? 'border-ember-500 bg-ember-500/[0.06] text-graphite-100' : 'border-hairline text-graphite-400 hover:border-hairline-strong',
           )}
         >
           {option}
@@ -150,7 +150,7 @@ function AiSettingsPanel() {
         <select
           value={ai.provider}
           onChange={(e) => updateAi({ provider: e.target.value as AiProvider })}
-          className="h-9 rounded-lg border border-graphite-700 bg-graphite-900 px-3 text-sm text-graphite-200"
+          className="h-9 rounded-lg border border-hairline-strong bg-surface-raised px-3 text-sm text-graphite-200"
         >
           <option value="anthropic">Anthropic</option>
           <option value="openai">OpenAI</option>
@@ -252,7 +252,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-graphite-800 px-3 py-2.5">
+    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-hairline px-3 py-2.5">
       <span className="text-sm text-graphite-300">{label}</span>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 accent-ember-500" />
     </label>

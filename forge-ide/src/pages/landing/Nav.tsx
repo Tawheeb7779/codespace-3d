@@ -15,7 +15,7 @@ export function Nav() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-40 border-b border-graphite-800/80 bg-graphite-950/85 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-hairline/80 bg-surface-base/85 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 font-semibold text-graphite-50">
           <Flame size={20} className="text-ember-500" />
@@ -49,7 +49,7 @@ export function Nav() {
       </div>
 
       {open && (
-        <div className="border-t border-graphite-800 px-4 py-4 md:hidden">
+        <div className="border-t border-hairline px-4 py-4 md:hidden">
           <nav className="flex flex-col gap-3">
             {LINKS.map((link) => (
               <a key={link.href} href={link.href} className="text-sm text-graphite-300" onClick={() => setOpen(false)}>

@@ -7,8 +7,10 @@ import type { TreeNode } from '@/features/explorer/buildTree'
 import { FileIcon } from '@/lib/fileIcon'
 import { useFileList, useWorkspace } from '@/features/workspace/WorkspaceContext'
 import { useEditorStore } from '@/stores/editorStore'
+import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { toast } from '@/stores/toastStore'
 import { InvalidPathError } from '@/lib/paths'
+import { menuContentClass, menuItemClass, menuItemDangerClass, menuSeparatorClass } from '@/components/ui/menu'
 
 export function FileTree() {
   const { fs } = useWorkspace()
@@ -80,18 +82,26 @@ export function FileTree() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-graphite-500">Explorer</span>
+      <div className="flex items-center justify-between px-3 py-2.5">
+        <span className="type-label text-graphite-600">Explorer</span>
         <div className="flex gap-0.5">
-          <button className="rounded p-1 text-graphite-500 hover:bg-graphite-800 hover:text-graphite-200" onClick={() => createFile('')} aria-label="New file">
+          <button
+            className="rounded-md p-1.5 text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
+            onClick={() => createFile('')}
+            aria-label="New file"
+          >
             <FilePlus size={14} />
           </button>
-          <button className="rounded p-1 text-graphite-500 hover:bg-graphite-800 hover:text-graphite-200" onClick={() => createFolder('')} aria-label="New folder">
+          <button
+            className="rounded-md p-1.5 text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
+            onClick={() => createFolder('')}
+            aria-label="New folder"
+          >
             <FolderPlus size={14} />
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto scrollbar-thin px-1 pb-2">
+      <div className="flex-1 overflow-y-auto scrollbar-thin px-1.5 pb-2">
         {tree.map((node) => (
           <Node
             key={node.path}
@@ -99,7 +109,12 @@ export function FileTree() {
             depth={0}
             expanded={expanded}
             onToggle={toggle}
-            onOpen={(path) => openTab(fs, path)}
+            onOpen={(path) => {
+              openTab(fs, path)
+              // On tablet the explorer is a drawer over the editor, so
+              // picking a file should reveal what was just opened.
+              useWorkspaceUiStore.getState().dismissOverlayPanels()
+            }}
             onCreateFile={createFile}
             onCreateFolder={createFolder}
             onRename={rename}
@@ -143,10 +158,12 @@ function Node({
     <div>
       <div
         className={clsx(
-          'group flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-sm',
-          activePath === node.path ? 'bg-graphite-800 text-graphite-50' : 'text-graphite-300 hover:bg-graphite-850',
+          'group flex w-full items-center gap-1.5 rounded-md py-[5px] pr-1 text-[0.8125rem] transition-colors duration-100',
+          activePath === node.path
+            ? 'bg-surface-hover text-graphite-50'
+            : 'text-graphite-300 hover:bg-surface-raised',
         )}
-        style={{ paddingLeft: depth * 14 + 6 }}
+        style={{ paddingLeft: depth * 12 + 8 }}
       >
         <button
           onClick={() => (isDir ? onToggle(node.path) : onOpen(node.path))}
@@ -163,32 +180,32 @@ function Node({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button
-              className="reveal-on-hover shrink-0 rounded p-1 opacity-0 transition-opacity hover:bg-graphite-700 group-hover:opacity-100 data-[state=open]:opacity-100"
+              className="reveal-on-hover shrink-0 rounded-md p-1 text-graphite-500 opacity-0 transition-[opacity,background-color,color] duration-150 hover:bg-surface-overlay hover:text-graphite-100 group-hover:opacity-100 data-[state=open]:opacity-100"
               aria-label={`Actions for ${node.name}`}
             >
               <MoreHorizontal size={13} />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-          <DropdownMenu.Content className="z-40 min-w-40 rounded-lg border border-graphite-800 bg-graphite-850 p-1 shadow-xl">
+          <DropdownMenu.Content sideOffset={4} className={menuContentClass}>
             {isDir && (
               <>
-                <DropdownMenu.Item onSelect={() => onCreateFile(node.path)} className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800">
+                <DropdownMenu.Item onSelect={() => onCreateFile(node.path)} className={menuItemClass}>
                   <FilePlus size={14} /> New file
                 </DropdownMenu.Item>
-                <DropdownMenu.Item onSelect={() => onCreateFolder(node.path)} className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800">
+                <DropdownMenu.Item onSelect={() => onCreateFolder(node.path)} className={menuItemClass}>
                   <FolderPlus size={14} /> New folder
                 </DropdownMenu.Item>
-                <DropdownMenu.Separator className="my-1 h-px bg-graphite-800" />
+                <DropdownMenu.Separator className={menuSeparatorClass} />
               </>
             )}
-            <DropdownMenu.Item onSelect={() => onRename(node)} className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800">
+            <DropdownMenu.Item onSelect={() => onRename(node)} className={menuItemClass}>
               <Pencil size={14} /> Rename
             </DropdownMenu.Item>
-            <DropdownMenu.Item onSelect={() => onDuplicate(node)} className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800">
+            <DropdownMenu.Item onSelect={() => onDuplicate(node)} className={menuItemClass}>
               <Copy size={14} /> Duplicate
             </DropdownMenu.Item>
-            <DropdownMenu.Item onSelect={() => onDelete(node)} className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-signal-red outline-none hover:bg-signal-red/10">
+            <DropdownMenu.Item onSelect={() => onDelete(node)} className={menuItemDangerClass}>
               <Trash2 size={14} /> Delete
             </DropdownMenu.Item>
           </DropdownMenu.Content>

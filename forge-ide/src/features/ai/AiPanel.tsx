@@ -92,9 +92,15 @@ export function AiPanel() {
     <div className="flex h-full flex-col">
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-3 scrollbar-thin">
         {messages.length === 0 && (
-          <p className="mt-4 text-center text-sm text-graphite-500">
-            Ask the agent to build, fix, or explain something. It can read and edit your files and run your project.
-          </p>
+          <div className="flex flex-col items-center gap-3.5 px-4 pt-10 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-overlay ring-1 ring-inset ring-hairline">
+              <Bot size={20} className="text-ember-400" />
+            </div>
+            <p className="max-w-[15rem] text-[0.8125rem] leading-relaxed text-graphite-500">
+              Ask the agent to build, fix, or explain something. It can read and edit your files and run your
+              project.
+            </p>
+          </div>
         )}
         {messages
           .filter((m) => m.role !== 'tool')
@@ -128,7 +134,7 @@ export function AiPanel() {
         </div>
       )}
 
-      <div className="flex items-end gap-2 border-t border-graphite-800 p-3">
+      <div className="flex items-end gap-2 border-t border-hairline p-3">
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -163,10 +169,10 @@ function MessageBubble({ message }: { message: AgentMessage }) {
       <div className={clsx('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full', isUser ? 'bg-graphite-700' : 'bg-ember-500/20 text-ember-400')}>
         {isUser ? <User size={13} /> : <Bot size={13} />}
       </div>
-      <div className={clsx('max-w-[85%] rounded-lg px-3 py-2 text-sm', isUser ? 'bg-graphite-800 text-graphite-100' : 'bg-graphite-900 text-graphite-200')}>
+      <div className={clsx('max-w-[85%] rounded-lg px-3 py-2 text-sm', isUser ? 'bg-surface-hover text-graphite-100' : 'bg-surface-raised text-graphite-200')}>
         {message.content && <p className="whitespace-pre-wrap">{message.content}</p>}
         {message.toolCalls?.map((call) => (
-          <div key={call.id} className="mt-1.5 flex items-center gap-1.5 rounded bg-graphite-850 px-2 py-1 text-xs text-graphite-500">
+          <div key={call.id} className="mt-1.5 flex items-center gap-1.5 rounded bg-surface-overlay px-2 py-1 text-xs text-graphite-500">
             <Wrench size={11} /> {call.name}
             {typeof call.arguments.path === 'string' && <span className="text-graphite-400">{call.arguments.path}</span>}
           </div>

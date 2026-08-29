@@ -42,7 +42,7 @@ export function MobileWorkspace() {
         {screen === 'ai' && <AiPanel />}
       </div>
 
-      <nav className="flex shrink-0 border-t border-graphite-800 bg-graphite-900 pb-[env(safe-area-inset-bottom)]">
+      <nav className="flex shrink-0 border-t border-hairline bg-surface-raised pb-[env(safe-area-inset-bottom)]">
         {SCREENS.map((s) => (
           <button
             key={s.id}

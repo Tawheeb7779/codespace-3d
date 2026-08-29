@@ -33,12 +33,18 @@ export function WorkspaceTopBar() {
   const isRunning = status === 'running' || isBusy
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between border-b border-graphite-800 bg-graphite-900 px-3">
-      <div className="flex min-w-0 items-center gap-3">
-        <Link to="/dashboard" className="text-graphite-500 hover:text-graphite-200" aria-label="Back to dashboard">
+    <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-hairline bg-surface-raised px-3">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <Link
+          to="/dashboard"
+          className="-m-1.5 rounded-lg p-1.5 text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
+          aria-label="Back to dashboard"
+        >
           <ArrowLeft size={16} />
         </Link>
-        <span className="truncate text-sm font-medium text-graphite-100">{project.name}</span>
+        <span className="truncate text-[0.8125rem] font-medium tracking-[-0.008em] text-graphite-50">
+          {project.name}
+        </span>
         <Badge variant={STATUS_VARIANT[status]}>{status}</Badge>
       </div>
 
@@ -46,11 +52,15 @@ export function WorkspaceTopBar() {
         <PresenceAvatars users={presentUsers} />
         <QuickActions />
 
+        {/* Reads as a keyboard hint rather than a button: recessed fill,
+            no border, monospaced key cap. */}
         <button
           onClick={() => setCommandPaletteOpen(true)}
-          className="hidden items-center gap-1.5 rounded-md border border-graphite-700 px-2.5 py-1.5 text-xs text-graphite-500 hover:text-graphite-300 sm:flex"
+          className="hidden items-center gap-1.5 rounded-lg bg-surface-sunken px-2.5 py-1.5 text-[0.6875rem] font-medium text-graphite-500 ring-1 ring-inset ring-hairline transition-colors duration-150 hover:text-graphite-200 hover:ring-hairline-strong sm:flex"
+          aria-label="Open command palette"
         >
-          <Command size={12} /> K
+          <Command size={12} />
+          <span className="font-mono">K</span>
         </button>
 
         {isRunning ? (

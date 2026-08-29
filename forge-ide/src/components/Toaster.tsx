@@ -32,16 +32,18 @@ export function Toaster() {
             key={t.id}
             role={t.variant === 'error' ? 'alert' : 'status'}
             aria-live={t.variant === 'error' ? 'assertive' : 'polite'}
-            className="animate-toast-in pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-xl border border-graphite-700/70 bg-graphite-850/95 p-3 shadow-lg shadow-black/40 backdrop-blur"
+            className="surface-overlay animate-toast-in pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card p-3.5 backdrop-blur-xl"
           >
             <Icon size={17} className={`mt-px shrink-0 ${ACCENTS[t.variant]}`} aria-hidden />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium leading-snug text-graphite-50">{t.title}</p>
+              <p className="text-[0.8125rem] font-medium leading-snug tracking-[-0.006em] text-graphite-50">
+                {t.title}
+              </p>
               {t.description && <p className="mt-1 text-xs leading-relaxed text-graphite-400">{t.description}</p>}
             </div>
             <button
               onClick={() => dismiss(t.id)}
-              className="-m-1 shrink-0 rounded-md p-1 text-graphite-500 transition-colors hover:bg-graphite-800 hover:text-graphite-200"
+              className="-m-1 shrink-0 rounded-md p-1 text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
               aria-label={`Dismiss: ${t.title}`}
             >
               <X size={14} />

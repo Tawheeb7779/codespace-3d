@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Copy, Download, MoreVertical, Pencil, Trash2 } from 'lucide-react'
+import { Copy, Download, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/misc'
 import { Input } from '@/components/ui/Input'
+import { menuContentClass, menuItemClass, menuItemDangerClass, menuSeparatorClass } from '@/components/ui/menu'
 import { getTemplate } from '@/features/projects/templates'
 import type { Project } from '@/types/project'
 
@@ -41,60 +42,58 @@ export function ProjectCard({
   }
 
   return (
-    <div className="group relative rounded-xl border border-graphite-800 bg-graphite-900/50 p-4 transition-colors hover:border-graphite-700">
-      <div className="flex items-start justify-between">
+    // Lifts by 1px on hover: a small, physical response that makes the whole
+    // grid feel like a set of objects rather than a list of rectangles.
+    <div className="surface-card group relative flex flex-col rounded-card p-4 transition-[transform,border-color,background-color] duration-200 ease-out hover:-translate-y-px hover:border-hairline-strong hover:bg-surface-hover/40 motion-reduce:hover:translate-y-0">
+      <div className="flex items-start justify-between gap-2">
         {renaming ? (
           <Input
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
             onBlur={submitRename}
-            onKeyDown={(e) => e.key === 'Enter' && submitRename()}
-            className="h-7 text-sm"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') submitRename()
+              if (e.key === 'Escape') {
+                setName(project.name)
+                setRenaming(false)
+              }
+            }}
+            className="h-8 px-2 text-sm"
           />
         ) : (
-          <Link to={`/projects/${project.id}`} className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-graphite-100 group-hover:text-white">{project.name}</p>
+          <Link to={`/projects/${project.id}`} className="min-w-0 flex-1 rounded">
+            {/* Covers the card so the whole surface is the click target,
+                while the menu button above it stays independently clickable. */}
+            <span className="absolute inset-0 rounded-card" aria-hidden />
+            <p className="truncate text-[0.9375rem] font-medium tracking-[-0.011em] text-graphite-100 transition-colors group-hover:text-white">
+              {project.name}
+            </p>
           </Link>
         )}
 
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button
-              className="reveal-on-hover -m-1 ml-1 shrink-0 rounded-lg p-2 text-graphite-500 opacity-0 transition-opacity hover:bg-graphite-800 hover:text-graphite-200 group-hover:opacity-100 data-[state=open]:opacity-100"
+              className="reveal-on-hover relative -m-1 ml-1 shrink-0 rounded-lg p-2 text-graphite-500 opacity-0 transition-[opacity,background-color,color] duration-150 hover:bg-surface-hover hover:text-graphite-100 group-hover:opacity-100 data-[state=open]:opacity-100"
               aria-label={`Actions for ${project.name}`}
             >
-              <MoreVertical size={16} />
+              <MoreHorizontal size={16} />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content
-              align="end"
-              className="z-40 min-w-40 rounded-lg border border-graphite-800 bg-graphite-850 p-1 shadow-xl data-[state=open]:animate-fade-in"
-            >
-              <DropdownMenu.Item
-                onSelect={() => setRenaming(true)}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800"
-              >
-                <Pencil size={14} /> Rename
+            <DropdownMenu.Content align="end" sideOffset={6} className={menuContentClass}>
+              <DropdownMenu.Item onSelect={() => setRenaming(true)} className={menuItemClass}>
+                <Pencil size={14} className="text-graphite-500" /> Rename
               </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onSelect={() => onDuplicate(project.id)}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800"
-              >
-                <Copy size={14} /> Duplicate
+              <DropdownMenu.Item onSelect={() => onDuplicate(project.id)} className={menuItemClass}>
+                <Copy size={14} className="text-graphite-500" /> Duplicate
               </DropdownMenu.Item>
-              <DropdownMenu.Item
-                onSelect={() => onExport(project.id)}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800"
-              >
-                <Download size={14} /> Export ZIP
+              <DropdownMenu.Item onSelect={() => onExport(project.id)} className={menuItemClass}>
+                <Download size={14} className="text-graphite-500" /> Export ZIP
               </DropdownMenu.Item>
-              <DropdownMenu.Separator className="my-1 h-px bg-graphite-800" />
-              <DropdownMenu.Item
-                onSelect={() => onDelete(project.id)}
-                className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-signal-red outline-none hover:bg-signal-red/10"
-              >
+              <DropdownMenu.Separator className={menuSeparatorClass} />
+              <DropdownMenu.Item onSelect={() => onDelete(project.id)} className={menuItemDangerClass}>
                 <Trash2 size={14} /> Delete
               </DropdownMenu.Item>
             </DropdownMenu.Content>
@@ -102,11 +101,15 @@ export function ProjectCard({
         </DropdownMenu.Root>
       </div>
 
-      {project.description && <p className="mt-1.5 truncate text-xs text-graphite-500">{project.description}</p>}
+      {project.description && (
+        <p className="mt-1.5 line-clamp-2 text-[0.8125rem] leading-relaxed text-graphite-500">{project.description}</p>
+      )}
 
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-5 flex items-center gap-2 pt-0.5">
         {template && <Badge>{template.name}</Badge>}
-        <span className="text-xs text-graphite-600">Updated {timeAgo(project.updatedAt)}</span>
+        <span className="text-[0.75rem] text-graphite-600" data-numeric>
+          {timeAgo(project.updatedAt)}
+        </span>
       </div>
     </div>
   )

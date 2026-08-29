@@ -28,7 +28,7 @@ const WorkspacePage = lazy(() => import('@/pages/WorkspacePage').then((m) => ({ 
 
 function FullScreenSpinner() {
   return (
-    <div className="flex h-screen items-center justify-center bg-graphite-950">
+    <div className="flex h-screen items-center justify-center bg-surface-base">
       <Spinner size={22} />
     </div>
   )

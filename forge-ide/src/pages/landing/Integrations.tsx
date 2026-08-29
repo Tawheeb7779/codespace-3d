@@ -17,7 +17,7 @@ export function Integrations() {
         <p className="mt-4 text-graphite-400">We never dress up a planned feature as a working one.</p>
       </div>
 
-      <div className="mt-10 divide-y divide-graphite-800 rounded-xl border border-graphite-800">
+      <div className="mt-10 divide-y divide-hairline rounded-xl border border-hairline">
         {INTEGRATIONS.map((item) => (
           <div key={item.name} className="flex items-center justify-between gap-4 px-5 py-4">
             <div>

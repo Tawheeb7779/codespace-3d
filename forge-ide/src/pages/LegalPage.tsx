@@ -32,7 +32,7 @@ export function LegalPage() {
   const entry = CONTENT[page ?? ''] ?? { title: 'Not found', body: ['This page does not exist.'] }
 
   return (
-    <div className="min-h-screen bg-graphite-950 px-4 py-16 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-surface-base px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-graphite-500 hover:text-graphite-300">
           <ArrowLeft size={14} /> Back home

@@ -3,6 +3,7 @@ import { Bug, FileText, Gauge, Shield, Sparkles, TestTube2, Wand2, Zap } from 'l
 import { useEditorStore } from '@/stores/editorStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { Button } from '@/components/ui/Button'
+import { menuContentClass, menuItemClass } from '@/components/ui/menu'
 
 const ACTIONS = [
   { id: 'explain', label: 'Explain', icon: FileText, prompt: (path: string) => `Explain what the code in ${path} does.` },
@@ -27,12 +28,12 @@ export function QuickActions() {
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content align="end" className="z-40 min-w-48 rounded-lg border border-graphite-800 bg-graphite-850 p-1 shadow-xl">
+        <DropdownMenu.Content align="end" sideOffset={6} className={menuContentClass}>
           {ACTIONS.map((action) => (
             <DropdownMenu.Item
               key={action.id}
               onSelect={() => activePath && requestAiAction(action.prompt(activePath))}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800"
+              className={menuItemClass}
             >
               <action.icon size={14} /> {action.label}
             </DropdownMenu.Item>

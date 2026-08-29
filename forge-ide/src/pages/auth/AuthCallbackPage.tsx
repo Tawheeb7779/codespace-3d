@@ -82,7 +82,7 @@ export function AuthCallbackPage() {
 
   if (state.phase === 'working') {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-graphite-950">
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-surface-base">
         <Spinner size={22} />
         <p className="text-sm text-graphite-500">Completing sign-in…</p>
       </div>

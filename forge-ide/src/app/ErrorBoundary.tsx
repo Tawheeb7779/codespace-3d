@@ -26,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.error) {
       return (
-        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-graphite-950 px-4 text-center">
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface-base px-4 text-center">
           <AlertOctagon size={32} className="text-signal-red" />
           <div>
             <h1 className="text-lg font-semibold text-graphite-50">Something went wrong</h1>

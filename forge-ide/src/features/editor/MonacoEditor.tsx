@@ -50,7 +50,7 @@ export function MonacoEditor() {
 
   if (!activeTab) {
     return (
-      <div className="flex h-full items-center justify-center bg-graphite-950">
+      <div className="flex h-full items-center justify-center bg-surface-base">
         <EmptyState icon={FileCode} title="No file open" description="Select a file from the explorer to start editing." />
       </div>
     )
@@ -64,7 +64,7 @@ export function MonacoEditor() {
       value={activeTab.buffer}
       onChange={handleChange}
       onMount={handleMount}
-      theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
+      theme={resolvedTheme === 'light' ? 'forge-light' : 'forge-dark'}
       options={{
         fontSize: editorSettings.fontSize,
         tabSize: editorSettings.tabSize,

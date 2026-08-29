@@ -18,7 +18,7 @@ export function Pricing() {
             key={plan.id}
             className={clsx(
               'flex flex-col rounded-2xl border p-6',
-              plan.highlighted ? 'border-ember-500/50 bg-ember-500/[0.04] ring-1 ring-ember-500/20' : 'border-graphite-800 bg-graphite-900/40',
+              plan.highlighted ? 'border-ember-500/50 bg-ember-500/[0.04] ring-1 ring-ember-500/20' : 'border-hairline bg-surface-raised/40',
             )}
           >
             <h3 className="text-sm font-medium uppercase tracking-wide text-graphite-400">{plan.name}</h3>

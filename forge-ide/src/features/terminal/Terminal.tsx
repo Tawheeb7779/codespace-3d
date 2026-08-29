@@ -5,11 +5,24 @@ import '@xterm/xterm/css/xterm.css'
 import { WebContainerService } from '@/services/WebContainerService'
 import { useTerminalStore } from '@/stores/terminalStore'
 
+/* Matches the surface tokens so the terminal is continuous with the panel
+   it sits in, rather than a black box pasted into it. */
 const THEME = {
-  background: '#14171a',
-  foreground: '#eceef0',
+  background: '#090b0c', // --color-surface-sunken
+  foreground: '#d5d9de',
   cursor: '#f6540f',
-  selectionBackground: '#3b434c',
+  cursorAccent: '#090b0c',
+  selectionBackground: '#f6540f40',
+  black: '#0b0d0f',
+  red: '#f2495c',
+  green: '#3ecf8e',
+  yellow: '#f5b93d',
+  blue: '#7f8a96',
+  magenta: '#8b7cf6',
+  cyan: '#3ecf8e',
+  white: '#d5d9de',
+  brightBlack: '#5f6b78',
+  brightWhite: '#f6f7f8',
 }
 
 /**

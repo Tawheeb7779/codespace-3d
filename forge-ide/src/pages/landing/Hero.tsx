@@ -11,7 +11,7 @@ export function Hero() {
       />
 
       <div className="mx-auto max-w-4xl text-center">
-        <div className="animate-fade-in mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-graphite-800 bg-graphite-900/60 px-3 py-1 text-xs text-graphite-400">
+        <div className="animate-fade-in mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-raised/60 px-3 py-1 text-xs text-graphite-400">
           <span className="h-1.5 w-1.5 rounded-full bg-signal-green" />
           Real in-browser runtime · real AI agent · no fake demos
         </div>
@@ -49,15 +49,15 @@ export function Hero() {
 
 function ProductPreview() {
   return (
-    <div className="overflow-hidden rounded-xl border border-graphite-800 bg-graphite-900 shadow-2xl shadow-black/40">
-      <div className="flex items-center gap-1.5 border-b border-graphite-800 bg-graphite-850 px-4 py-2.5">
+    <div className="overflow-hidden rounded-xl border border-hairline bg-surface-raised shadow-2xl shadow-black/40">
+      <div className="flex items-center gap-1.5 border-b border-hairline bg-surface-overlay px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-graphite-700" />
         <span className="h-2.5 w-2.5 rounded-full bg-graphite-700" />
         <span className="h-2.5 w-2.5 rounded-full bg-graphite-700" />
         <span className="ml-3 text-xs text-graphite-500">forge-ide — src/App.tsx</span>
       </div>
       <div className="grid grid-cols-[160px_1fr_220px] text-left text-xs">
-        <div className="hidden border-r border-graphite-800 p-3 text-graphite-500 sm:block">
+        <div className="hidden border-r border-hairline p-3 text-graphite-500 sm:block">
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-graphite-600">Explorer</p>
           {['src/', 'App.tsx', 'main.tsx', 'components/', 'package.json'].map((f) => (
             <p key={f} className="truncate py-0.5">
@@ -76,10 +76,10 @@ function ProductPreview() {
   )
 }`}
         </pre>
-        <div className="hidden border-l border-graphite-800 p-3 text-graphite-500 md:block">
+        <div className="hidden border-l border-hairline p-3 text-graphite-500 md:block">
           <p className="mb-2 text-[10px] font-medium uppercase tracking-wide text-graphite-600">Preview</p>
-          <div className="rounded-md border border-graphite-800 bg-graphite-950 p-3">
-            <div className="inline-flex rounded border border-graphite-700 px-2 py-1 text-graphite-300">Count: 3</div>
+          <div className="rounded-md border border-hairline bg-surface-base p-3">
+            <div className="inline-flex rounded border border-hairline-strong px-2 py-1 text-graphite-300">Count: 3</div>
           </div>
         </div>
       </div>

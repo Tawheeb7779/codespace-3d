@@ -9,7 +9,7 @@ import { Footer } from '@/pages/landing/Footer'
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-graphite-950">
+    <div className="min-h-screen bg-surface-base">
       <Nav />
       <main>
         <Hero />

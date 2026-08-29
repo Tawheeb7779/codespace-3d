@@ -30,7 +30,7 @@ const COLUMNS = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-graphite-800 px-4 py-14 sm:px-6 lg:px-8">
+    <footer className="border-t border-hairline px-4 py-14 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           {COLUMNS.map((col) => (
@@ -49,7 +49,7 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-graphite-800 pt-6 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-hairline pt-6 sm:flex-row">
           <Link to="/" className="flex items-center gap-2 text-sm font-medium text-graphite-300">
             <Flame size={16} className="text-ember-500" /> Forge IDE
           </Link>

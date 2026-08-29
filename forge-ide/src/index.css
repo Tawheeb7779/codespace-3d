@@ -32,8 +32,32 @@
   --color-signal-amber: #f5b93d;
   --color-signal-red: #f2495c;
 
+  /*
+   * Surfaces form an elevation ladder instead of every panel being the same
+   * value fenced off by a visible border. In dark mode a surface gets
+   * lighter as it comes forward — page, then panels, then the things that
+   * float above them — so depth is carried by value and shadow, and borders
+   * can drop back to a hairline that separates without drawing attention.
+   */
+  --color-surface-base: #0b0d0f;   /* page */
+  --color-surface-sunken: #090b0c;  /* wells: inputs, editor gutter, terminal */
+  --color-surface-raised: #141719;  /* panels, cards, headers */
+  --color-surface-overlay: #1c2023; /* dialogs, menus, popovers */
+  --color-surface-hover: #22262a;   /* transient control fills */
+
+  /* Hairlines: low-alpha white rather than a solid grey, so a border reads
+     as the edge of a surface instead of a drawn line on top of it. */
+  --color-hairline: rgb(255 255 255 / 0.07);
+  --color-hairline-strong: rgb(255 255 255 / 0.12);
+
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Radii scale up with the size of the surface they belong to, so a
+     control, a card and a dialog stay in proportion to one another. */
+  --radius-control: 0.625rem; /* 10px — buttons, inputs */
+  --radius-card: 0.875rem;    /* 14px — cards, panels */
+  --radius-modal: 1.125rem;   /* 18px — dialogs, sheets */
 
   /*
    * Motion: one decelerating curve for anything entering the screen and a
@@ -98,6 +122,17 @@
   --color-graphite-850: #edeff1;
   --color-graphite-900: #f5f6f7;
   --color-graphite-950: #fbfbfc;
+
+  /* Light mode inverts the elevation logic: the page is the mid value and
+     surfaces come forward by getting closer to white, with hairlines as
+     low-alpha black. */
+  --color-surface-base: #f4f5f7;
+  --color-surface-sunken: #eceef1;
+  --color-surface-raised: #ffffff;
+  --color-surface-overlay: #ffffff;
+  --color-surface-hover: #eef0f3;
+  --color-hairline: rgb(0 0 0 / 0.08);
+  --color-hairline-strong: rgb(0 0 0 / 0.14);
 }
 
 @layer base {
@@ -112,8 +147,9 @@
   }
 
   body {
-    @apply bg-graphite-950 text-graphite-100 font-sans antialiased;
+    @apply bg-surface-base text-graphite-100 font-sans antialiased;
     text-rendering: optimizeLegibility;
+    font-feature-settings: "cv05" 1, "ss01" 1; /* Inter: single-storey g, disambiguated I/l */
   }
 
   /*
@@ -122,9 +158,15 @@
    * natural spacing. Applied by element so every heading inherits the
    * same rules instead of each screen re-deciding.
    */
-  h1 { letter-spacing: -0.022em; }
-  h2 { letter-spacing: -0.019em; }
-  h3 { letter-spacing: -0.014em; }
+  h1 { letter-spacing: -0.024em; }
+  h2 { letter-spacing: -0.021em; }
+  h3 { letter-spacing: -0.015em; }
+
+  /* Tabular figures wherever numbers sit in a column or update in place
+     (counts, timestamps, line numbers) so they don't jitter. */
+  time, [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
 
   ::selection {
     @apply bg-ember-500/30 text-white;
@@ -159,6 +201,78 @@
       transition-duration: 0.001ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer components {
+  /*
+   * Named type roles rather than ad-hoc size/weight/tracking triplets on
+   * each screen. Sizes step by a consistent ratio and line-height tightens
+   * as size grows, which is what keeps headings compact and body copy
+   * readable at the same time.
+   */
+  .type-display {
+    font-size: 1.875rem;   /* 30px */
+    line-height: 1.16;
+    font-weight: 600;
+    letter-spacing: -0.028em;
+  }
+  .type-title {
+    font-size: 1.375rem;   /* 22px */
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.021em;
+  }
+  .type-heading {
+    font-size: 1rem;       /* 16px */
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+  .type-body {
+    font-size: 0.875rem;   /* 14px */
+    line-height: 1.55;
+  }
+  .type-secondary {
+    font-size: 0.8125rem;  /* 13px */
+    line-height: 1.5;
+  }
+  /* Section labels above groups of controls. */
+  .type-label {
+    font-size: 0.6875rem;  /* 11px */
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /*
+   * A raised surface. The inset top highlight is what makes a panel read as
+   * catching light from above rather than as a flat rectangle — it does the
+   * work a heavy border used to do, without the noise.
+   */
+  .surface-card {
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-hairline);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+      0 1px 2px rgb(0 0 0 / 0.2);
+  }
+
+  .surface-overlay {
+    background-color: var(--color-surface-overlay);
+    border: 1px solid var(--color-hairline-strong);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.05),
+      0 16px 48px -12px rgb(0 0 0 / 0.6),
+      0 4px 12px rgb(0 0 0 / 0.3);
+  }
+
+  :root[data-theme='light'] .surface-card,
+  :root[data-theme='light'] .surface-overlay {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.06),
+      0 8px 24px -8px rgb(0 0 0 / 0.1);
   }
 }
 

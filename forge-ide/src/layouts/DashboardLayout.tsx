@@ -1,10 +1,17 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useShallow } from 'zustand/react/shallow'
+import { clsx } from 'clsx'
 import { Flame, LogOut, Settings, User } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
 import { Badge } from '@/components/ui/misc'
+import { menuContentClass, menuItemClass, menuSeparatorClass } from '@/components/ui/menu'
+
+const NAV = [
+  { to: '/dashboard', label: 'Projects' },
+  { to: '/teams', label: 'Teams' },
+]
 
 export function DashboardLayout() {
   const { user, status, signOut } = useAuthStore(
@@ -23,20 +30,38 @@ export function DashboardLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-graphite-950">
-      <header className="sticky top-0 z-30 border-b border-graphite-800 bg-graphite-950/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-graphite-100">
-              <Flame size={18} className="text-ember-500" /> Forge IDE
+    <div className="min-h-screen bg-surface-base">
+      {/* The header sits on a translucent, blurred surface with only a
+          hairline under it — enough to separate it from content that
+          scrolls beneath without drawing a hard rule across the page. */}
+      <header className="sticky top-0 z-30 border-b border-hairline bg-surface-base/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-5 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-7">
+            <Link
+              to="/dashboard"
+              className="flex items-center gap-2 rounded-lg text-[0.9375rem] font-semibold tracking-[-0.014em] text-graphite-50 transition-opacity hover:opacity-70"
+            >
+              <Flame size={18} className="text-ember-500" />
+              Forge IDE
             </Link>
-            <nav className="hidden gap-4 sm:flex">
-              <Link to="/dashboard" className="text-sm text-graphite-400 hover:text-graphite-100">
-                Projects
-              </Link>
-              <Link to="/teams" className="text-sm text-graphite-400 hover:text-graphite-100">
-                Teams
-              </Link>
+
+            <nav className="hidden items-center gap-1 sm:flex">
+              {NAV.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    clsx(
+                      'rounded-lg px-2.5 py-1.5 text-[0.8125rem] font-medium transition-colors duration-150',
+                      isActive
+                        ? 'bg-surface-hover text-graphite-50'
+                        : 'text-graphite-400 hover:bg-surface-raised hover:text-graphite-100',
+                    )
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
             </nav>
           </div>
 
@@ -44,29 +69,32 @@ export function DashboardLayout() {
             {status === 'local' && <Badge variant="warning">Local mode</Badge>}
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
-                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-graphite-800 text-graphite-300 hover:bg-graphite-700">
-                  <User size={16} />
+                <button
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-hover text-graphite-300 ring-1 ring-inset ring-hairline transition-colors duration-150 hover:bg-surface-overlay hover:text-graphite-50"
+                  aria-label="Account menu"
+                >
+                  <User size={15} />
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
-                <DropdownMenu.Content align="end" className="z-40 min-w-48 rounded-lg border border-graphite-800 bg-graphite-850 p-1 shadow-xl">
+                <DropdownMenu.Content align="end" sideOffset={8} className={menuContentClass}>
                   {user && (
-                    <div className="border-b border-graphite-800 px-2.5 py-2">
-                      <p className="truncate text-sm font-medium text-graphite-100">{user.displayName}</p>
-                      {user.email && <p className="truncate text-xs text-graphite-500">{user.email}</p>}
-                    </div>
+                    <>
+                      <div className="px-2.5 py-1.5">
+                        <p className="truncate text-[0.8125rem] font-medium text-graphite-50">{user.displayName}</p>
+                        {user.email && <p className="truncate text-xs text-graphite-500">{user.email}</p>}
+                      </div>
+                      <DropdownMenu.Separator className={menuSeparatorClass} />
+                    </>
                   )}
-                  <DropdownMenu.Item asChild>
-                    <Link to="/settings" className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800">
-                      <Settings size={14} /> Settings
+                  <DropdownMenu.Item asChild className={menuItemClass}>
+                    <Link to="/settings">
+                      <Settings size={14} className="text-graphite-500" /> Settings
                     </Link>
                   </DropdownMenu.Item>
                   {status === 'authenticated' && (
-                    <DropdownMenu.Item
-                      onSelect={handleSignOut}
-                      className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-graphite-200 outline-none hover:bg-graphite-800"
-                    >
-                      <LogOut size={14} /> Sign out
+                    <DropdownMenu.Item onSelect={handleSignOut} className={menuItemClass}>
+                      <LogOut size={14} className="text-graphite-500" /> Sign out
                     </DropdownMenu.Item>
                   )}
                 </DropdownMenu.Content>

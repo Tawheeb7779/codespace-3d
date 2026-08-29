@@ -43,7 +43,7 @@ export function Features() {
 
       <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURES.map((f) => (
-          <div key={f.title} className="rounded-xl border border-graphite-800 bg-graphite-900/40 p-6 transition-colors hover:border-graphite-700">
+          <div key={f.title} className="rounded-xl border border-hairline bg-surface-raised/40 p-6 transition-colors hover:border-hairline-strong">
             <div className="mb-4 inline-flex rounded-lg bg-ember-500/10 p-2.5 text-ember-400">
               <f.icon size={20} />
             </div>

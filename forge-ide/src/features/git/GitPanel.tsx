@@ -120,7 +120,7 @@ export function GitPanel() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-graphite-800 px-3 py-2">
+      <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
         <div className="flex items-center gap-1.5 text-xs text-graphite-400">
           <GitBranch size={13} /> {branch}
         </div>
@@ -134,7 +134,7 @@ export function GitPanel() {
         </div>
       </div>
 
-      <div className="flex border-b border-graphite-800 text-xs">
+      <div className="flex border-b border-hairline text-xs">
         <button onClick={() => setView('changes')} className={clsx('flex-1 py-2', view === 'changes' ? 'border-b-2 border-ember-500 text-graphite-100' : 'text-graphite-500')}>
           Changes {status.length > 0 && `(${status.length})`}
         </button>
@@ -162,7 +162,7 @@ export function GitPanel() {
             )}
           </div>
 
-          <div className="border-t border-graphite-800 p-3">
+          <div className="border-t border-hairline p-3">
             <Textarea value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Commit message" rows={2} />
             <div className="mt-2 flex gap-2">
               <Button variant="outline" size="sm" className="flex-1" onClick={handleStageAll} disabled={unstaged.length === 0}>
@@ -175,12 +175,12 @@ export function GitPanel() {
           </div>
 
           {selected && diff && (
-            <div className="h-56 shrink-0 border-t border-graphite-800">
+            <div className="h-56 shrink-0 border-t border-hairline">
               <DiffEditor
                 language={languageForPath(selected)}
                 original={diff.head}
                 modified={diff.workdir}
-                theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
+                theme={resolvedTheme === 'light' ? 'forge-light' : 'forge-dark'}
                 options={{ readOnly: true, renderSideBySide: false, minimap: { enabled: false }, fontSize: 12 }}
               />
             </div>
@@ -192,7 +192,7 @@ export function GitPanel() {
             <EmptyState icon={History} title="No commits yet" description="Commit your changes to start a history." />
           ) : (
             log.map((commit) => (
-              <div key={commit.oid} className="border-b border-graphite-900 px-3 py-2">
+              <div key={commit.oid} className="border-b border-hairline px-3 py-2">
                 <p className="text-sm text-graphite-200">{commit.message}</p>
                 <p className="mt-1 text-xs text-graphite-500">
                   {commit.author} · {new Date(commit.timestamp).toLocaleString()} · {commit.oid.slice(0, 7)}
@@ -212,12 +212,12 @@ function SectionLabel({ label }: { label: string }) {
 
 function FileRow({ file, selected, onSelect, onToggle }: { file: GitFileStatus; selected: boolean; onSelect: () => void; onToggle: () => void }) {
   return (
-    <div className={clsx('flex items-center gap-2 px-3 py-1.5 text-sm', selected ? 'bg-graphite-800' : 'hover:bg-graphite-850')}>
+    <div className={clsx('flex items-center gap-2 px-3 py-1.5 text-sm', selected ? 'bg-surface-hover' : 'hover:bg-surface-raised')}>
       <button onClick={onSelect} className="min-w-0 flex-1 truncate text-left text-graphite-300">
         {file.path}
       </button>
       <span className={clsx('w-4 shrink-0 text-center text-xs font-medium', STATUS_COLOR[file.status])}>{STATUS_LABEL[file.status]}</span>
-      <button onClick={onToggle} className="shrink-0 rounded px-1.5 py-0.5 text-xs text-graphite-500 hover:bg-graphite-700 hover:text-graphite-200">
+      <button onClick={onToggle} className="shrink-0 rounded px-1.5 py-0.5 text-xs text-graphite-500 hover:bg-surface-overlay hover:text-graphite-200">
         {file.staged ? '−' : '+'}
       </button>
     </div>
