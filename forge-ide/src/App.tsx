@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
 import { AuthGate } from '@/app/AuthGate'
 import { Toaster } from '@/components/Toaster'
 import { ErrorBoundary } from '@/app/ErrorBoundary'
+import { Spinner } from '@/components/ui/misc'
 import { LandingPage } from '@/pages/LandingPage'
 import { DocsPage } from '@/pages/DocsPage'
 import { LegalPage } from '@/pages/LegalPage'
@@ -15,8 +16,20 @@ import { AuthCallbackPage } from '@/pages/auth/AuthCallbackPage'
 import { DashboardLayout } from '@/layouts/DashboardLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { SettingsPage } from '@/pages/SettingsPage'
-import { WorkspacePage } from '@/pages/WorkspacePage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
+
+// The workspace pulls in Monaco, xterm, WebContainer, and isomorphic-git —
+// several hundred KB nothing outside the IDE needs, so it's the one route
+// split out of the main bundle (spec §44).
+const WorkspacePage = lazy(() => import('@/pages/WorkspacePage').then((m) => ({ default: m.WorkspacePage })))
+
+function FullScreenSpinner() {
+  return (
+    <div className="flex h-screen items-center justify-center bg-graphite-950">
+      <Spinner size={22} />
+    </div>
+  )
+}
 
 export default function App() {
   const initialize = useAuthStore((s) => s.initialize)
@@ -54,7 +67,9 @@ export default function App() {
             path="/projects/:projectId"
             element={
               <AuthGate>
-                <WorkspacePage />
+                <Suspense fallback={<FullScreenSpinner />}>
+                  <WorkspacePage />
+                </Suspense>
               </AuthGate>
             }
           />
