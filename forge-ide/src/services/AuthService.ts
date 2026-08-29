@@ -1,6 +1,8 @@
 import type { Session, User } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
 import type { UserProfile } from '@/types/auth'
+import type { OAuthProviderId } from '@/features/auth/providers'
+import { DEFAULT_POST_AUTH_PATH, safeRedirectPath } from '@/features/auth/redirect'
 
 export class SupabaseNotConfiguredError extends Error {
   constructor() {
@@ -56,11 +58,24 @@ export const AuthService = {
     return data
   },
 
-  async signInWithOAuth(provider: 'google' | 'github') {
+  /**
+   * Starts a real OAuth authorization-code flow through Supabase Auth. The
+   * browser is redirected to the provider; on return, Supabase's client
+   * exchanges the code for a session (detectSessionInUrl) at /auth/callback.
+   *
+   * `next` is the in-app path to land on afterwards. It is passed through
+   * the callback URL and validated there — never used to build the redirect
+   * host, so it cannot be turned into an open redirect off-origin.
+   */
+  async signInWithOAuth(provider: OAuthProviderId, next?: string) {
     const client = requireClient()
+    const callback = new URL('/auth/callback', window.location.origin)
+    const target = safeRedirectPath(next)
+    if (target !== DEFAULT_POST_AUTH_PATH) callback.searchParams.set('next', target)
+
     const { error } = await client.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: callback.toString() },
     })
     if (error) throw error
   },

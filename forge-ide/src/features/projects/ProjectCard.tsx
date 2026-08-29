@@ -60,7 +60,10 @@ export function ProjectCard({
 
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="ml-2 shrink-0 rounded p-1 text-graphite-500 opacity-0 hover:bg-graphite-800 hover:text-graphite-200 group-hover:opacity-100" aria-label="Project actions">
+            <button
+              className="reveal-on-hover -m-1 ml-1 shrink-0 rounded-lg p-2 text-graphite-500 opacity-0 transition-opacity hover:bg-graphite-800 hover:text-graphite-200 group-hover:opacity-100 data-[state=open]:opacity-100"
+              aria-label={`Actions for ${project.name}`}
+            >
               <MoreVertical size={16} />
             </button>
           </DropdownMenu.Trigger>

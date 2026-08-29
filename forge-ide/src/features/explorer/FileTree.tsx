@@ -163,7 +163,7 @@ function Node({
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button
-              className="shrink-0 rounded p-0.5 opacity-0 hover:bg-graphite-700 group-hover:opacity-100 data-[state=open]:opacity-100"
+              className="reveal-on-hover shrink-0 rounded p-1 opacity-0 transition-opacity hover:bg-graphite-700 group-hover:opacity-100 data-[state=open]:opacity-100"
               aria-label={`Actions for ${node.name}`}
             >
               <MoreHorizontal size={13} />

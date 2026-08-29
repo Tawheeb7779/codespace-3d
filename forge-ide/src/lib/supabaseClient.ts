@@ -16,6 +16,13 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
+        // Authorization Code + PKCE rather than the legacy implicit flow:
+        // the implicit flow returns access/refresh tokens directly in the
+        // URL fragment, where they land in history and can leak via
+        // referrers. With PKCE the redirect carries only a short-lived
+        // code, which the client exchanges using a verifier that never
+        // leaves this browser.
+        flowType: 'pkce',
       },
     })
   : null

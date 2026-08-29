@@ -12,7 +12,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { AuthService } from '@/services/AuthService'
 import { ConnectionsService } from '@/services/ConnectionsService'
 import { toast } from '@/stores/toastStore'
-import { isSupabaseConfigured, supabase } from '@/lib/supabaseClient'
+import { isSupabaseConfigured } from '@/lib/supabaseClient'
 
 const TABS = ['editor', 'appearance', 'ai', 'account'] as const
 
@@ -181,9 +181,12 @@ function AiSettingsPanel() {
 }
 
 function AccountSettingsPanel({ onSignedOut }: { onSignedOut: () => void }) {
-  const { user, status } = useAuthStore(useShallow((s) => ({ user: s.user, status: s.status })))
+  const { user, status, signOut } = useAuthStore(
+    useShallow((s) => ({ user: s.user, status: s.status, signOut: s.signOut })),
+  )
   const [password, setPassword] = useState('')
   const [saving, setSaving] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
 
   if (status === 'local') {
     return <ConfigNotice>You're in local mode — projects are stored only in this browser. Configure Supabase to enable cloud accounts.</ConfigNotice>
@@ -220,9 +223,16 @@ function AccountSettingsPanel({ onSignedOut }: { onSignedOut: () => void }) {
       </div>
       <Button
         variant="danger"
+        loading={signingOut}
         onClick={async () => {
-          await supabase?.auth.signOut()
-          onSignedOut()
+          setSigningOut(true)
+          try {
+            await signOut()
+            onSignedOut()
+          } catch (err) {
+            toast.error('Sign out failed', err instanceof Error ? err.message : undefined)
+            setSigningOut(false)
+          }
         }}
       >
         Sign out

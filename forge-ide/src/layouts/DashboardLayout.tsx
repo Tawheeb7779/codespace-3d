@@ -3,15 +3,22 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { useShallow } from 'zustand/react/shallow'
 import { Flame, LogOut, Settings, User } from 'lucide-react'
 import { useAuthStore } from '@/stores/authStore'
-import { AuthService } from '@/services/AuthService'
+import { toast } from '@/stores/toastStore'
 import { Badge } from '@/components/ui/misc'
 
 export function DashboardLayout() {
-  const { user, status } = useAuthStore(useShallow((s) => ({ user: s.user, status: s.status })))
+  const { user, status, signOut } = useAuthStore(
+    useShallow((s) => ({ user: s.user, status: s.status, signOut: s.signOut })),
+  )
   const navigate = useNavigate()
 
   async function handleSignOut() {
-    await AuthService.signOut()
+    try {
+      await signOut()
+    } catch (err) {
+      toast.error('Sign out failed', err instanceof Error ? err.message : undefined)
+      return
+    }
     navigate('/')
   }
 

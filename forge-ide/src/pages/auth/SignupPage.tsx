@@ -1,12 +1,16 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
+import { MailCheck } from 'lucide-react'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { Button } from '@/components/ui/Button'
-import { Input, Label } from '@/components/ui/Input'
+import { Input, Label, FieldError } from '@/components/ui/Input'
 import { ConfigNotice } from '@/components/ConfigNotice'
 import { OAuthButtons } from '@/pages/auth/OAuthButtons'
+import { AuthDivider, AuthRedirectGate } from '@/pages/auth/authParts'
 import { AuthService } from '@/services/AuthService'
 import { useAuthStore } from '@/stores/authStore'
+
+const MIN_PASSWORD_LENGTH = 8
 
 export function SignupPage() {
   const status = useAuthStore((s) => s.status)
@@ -16,14 +20,16 @@ export function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [sent, setSent] = useState(false)
 
+  if (status === 'loading') return <AuthRedirectGate />
   if (status === 'authenticated') return <Navigate to="/dashboard" replace />
 
   if (!AuthService.isConfigured) {
     return (
       <AuthLayout title="Create your account" subtitle="Cloud accounts require a Supabase project.">
         <ConfigNotice>
-          Supabase isn't configured for this deployment. You can still use Forge IDE in{' '}
-          <Link to="/dashboard" className="underline">
+          Supabase isn't configured for this deployment, so account creation and Google/GitHub sign-in aren't
+          available. You can still use Forge IDE in{' '}
+          <Link to="/dashboard" className="font-medium underline underline-offset-2">
             local mode
           </Link>{' '}
           — projects are saved in this browser only, with no cloud sync.
@@ -34,10 +40,18 @@ export function SignupPage() {
 
   if (sent) {
     return (
-      <AuthLayout title="Check your inbox" subtitle="We sent a confirmation link to your email.">
-        <p className="text-sm text-graphite-400">
-          Click the link in the email to finish creating your account. You can close this tab.
-        </p>
+      <AuthLayout title="Check your inbox" subtitle={`We sent a confirmation link to ${email}.`}>
+        <div className="flex flex-col items-center gap-4 py-2 text-center">
+          <div className="rounded-full bg-signal-green/10 p-3 text-signal-green">
+            <MailCheck size={22} />
+          </div>
+          <p className="text-sm text-graphite-400">
+            Click the link in the email to finish creating your account. You can close this tab.
+          </p>
+          <Link to="/login" className="text-sm font-medium text-graphite-300 hover:text-ember-400">
+            Back to sign in
+          </Link>
+        </div>
       </AuthLayout>
     )
   }
@@ -45,6 +59,10 @@ export function SignupPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`)
+      return
+    }
     setLoading(true)
     try {
       await AuthService.signUpWithPassword(email, password)
@@ -58,15 +76,23 @@ export function SignupPage() {
 
   return (
     <AuthLayout title="Create your account" subtitle="Start building for free.">
-      <OAuthButtons />
-      <div className="my-5 flex items-center gap-3 text-xs text-graphite-600">
-        <div className="h-px flex-1 bg-graphite-800" /> or <div className="h-px flex-1 bg-graphite-800" />
-      </div>
+      <OAuthButtons disabled={loading} />
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <AuthDivider />
+
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+          <Input
+            id="email"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'signup-error' : undefined}
+          />
         </div>
         <div>
           <Label htmlFor="password">Password</Label>
@@ -74,21 +100,30 @@ export function SignupPage() {
             id="password"
             type="password"
             required
-            minLength={8}
+            minLength={MIN_PASSWORD_LENGTH}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'signup-error' : 'password-hint'}
           />
+          {!error && (
+            <p id="password-hint" className="mt-1.5 text-xs text-graphite-600">
+              At least {MIN_PASSWORD_LENGTH} characters.
+            </p>
+          )}
         </div>
-        {error && <p className="text-sm text-signal-red">{error}</p>}
-        <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+
+        {error && <FieldError id="signup-error">{error}</FieldError>}
+
+        <Button type="submit" variant="primary" size="lg" touch loading={loading} className="w-full">
           {loading ? 'Creating account…' : 'Create account'}
         </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-graphite-500">
         Already have an account?{' '}
-        <Link to="/login" className="text-graphite-200 hover:text-ember-400">
+        <Link to="/login" className="rounded font-medium text-graphite-200 transition-colors hover:text-ember-400">
           Sign in
         </Link>
       </p>

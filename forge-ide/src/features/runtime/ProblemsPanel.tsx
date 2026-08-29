@@ -35,7 +35,7 @@ export function ProblemsPanel() {
             </div>
             <button
               onClick={() => requestAiAction(`This runtime error occurred:\n\n${entry.text}\n\nDiagnose and fix it.`)}
-              className="shrink-0 rounded p-1 text-graphite-500 opacity-0 hover:bg-graphite-800 hover:text-ember-400 group-hover:opacity-100"
+              className="reveal-on-hover shrink-0 rounded p-1.5 text-graphite-500 opacity-0 transition-opacity hover:bg-graphite-800 hover:text-ember-400 group-hover:opacity-100"
               aria-label="Send to AI"
               title="Send to AI"
             >

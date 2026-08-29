@@ -23,7 +23,7 @@ export function DesktopWorkspace() {
       {leftPanel !== 'hidden' && (
         <>
           <div
-            className="fixed bottom-0 left-11 top-12 z-30 w-72 border-r border-graphite-800 bg-graphite-900 lg:static lg:inset-auto lg:z-auto lg:w-64 lg:shrink-0"
+            className="fixed bottom-0 left-12 top-12 z-30 w-72 border-r border-graphite-800 bg-graphite-900 shadow-2xl shadow-black/30 lg:static lg:inset-auto lg:z-auto lg:w-64 lg:shrink-0 lg:shadow-none"
           >
             {leftPanel === 'explorer' && <FileTree />}
             {leftPanel === 'search' && <ProjectSearch />}

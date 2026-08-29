@@ -42,7 +42,10 @@ export function EditorTabs() {
                   if (tab.dirty && !confirm(`Discard unsaved changes to ${basename(tab.path)}?`)) return
                   close(tab.path)
                 }}
-                className={clsx('absolute inset-0 hidden items-center justify-center rounded hover:bg-graphite-700 group-hover:flex', !tab.dirty && 'flex')}
+                className={clsx(
+                  'reveal-on-hover-flex absolute inset-0 hidden items-center justify-center rounded transition-colors hover:bg-graphite-700 group-hover:flex',
+                  !tab.dirty && 'flex',
+                )}
                 aria-label={`Close ${basename(tab.path)}`}
               >
                 <X size={12} />

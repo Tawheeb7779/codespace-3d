@@ -35,16 +35,45 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
-  --animate-fade-in: fade-in 0.15s ease-out;
-  --animate-slide-up: slide-up 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  /*
+   * Motion: one decelerating curve for anything entering the screen and a
+   * shorter symmetric one for anything leaving, so transitions across the
+   * app feel like one system rather than per-component guesses. Durations
+   * stay short enough that motion never sits between the user and the work.
+   */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quad: cubic-bezier(0.45, 0, 0.55, 1);
+
+  --animate-fade-in: fade-in 0.16s var(--ease-out-quint);
+  --animate-fade-out: fade-out 0.12s var(--ease-in-out-quad);
+  --animate-slide-up: slide-up 0.22s var(--ease-out-quint);
+  --animate-scale-in: scale-in 0.18s var(--ease-out-quint);
+  --animate-scale-out: scale-out 0.12s var(--ease-in-out-quad);
+  --animate-toast-in: toast-in 0.26s var(--ease-out-quint);
 
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
   }
+  @keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
   @keyframes slide-up {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes scale-out {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    to { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 }
 
@@ -78,19 +107,49 @@
 
   html {
     -webkit-tap-highlight-color: transparent;
+    /* Keep long-press/drag from selecting UI chrome on touch devices. */
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
     @apply bg-graphite-950 text-graphite-100 font-sans antialiased;
+    text-rendering: optimizeLegibility;
   }
+
+  /*
+   * Display type: large text reads as loose at default tracking, so
+   * headings tighten progressively with size while body copy keeps its
+   * natural spacing. Applied by element so every heading inherits the
+   * same rules instead of each screen re-deciding.
+   */
+  h1 { letter-spacing: -0.022em; }
+  h2 { letter-spacing: -0.019em; }
+  h3 { letter-spacing: -0.014em; }
 
   ::selection {
     @apply bg-ember-500/30 text-white;
   }
 
+  /*
+   * A single focus treatment everywhere: a ring rather than a hard
+   * outline, offset from the control so it reads on both themes and
+   * never clips against adjacent elements. Only keyboard focus shows it.
+   */
   :focus-visible {
     outline: 2px solid var(--color-ember-400);
     outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
+
+  /*
+   * iOS zooms the viewport when a focused input's text is under 16px.
+   * Form controls get 16px up to the tablet breakpoint, then fall back to
+   * the denser desktop size.
+   */
+  @media (max-width: 767px) {
+    input, select, textarea {
+      font-size: 16px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -104,6 +163,26 @@
 }
 
 @layer utilities {
+  /*
+   * Controls that fade in on hover (row actions, tab close buttons) have no
+   * way to appear on a touch device, where there is no hover state — which
+   * made them unreachable on tablet and mobile. Pair this class with the
+   * `opacity-0 group-hover:opacity-100` treatment so those same controls are
+   * simply always visible wherever hover doesn't exist.
+   */
+  /* The doubled class raises specificity above the single-class
+     `opacity-0` / `hidden` utilities these pair with, so the override wins
+     regardless of the order Tailwind emits them in. */
+  @media (hover: none) {
+    .reveal-on-hover.reveal-on-hover {
+      opacity: 1;
+    }
+    /* Same idea for controls revealed by toggling display rather than opacity. */
+    .reveal-on-hover-flex.reveal-on-hover-flex {
+      display: flex;
+    }
+  }
+
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: var(--color-graphite-600) transparent;
