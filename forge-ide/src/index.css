@@ -48,6 +48,29 @@
   }
 }
 
+/*
+ * Light theme: re-declares the same token names with the ramp reversed
+ * (950 = near-white background ... 50 = near-black text) rather than a
+ * flat color inversion, so contrast and hierarchy stay intentional in
+ * both themes (spec §40). Every component references these tokens by
+ * name only, so no component-level styling changes with the theme.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-graphite-50: #0b0d0f;
+  --color-graphite-100: #16191c;
+  --color-graphite-200: #2b3036;
+  --color-graphite-300: #454c54;
+  --color-graphite-400: #626b74;
+  --color-graphite-500: #7c8590;
+  --color-graphite-600: #99a1a9;
+  --color-graphite-700: #c7ccd1;
+  --color-graphite-800: #e2e5e8;
+  --color-graphite-850: #edeff1;
+  --color-graphite-900: #f5f6f7;
+  --color-graphite-950: #fbfbfc;
+}
+
 @layer base {
   :root {
     color-scheme: dark;

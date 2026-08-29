@@ -4,6 +4,7 @@ import { Check, FilePlus, FileMinus, FileEdit, RotateCcw, X } from 'lucide-react
 import { clsx } from 'clsx'
 import { Button } from '@/components/ui/Button'
 import { languageForPath } from '@/lib/languageMap'
+import { useResolvedTheme } from '@/app/useThemeEffect'
 import type { FileChange } from '@/features/ai/ChangeTracker'
 
 const ICON = { created: FilePlus, deleted: FileMinus, modified: FileEdit, renamed: FileEdit }
@@ -21,6 +22,7 @@ export function ChangesReview({
   onAcceptAll: () => void
 }) {
   const [selected, setSelected] = useState<string | null>(changes[0]?.path ?? null)
+  const resolvedTheme = useResolvedTheme()
 
   if (changes.length === 0) return null
   const active = changes.find((c) => c.path === selected) ?? changes[0]
@@ -76,7 +78,7 @@ export function ChangesReview({
               language={languageForPath(active.path)}
               original={active.before ?? ''}
               modified={active.after ?? ''}
-              theme="vs-dark"
+              theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
               options={{ readOnly: true, renderSideBySide: true, minimap: { enabled: false }, fontSize: 12 }}
             />
           </div>

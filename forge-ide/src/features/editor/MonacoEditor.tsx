@@ -4,6 +4,7 @@ import type { OnMount } from '@monaco-editor/react'
 import { useEditorStore } from '@/stores/editorStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useWorkspace } from '@/features/workspace/WorkspaceContext'
+import { useResolvedTheme } from '@/app/useThemeEffect'
 import { languageForPath } from '@/lib/languageMap'
 import { EmptyState } from '@/components/ui/misc'
 import { FileCode } from 'lucide-react'
@@ -17,6 +18,7 @@ export function MonacoEditor() {
     save: s.save,
   }))
   const editorSettings = useSettingsStore((s) => s.editor)
+  const resolvedTheme = useResolvedTheme()
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null)
 
@@ -59,7 +61,7 @@ export function MonacoEditor() {
       value={activeTab.buffer}
       onChange={handleChange}
       onMount={handleMount}
-      theme="vs-dark"
+      theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
       options={{
         fontSize: editorSettings.fontSize,
         tabSize: editorSettings.tabSize,

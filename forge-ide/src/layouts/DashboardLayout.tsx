@@ -18,9 +18,19 @@ export function DashboardLayout() {
     <div className="min-h-screen bg-graphite-950">
       <header className="sticky top-0 z-30 border-b border-graphite-800 bg-graphite-950/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-graphite-100">
-            <Flame size={18} className="text-ember-500" /> Forge IDE
-          </Link>
+          <div className="flex items-center gap-6">
+            <Link to="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-graphite-100">
+              <Flame size={18} className="text-ember-500" /> Forge IDE
+            </Link>
+            <nav className="hidden gap-4 sm:flex">
+              <Link to="/dashboard" className="text-sm text-graphite-400 hover:text-graphite-100">
+                Projects
+              </Link>
+              <Link to="/teams" className="text-sm text-graphite-400 hover:text-graphite-100">
+                Teams
+              </Link>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-3">
             {status === 'local' && <Badge variant="warning">Local mode</Badge>}

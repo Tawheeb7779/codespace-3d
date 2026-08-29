@@ -11,6 +11,7 @@ import { useWorkspace, useFileList } from '@/features/workspace/WorkspaceContext
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
 import { languageForPath } from '@/lib/languageMap'
+import { useResolvedTheme } from '@/app/useThemeEffect'
 
 const STATUS_LABEL: Record<GitFileStatus['status'], string> = {
   untracked: 'U',
@@ -41,6 +42,7 @@ export function GitPanel() {
   const [selected, setSelected] = useState<string | null>(null)
   const [diff, setDiff] = useState<{ head: string; workdir: string } | null>(null)
   const [view, setView] = useState<'changes' | 'history'>('changes')
+  const resolvedTheme = useResolvedTheme()
 
   useEffect(() => {
     GitService.forProject(project.id, fs).then((service) => {
@@ -178,7 +180,7 @@ export function GitPanel() {
                 language={languageForPath(selected)}
                 original={diff.head}
                 modified={diff.workdir}
-                theme="vs-dark"
+                theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
                 options={{ readOnly: true, renderSideBySide: false, minimap: { enabled: false }, fontSize: 12 }}
               />
             </div>

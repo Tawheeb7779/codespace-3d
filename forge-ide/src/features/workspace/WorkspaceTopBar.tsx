@@ -7,6 +7,10 @@ import { QuickActions } from '@/features/ai/QuickActions'
 import { useWorkspace } from '@/features/workspace/WorkspaceContext'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useEditorStore } from '@/stores/editorStore'
+import { usePresence } from '@/features/collaboration/usePresence'
+import { PresenceAvatars } from '@/features/collaboration/PresenceAvatars'
 
 const STATUS_VARIANT = {
   idle: 'default',
@@ -22,6 +26,9 @@ export function WorkspaceTopBar() {
   const { project, fs } = useWorkspace()
   const status = useRuntimeStore((s) => s.status)
   const setCommandPaletteOpen = useWorkspaceUiStore((s) => s.setCommandPaletteOpen)
+  const user = useAuthStore((s) => s.user)
+  const activePath = useEditorStore((s) => s.activePath)
+  const presentUsers = usePresence(project.id, user, activePath)
 
   const isBusy = status === 'installing' || status === 'starting'
   const isRunning = status === 'running' || isBusy
@@ -37,6 +44,7 @@ export function WorkspaceTopBar() {
       </div>
 
       <div className="flex items-center gap-1.5">
+        <PresenceAvatars users={presentUsers} />
         <QuickActions />
 
         <button

@@ -1,6 +1,8 @@
 import { Suspense, lazy, useEffect } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { useSettingsStore } from '@/stores/settingsStore'
+import { useThemeEffect } from '@/app/useThemeEffect'
 import { AuthGate } from '@/app/AuthGate'
 import { Toaster } from '@/components/Toaster'
 import { ErrorBoundary } from '@/app/ErrorBoundary'
@@ -16,6 +18,7 @@ import { AuthCallbackPage } from '@/pages/auth/AuthCallbackPage'
 import { DashboardLayout } from '@/layouts/DashboardLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { TeamsPage } from '@/pages/TeamsPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 // The workspace pulls in Monaco, xterm, WebContainer, and isomorphic-git —
@@ -33,11 +36,17 @@ function FullScreenSpinner() {
 
 export default function App() {
   const initialize = useAuthStore((s) => s.initialize)
+  const loadSettings = useSettingsStore((s) => s.load)
+  useThemeEffect()
 
   useEffect(() => {
     const unsubscribe = initialize()
     return unsubscribe
   }, [initialize])
+
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
 
   return (
     <ErrorBoundary>
@@ -60,6 +69,7 @@ export default function App() {
             }
           >
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/teams" element={<TeamsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
 
