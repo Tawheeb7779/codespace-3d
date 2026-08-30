@@ -32,6 +32,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@21st-dev/cli": "^1.16.1",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",

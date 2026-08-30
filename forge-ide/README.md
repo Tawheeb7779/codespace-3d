@@ -201,6 +201,35 @@ run against a real Chromium browser during development — see "Known
 limitations" below for what that QA could and couldn't verify in this
 particular environment.
 
+## 21st.dev CLI (UI component search/install)
+
+[`@21st-dev/cli`](https://21st.dev) is installed as a dev dependency for
+searching and pulling in UI components from 21st.dev's registry. It's a
+tool for the person developing this repo, not something the app itself
+depends on at runtime.
+
+```bash
+npx 21st login          # opens your browser, saves a token to your machine
+npx 21st search "..."   # search components/themes/templates
+npx 21st add author/slug   # install a published component
+```
+
+`login` needs a real browser and a reachable `localhost` callback, so it
+only works on your own machine — it cannot complete inside a headless
+CI job or a remote/sandboxed session (there's no browser to redirect,
+and the loopback callback isn't reachable from outside the container).
+For those, skip login and authenticate per-command instead:
+
+```bash
+API_KEY_21ST=<your key> npx 21st <command>
+# or
+npx 21st <command> --api-key <your key>
+```
+
+Get a key at <https://21st.dev/mcp>. `TWENTYFIRST_TOKEN` also works as
+the env var name. Never commit a key — export it in your shell profile
+or set it as a CI secret instead.
+
 ## Known limitations
 
 - **Google/GitHub OAuth has not been exercised against the live
