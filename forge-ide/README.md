@@ -11,23 +11,44 @@ is faked to look more finished than it is.
 
 ## Feature status
 
+Three statuses, used precisely — a row is never marked more finished than
+it's actually been shown to be:
+
+- **REAL** — the code path is real (no mocks, no fabricated data) and has
+  been exercised: either by an automated test in this repo, or by browser
+  QA against the actual running app.
+- **CONFIGURATION REQUIRED** — the code is real, but needs a real external
+  account/credential this repo cannot supply for you (a Supabase project,
+  an OAuth app, an AI provider key). Until that's supplied, the app shows
+  a clear "needs setup" state rather than pretending to work.
+- **ENVIRONMENT LIMITED** — the code is real, but the environment this
+  particular build was developed and audited in cannot reach the external
+  service it depends on (sandboxed network policy — no route to
+  `stackblitz.com`, live Supabase projects, or AI provider APIs), so that
+  path could only be verified by reading the code and, where possible,
+  exercising the underlying logic locally (e.g. RLS policies against a
+  local Postgres instance) — never by an actual live round trip. This is a
+  property of the sandbox this was built in, not of the app: it should
+  work in a normal developer or CI environment with real network access.
+
 | Area | Status | Notes |
 |---|---|---|
-| Landing page, docs, legal pages | **Real** | Fully static, all links resolve to real in-app routes. |
-| Auth (email/password) | **Config required** | Needs a Supabase project. Falls back to a genuine **local mode** (IndexedDB-only projects, no account) when unconfigured — never a fake login. |
-| Auth (Google / GitHub OAuth) | **Config required** | Fully implemented against Supabase Auth using the Authorization Code + PKCE flow, including the callback, cancellation, error and session-restore paths. The buttons perform a real OAuth redirect. It cannot complete a sign-in until you create the OAuth apps and enable the providers in Supabase — see [OAuth setup](#google--github-oauth-setup). |
-| Dashboard, project CRUD, templates | **Real** | Works in both cloud and local mode. |
-| ZIP import/export | **Real** | Path-traversal-safe (tested). |
-| Monaco editor, tabs, autosave, command palette | **Real** | 30+ languages get real Monaco syntax highlighting; a few listed in the spec (TOML, Makefile) have no built-in Monaco grammar and fall back to plaintext rather than fake highlighting. |
-| File explorer, project-wide search | **Real** | |
-| In-browser runtime (terminal, run, preview) | **Real, requires network** | Uses StackBlitz's WebContainer API, which loads a hosted runtime from `stackblitz.com` at boot. Verified working end-to-end against a real project in this build's browser QA where that domain was reachable; on a network/firewall that blocks it, the app now surfaces a clear timeout error (not a silent hang) instead of pretending to run. Execution is real only for JS/TS/Node/web projects — other languages (Python, Java, C++, etc.) get real editing but not in-browser execution. |
-| Git (status/diff/stage/commit/branch/history) | **Real** | A real `isomorphic-git` repository per project, over a browser-native fs adapter — no server round trip. |
+| Landing page, docs, legal pages | **REAL** | Fully static, all links resolve to real in-app routes. |
+| Auth (email/password) | **CONFIGURATION REQUIRED** | Needs a Supabase project. Falls back to a genuine **local mode** (IndexedDB-only projects, no account) when unconfigured — never a fake login. |
+| Auth (Google OAuth) | **CONFIGURATION REQUIRED**, **ENVIRONMENT LIMITED** for a live handshake | Fully implemented against Supabase Auth using the Authorization Code + PKCE flow, including the callback, cancellation, error and session-restore paths — verified against a local mock of Supabase's `/auth/v1/authorize` endpoint. Completing a real sign-in needs a Google OAuth app + Supabase provider config (see [OAuth setup](#google--github-oauth-setup)), and this sandbox cannot reach `accounts.google.com` to verify the live handshake either way. |
+| Auth (GitHub OAuth) | **CONFIGURATION REQUIRED**, **ENVIRONMENT LIMITED** for a live handshake | Same code path as Google, provider-parameterized. Needs a GitHub OAuth App + Supabase provider config; this sandbox cannot reach `github.com` to verify the live handshake. |
+| Dashboard, project CRUD, templates | **REAL** | Works in both cloud and local mode. |
+| ZIP import/export | **REAL** | Path-traversal-safe and `.git/`-protected (both cases have automated tests — an archive can neither escape the project directory nor write into the reserved Git-subsystem path). |
+| Monaco editor, tabs, autosave, command palette | **REAL** | 30+ languages get real Monaco syntax highlighting; a few listed in the spec (TOML, Makefile) have no built-in Monaco grammar and fall back to plaintext rather than fake highlighting. |
+| File explorer, project-wide search | **REAL** | |
+| In-browser runtime (terminal, run, preview) | **REAL** code, **ENVIRONMENT LIMITED** verification | Uses StackBlitz's WebContainer API, which loads a hosted runtime from `stackblitz.com` at boot. The service, its cross-origin-isolation requirement, and its error/timeout handling are real and reviewed; this sandbox's network policy blocks `stackblitz.com` outright, so it could not be booted live here. Verify by actually running a project once deployed somewhere with real network access. Execution is real only for JS/TS/Node/web projects — other languages (Python, Java, C++, etc.) get real editing but not in-browser execution. |
+| Git (status/diff/stage/commit/branch/history) | **REAL** | A real `isomorphic-git` repository per project, over a browser-native fs adapter — no server round trip. |
 | GitHub repository import/push | **Planned** | Needs a CORS proxy or server-side git operations; not implemented. |
-| AI coding agent | **Config required** | Needs Supabase (the provider call is proxied through a Supabase Edge Function so API keys never reach the browser) and an API key for OpenAI, Anthropic, or Gemini, added in Settings → AI. The tool-calling loop, file read/write/search, run/build, and the diff-based change review are all real once configured. |
-| Teams, roles, invitations | **Config required** | Needs Supabase; enforced server-side via Postgres RLS, not just a frontend check. |
-| Real-time presence | **Config required** | Needs Supabase Realtime; shows genuinely connected users, never fabricated ones. Presence channels are keyed by (unguessable UUID) project ID, not gated by Realtime Authorization — anyone with the ID could join the channel and see who's active, though not read any file content (that stays behind Postgres RLS). Tightening this needs Supabase's Realtime Authorization feature enabled per-project. |
+| AI coding agent | **CONFIGURATION REQUIRED**, **ENVIRONMENT LIMITED** for a live model call | Needs Supabase (the provider call is proxied through a Supabase Edge Function so API keys never reach the browser) and an API key for OpenAI, Anthropic, or Gemini, added in Settings → AI. The multi-step tool-calling loop, file read/write/search, run/build, diff-based change review, and per-provider request normalization are all real and reviewed; this sandbox cannot reach any provider's API or a deployed Edge Function to exercise a live call. |
+| Teams, roles, invitations | **REAL** RLS (tested), **CONFIGURATION REQUIRED** for a live project | Enforced server-side via Postgres RLS, not just a frontend check. A real privilege-escalation bug (any team admin could promote themselves to owner, or delete the actual owner) and a real functional bug (an invitee could never actually accept an invitation) were found and fixed — both are covered by automated RLS tests run against a local Postgres instance; see `supabase/tests/`. |
+| Real-time presence authorization | **REAL** predicate logic (tested locally), **CONFIGURATION REQUIRED** for a live project, **ENVIRONMENT LIMITED** for a live Realtime smoke test | Presence channels used to be joinable by any authenticated client that knew a project's UUID, regardless of access — fixed with Supabase Realtime Authorization (private channel + RLS on `realtime.messages`, reusing the same `can_access_project()` used everywhere else). The access predicate is proven correct by an automated test suite against a local Postgres instance (owner/team-role/outsider/public scenarios, 10/10 passing) — see `supabase/tests/`. The Realtime-specific plumbing (`realtime.messages`, `realtime.topic()`) follows Supabase's documented pattern but is a best-effort local approximation and has **not** been exercised against real Supabase Realtime; smoke-test it once connected to a live project (subscribe as an unauthorized user and confirm the subscription is refused). |
 | Comments on files/lines | **Planned** | The `comments` table and RLS policies exist in the schema; no UI yet. |
-| Static hosting (Vercel/Netlify/any CDN) | **Real** | It's a standard Vite SPA build (`npm run build` → `dist/`); `public/_headers` and `vercel.json` ship the COOP/COEP headers WebContainer needs for Netlify/Cloudflare Pages and Vercel. Other hosts (AWS CloudFront/S3, etc.) need those two headers set at the CDN/server layer — see [WebContainer](#the-in-browser-runtime-webcontainer). |
+| Static hosting (Vercel/Netlify/any CDN) | **REAL** | It's a standard Vite SPA build (`npm run build` → `dist/`); `public/_headers` and `vercel.json` ship the COOP/COEP headers WebContainer needs, verified present in the actual build output (`dist/_headers`) after `npm run build`. Netlify/Cloudflare Pages and Vercel need no manual header configuration. Other hosts (AWS CloudFront/S3, etc.) need those two headers set at the CDN/server layer — see [WebContainer](#the-in-browser-runtime-webcontainer). |
 | One-click "Deploy my project" integration (Vercel/Netlify/AWS APIs) | **Planned** | Not implemented — would need its own OAuth + API integration per provider, distinct from hosting Forge IDE itself. |
 
 ## Tech stack
@@ -81,11 +102,22 @@ show a clear "needs setup" notice instead of pretending to work.
    filename order, or use the Supabase CLI: `supabase db push`.
 5. Enable Realtime for the project (Database → Replication) if not already
    on — the migration adds `comments` and `activities` to the
-   `supabase_realtime` publication; presence uses ephemeral Realtime
-   channels and needs no extra setup.
-6. Configure Google and GitHub sign-in — see [OAuth setup](#google--github-oauth-setup)
+   `supabase_realtime` publication.
+6. Realtime Authorization for presence: migration `0003` already enables
+   RLS on `realtime.messages` and adds the policy that gates a project's
+   presence channel by the same access rules as its data — nothing further
+   to enable in the dashboard. This is genuinely security-relevant, not
+   optional: without it (or on a project where migration `0003` wasn't
+   applied), presence falls back to Realtime's default behavior, and any
+   authenticated user who knows or guesses a project's UUID could see who
+   is active on it. See [Real-time presence authorization](#feature-status)
+   above — the access predicate is tested locally in `supabase/tests/`, but
+   has not been smoke-tested against a live Supabase project; do that once
+   you're connected (try subscribing as a user with no access to a private
+   project and confirm it's refused).
+7. Configure Google and GitHub sign-in — see [OAuth setup](#google--github-oauth-setup)
    below.
-7. Deploy the two Edge Functions (needed for the AI agent):
+8. Deploy the two Edge Functions (needed for the AI agent):
    ```bash
    supabase functions deploy ai-agent
    supabase functions deploy connections-save
@@ -192,8 +224,9 @@ Running a project, using the terminal, and live preview all go through
 ## Testing
 
 ```bash
-npm test          # Vitest — path safety, virtual file system, ZIP import,
-                   # run/package-manager detection, explorer tree building
+npm test          # Vitest — path safety, virtual file system, ZIP import
+                   # (including .git/ rejection), run/package-manager
+                   # detection, explorer tree building, redirect validation
 npx tsc -b         # TypeScript, no emit
 npm run build      # Production build
 ```
@@ -204,6 +237,16 @@ config states, responsive layouts at 1440×900 / 768×1024 / 390×844) was
 run against a real Chromium browser during development — see "Known
 limitations" below for what that QA could and couldn't verify in this
 particular environment.
+
+### RLS / authorization tests
+
+`supabase/tests/` holds real, executable SQL tests for the Row Level
+Security policies in `supabase/migrations/` — run against a plain local
+Postgres instance, no Docker or Supabase CLI required. They cover project/
+team access control, presence authorization, invitation acceptance, and the
+team-membership privilege-escalation fix (see `supabase/tests/README.md`
+for exact run instructions and — importantly — what these tests do and
+don't prove about behavior against real Supabase infrastructure).
 
 ## 21st.dev CLI (UI component search/install)
 
@@ -251,6 +294,22 @@ or set it as a CI secret instead.
   `@webcontainer/api` and was exercised in browser QA; whether it actually
   boots depends on your network being able to reach that domain. A 20s
   timeout with a clear error message covers the case where it can't.
+- **Realtime Authorization's Supabase-side plumbing has not been verified
+  against a live project.** The authorization *predicate* — does presence
+  access for a project follow the same ownership/team/visibility rules as
+  the project's own data — is proven by an automated test suite run against
+  a real local Postgres instance (`supabase/tests/`, 10/10 passing
+  scenarios: owner, each team role, an outsider, and a public project).
+  What that suite cannot prove is that Supabase's actual Realtime server
+  enforces `realtime.messages` RLS the exact same way its documentation
+  describes — that needs a smoke test against a real Supabase project (see
+  the setup step above).
+- **The AI agent's tool-calling loop and per-provider request/response
+  normalization have not been exercised against a live model call.** The
+  loop, tool dispatch, and each provider's request shape (Anthropic, OpenAI,
+  Gemini) were verified by direct code review, not a live API round trip —
+  this repo's environment has no route to any provider's API or a deployed
+  Supabase Edge Function.
 - **Only JS/TS/Node/web projects execute in-browser.** Python, Java, Go,
   Rust, etc. get full editing support (syntax highlighting, Monaco
   features) but no in-browser execution — there is no in-browser runtime
@@ -281,11 +340,23 @@ as Supabase Edge Function secrets, never in a client `.env` file.
   validated against traversal (`../`, absolute paths, backslash tricks,
   control characters) before touching the virtual file system — see
   `src/lib/paths.ts` and its test suite.
-- `.git/` is a reserved path the ordinary file API refuses to touch
-  directly; only the Git subsystem's dedicated adapter can write there.
+- `.git/` is a reserved path the ordinary file API, the AI agent, and ZIP
+  import all refuse to write into directly; only the Git subsystem's
+  dedicated adapter can write there (a ZIP entry under `.git/` is skipped
+  and reported, not imported — see `ProjectExport.test.ts`).
 - Row Level Security is enabled on every Supabase table; a user can only
   read/write projects and teams they own or belong to — enforced in
-  Postgres, not just hidden in the UI.
+  Postgres, not just hidden in the UI. Within a team, only an owner can
+  create/modify/remove an `owner` or `admin` membership row or invitation;
+  an `admin` can manage `developer`/`viewer` members but can never touch an
+  owner/admin row or promote anyone (including themselves) into one — see
+  `supabase/migrations/0004_membership_privilege_fix.sql` and its tests.
+- A project's real-time presence channel is authorized the same way its
+  data is: Supabase Realtime Authorization (private channel + RLS on
+  `realtime.messages`) reuses the same `can_access_project()` predicate as
+  the `projects`/`project_files` tables, so presence can never leak to a
+  user who couldn't otherwise access the project — see
+  `supabase/migrations/0003_realtime_presence_authorization.sql`.
 - AI provider API keys are encrypted at rest and only decrypted inside the
   `ai-agent` Edge Function to make the provider call; they are never sent
   back to the browser after being saved.
