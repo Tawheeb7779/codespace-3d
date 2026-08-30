@@ -10,6 +10,7 @@ import { ProjectService } from '@/services/ProjectService'
 import { exportProjectAsZip, importZipIntoProject } from '@/services/ProjectExport'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
+import { useDashboardUiStore } from '@/stores/dashboardUiStore'
 import type { Project } from '@/types/project'
 
 type SortKey = 'updated' | 'name'
@@ -40,6 +41,16 @@ export function DashboardPage() {
     refresh()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
+
+  // The sidebar's "New Project" button lives outside this page (it's part
+  // of the shared dashboard shell), so it asks for the dialog via a nonce
+  // in shared state rather than this page reaching up into the layout.
+  const createProjectRequest = useDashboardUiStore((s) => s.createProjectRequest)
+  const [seenRequest, setSeenRequest] = useState(createProjectRequest)
+  if (createProjectRequest !== seenRequest) {
+    setSeenRequest(createProjectRequest)
+    setCreateOpen(true)
+  }
 
   const visible = useMemo(() => {
     const filtered = projects.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))

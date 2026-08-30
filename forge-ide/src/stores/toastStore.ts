@@ -7,24 +7,41 @@ export interface Toast {
   title: string
   description?: string
   variant: ToastVariant
+  createdAt: number
 }
+
+// Notifications shown in the topbar bell are this same real toast stream,
+// kept around after the toast itself auto-dismisses — never a fabricated
+// activity feed.
+const HISTORY_LIMIT = 30
 
 interface ToastState {
   toasts: Toast[]
-  push: (toast: Omit<Toast, 'id'>) => void
+  history: Toast[]
+  unreadCount: number
+  push: (toast: Omit<Toast, 'id' | 'createdAt'>) => void
   dismiss: (id: string) => void
+  markAllRead: () => void
 }
 
 export const useToastStore = create<ToastState>((set) => ({
   toasts: [],
+  history: [],
+  unreadCount: 0,
   push: (toast) => {
     const id = crypto.randomUUID()
-    set((state) => ({ toasts: [...state.toasts, { ...toast, id }] }))
+    const entry: Toast = { ...toast, id, createdAt: Date.now() }
+    set((state) => ({
+      toasts: [...state.toasts, entry],
+      history: [entry, ...state.history].slice(0, HISTORY_LIMIT),
+      unreadCount: state.unreadCount + 1,
+    }))
     setTimeout(() => {
       set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }))
     }, 5000)
   },
   dismiss: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+  markAllRead: () => set({ unreadCount: 0 }),
 }))
 
 export const toast = {
