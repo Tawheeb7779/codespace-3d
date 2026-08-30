@@ -68,14 +68,12 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between px-4 pt-4">
-        <Link
-          to="/dashboard"
-          onClick={onNavigate}
-          className="flex items-center gap-2 text-[0.9375rem] font-semibold tracking-[-0.014em] text-graphite-50"
-        >
-          <Flame size={18} className="text-ember-500" />
-          Forge IDE
+      <div className="flex items-center justify-between px-4 pb-1 pt-5">
+        <Link to="/dashboard" onClick={onNavigate} className="flex items-center gap-2.5">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-ember-500/12 ring-1 ring-inset ring-ember-500/20">
+            <Flame size={15} className="text-ember-400" />
+          </span>
+          <span className="text-[0.9375rem] font-semibold tracking-[-0.016em] text-graphite-50">Forge IDE</span>
         </Link>
         {status === 'local' && <Badge variant="warning">Local</Badge>}
       </div>
@@ -84,13 +82,14 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
         <button
           onClick={handleNewProject}
           className={clsx(
-            'flex w-full items-center justify-center gap-2 rounded-control bg-ember-500 px-3.5 py-2.5',
-            'text-sm font-medium text-white',
-            'shadow-[inset_0_1px_0_0_rgb(255_255_255/0.18),0_1px_2px_rgb(0_0_0/0.3)]',
-            'transition-[background-color,transform] duration-150 hover:bg-ember-400 active:scale-[0.975] motion-reduce:active:scale-100',
+            'flex w-full items-center justify-center gap-2 rounded-full bg-ember-500 px-4 py-2.5',
+            'text-[0.8125rem] font-semibold text-white',
+            'shadow-[inset_0_1px_0_0_rgb(255_255_255/0.2),0_1px_2px_rgb(0_0_0/0.3),0_8px_20px_-8px_rgb(246_84_15/0.55)]',
+            'transition-[background-color,transform,box-shadow] duration-150 ease-out',
+            'hover:bg-ember-400 active:scale-[0.975] motion-reduce:active:scale-100',
           )}
         >
-          <Plus size={16} /> New Project
+          <Plus size={15} /> New Project
         </button>
       </div>
 
@@ -107,7 +106,7 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <nav className="mt-4 flex flex-col gap-0.5 px-3">
+      <nav className="mt-5 flex flex-col gap-0.5 px-3">
         {NAV.map((item) => (
           <NavLink
             key={item.to}
@@ -115,26 +114,32 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
             onClick={onNavigate}
             className={({ isActive }) =>
               clsx(
-                'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[0.8125rem] font-medium transition-colors duration-150',
+                'flex items-center gap-2.5 rounded-lg px-2.5 py-[0.4375rem] text-[0.8125rem] font-medium',
+                'transition-[background-color,color,transform] duration-150 ease-out',
+                'active:scale-[0.97] motion-reduce:active:scale-100',
                 isActive
-                  ? 'bg-surface-hover text-graphite-50'
+                  ? 'nav-pill-active text-graphite-50'
                   : 'text-graphite-400 hover:bg-surface-raised hover:text-graphite-100',
               )
             }
           >
-            <item.icon size={15} />
-            {item.label}
+            {({ isActive }) => (
+              <>
+                <item.icon size={15} className={isActive ? 'text-ember-400' : ''} />
+                {item.label}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
 
-      <div className="mx-3 my-4 h-px bg-hairline" />
+      <div className="hairline-fade mx-3 my-5" />
 
       <div className="flex min-h-0 flex-1 flex-col px-3">
-        <p className="type-label px-2 text-graphite-600">Recent projects</p>
-        <div className="scrollbar-thin mt-2 min-h-0 flex-1 space-y-0.5 overflow-y-auto pb-2">
+        <p className="type-label px-2.5 text-graphite-600">Recent projects</p>
+        <div className="scrollbar-thin mt-2.5 min-h-0 flex-1 space-y-0.5 overflow-y-auto pb-2">
           {visibleRecent.length === 0 ? (
-            <p className="px-2 py-3 text-[0.8125rem] text-graphite-600">
+            <p className="px-2.5 py-3 text-[0.8125rem] text-graphite-600">
               {recent.length === 0 ? 'No projects yet' : 'No matches'}
             </p>
           ) : (
@@ -143,9 +148,16 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
                 key={project.id}
                 to={`/projects/${project.id}`}
                 onClick={onNavigate}
-                className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[0.8125rem] text-graphite-300 transition-colors duration-150 hover:bg-surface-raised hover:text-graphite-100"
+                className={clsx(
+                  'flex items-center gap-2.5 rounded-lg px-2.5 py-[0.4375rem] text-[0.8125rem] text-graphite-300',
+                  'transition-[background-color,color,transform] duration-150 ease-out',
+                  'hover:bg-surface-raised hover:text-graphite-100',
+                  'active:scale-[0.97] motion-reduce:active:scale-100',
+                )}
               >
-                <Folder size={14} className="shrink-0 text-graphite-500" />
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-white/[0.04] text-graphite-500">
+                  <Folder size={11} />
+                </span>
                 <span className="truncate">{project.name}</span>
               </Link>
             ))
@@ -153,10 +165,10 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <div className="mx-3 h-px bg-hairline" />
+      <div className="hairline-fade mx-3" />
 
-      <div className="flex items-center gap-2.5 px-4 py-3.5">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-hover text-[0.8125rem] font-medium text-graphite-300 ring-1 ring-inset ring-hairline">
+      <div className="flex items-center gap-2.5 px-3 py-3.5">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-hover text-[0.8125rem] font-semibold text-graphite-200 ring-1 ring-inset ring-hairline-strong">
           {(user?.displayName ?? '?').slice(0, 1).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">
@@ -167,7 +179,7 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
           to="/settings"
           onClick={onNavigate}
           aria-label="Settings"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-graphite-500 transition-[background-color,color,transform] duration-150 ease-out hover:bg-surface-hover hover:text-graphite-100 active:scale-90 motion-reduce:active:scale-100"
         >
           <Settings size={14} />
         </Link>
@@ -175,7 +187,7 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
           <button
             onClick={handleSignOut}
             aria-label="Sign out"
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-graphite-500 transition-[background-color,color,transform] duration-150 ease-out hover:bg-surface-hover hover:text-graphite-100 active:scale-90 motion-reduce:active:scale-100"
           >
             <LogOut size={14} />
           </button>

@@ -76,6 +76,8 @@
   --animate-toast-in: toast-in 0.26s var(--ease-out-quint);
   --animate-screen-from-right: screen-from-right 0.22s var(--ease-out-quint);
   --animate-screen-from-left: screen-from-left 0.22s var(--ease-out-quint);
+  --animate-panel-in-right: panel-in-right 0.22s var(--ease-out-quint);
+  --animate-panel-out-right: panel-out-right 0.16s var(--ease-in-out-quad);
 
   @keyframes fade-in {
     from { opacity: 0; }
@@ -114,6 +116,18 @@
   @keyframes toast-in {
     from { opacity: 0; transform: translateY(8px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  /* The right status panel enters/leaves from the edge it's anchored to,
+     symmetrically — the same "spatial consistency" rule the mobile screen
+     transitions follow, so nothing on screen ever only fades in but slides
+     out, or vice versa. */
+  @keyframes panel-in-right {
+    from { opacity: 0; transform: translateX(14px) scale(0.98); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes panel-out-right {
+    from { opacity: 1; transform: translateX(0) scale(1); }
+    to { opacity: 0; transform: translateX(14px) scale(0.98); }
   }
 }
 
@@ -290,6 +304,30 @@
       0 1px 2px rgb(0 0 0 / 0.06),
       0 8px 24px -8px rgb(0 0 0 / 0.1);
   }
+
+  /*
+   * A translucent, blurred version of a raised surface for the shell's
+   * large fixed panels (sidebar, topbar) — enough see-through to feel like
+   * a pane of glass over the workspace rather than an opaque wall, without
+   * going full glassmorphism (no heavy blur, no saturation boost, no border
+   * glow). Depth comes from the ambient glow behind it, not from the panel
+   * itself.
+   */
+  .surface-shell {
+    background-color: rgb(20 23 25 / 0.86);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  :root[data-theme='light'] .surface-shell {
+    background-color: rgb(255 255 255 / 0.86);
+  }
+
+  /* Active nav state: a soft filled pill rather than a hard-edged
+     selection, with the faintest lift so it reads as raised, not painted. */
+  .nav-pill-active {
+    background: linear-gradient(180deg, rgb(246 84 15 / 0.16), rgb(246 84 15 / 0.08));
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  }
 }
 
 @layer utilities {
@@ -324,5 +362,39 @@
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: var(--color-graphite-700);
     border-radius: 9999px;
+  }
+
+  /*
+   * A single soft light source bleeding in from the top of the shell,
+   * behind the sidebar/topbar/workspace surfaces — what reads as "depth"
+   * and "premium lighting" in the reference without being an actual glow
+   * *on* any element. Warm (ember) rather than the reference's violet, to
+   * stay on this product's own palette, and restrained: this is the
+   * faintest wash, not a visible spotlight. Absolutely positioned behind
+   * everything in its containing block; the container needs `relative`.
+   */
+  .ambient-glow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    /* Centered over the main content rather than the far corner: the
+       sidebar is an opaque-ish panel, so a glow placed behind it would be
+       nearly invisible — this needs to land where it's actually seen. */
+    background:
+      radial-gradient(1200px 620px at 58% -18%, rgb(246 84 15 / 0.14), transparent 60%),
+      radial-gradient(900px 480px at 102% -10%, rgb(255 255 255 / 0.05), transparent 65%);
+  }
+  :root[data-theme='light'] .ambient-glow {
+    background:
+      radial-gradient(1200px 620px at 58% -18%, rgb(246 84 15 / 0.08), transparent 60%),
+      radial-gradient(900px 480px at 102% -10%, rgb(11 13 15 / 0.03), transparent 65%);
+  }
+
+  /* A separator that fades at its ends instead of drawing a hard line edge
+     to edge — reads as a break between sections, not a ruled boundary. */
+  .hairline-fade {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-hairline-strong) 18%, var(--color-hairline-strong) 82%, transparent);
   }
 }

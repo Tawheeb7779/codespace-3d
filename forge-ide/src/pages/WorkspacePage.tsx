@@ -96,10 +96,15 @@ function WorkspaceContent({ project, fs }: { project: Project; fs: FileSystemSer
 
   return (
     <WorkspaceProvider value={{ project, fs, changeTracker }}>
-      <div className="flex h-screen flex-col bg-surface-base">
-        <WorkspaceTopBar />
-        <DesktopWorkspace />
-        <MobileWorkspace />
+      <div className="relative flex h-screen flex-col overflow-hidden bg-surface-base">
+        {/* Same restrained ambient light as the dashboard shell, so moving
+            between the two doesn't feel like entering a different product. */}
+        <div className="ambient-glow" aria-hidden />
+        <div className="relative z-10 flex min-h-0 flex-1 flex-col">
+          <WorkspaceTopBar />
+          <DesktopWorkspace />
+          <MobileWorkspace />
+        </div>
       </div>
       <CommandPalette />
     </WorkspaceProvider>

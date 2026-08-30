@@ -21,31 +21,35 @@ export function DashboardLayout() {
   const setSidebarOpen = useDashboardUiStore((s) => s.setSidebarOpen)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-base">
+    <div className="relative flex h-screen overflow-hidden bg-surface-base">
+      {/* One restrained light source behind the whole shell, rather than a
+          glow on any individual panel — see the `.ambient-glow` comment. */}
+      <div className="ambient-glow" aria-hidden />
+
       {isOverlay ? (
         <SidebarDrawer
           open={sidebarOpen}
           width={SIDEBAR_WIDTH}
           onClose={() => setSidebarOpen(false)}
-          className="surface-card fixed bottom-3 left-3 top-3 z-50 w-[17rem] overflow-hidden rounded-2xl shadow-2xl shadow-black/40"
+          className="surface-overlay fixed bottom-3 left-3 top-3 z-50 w-[17rem] overflow-hidden rounded-2xl shadow-2xl shadow-black/50"
         >
           <DashboardSidebar onNavigate={() => setSidebarOpen(false)} />
         </SidebarDrawer>
       ) : (
-        <div className="w-64 shrink-0 overflow-hidden border-r border-hairline bg-surface-raised/60">
+        <div className="surface-shell relative z-10 w-64 shrink-0 overflow-hidden border-r border-hairline">
           <DashboardSidebar />
         </div>
       )}
 
       {isOverlay && sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px]"
+          className="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px]"
           onClick={() => setSidebarOpen(false)}
           aria-hidden
         />
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col overflow-hidden">
         <DashboardTopbar />
         <main className="min-h-0 flex-1 overflow-y-auto">
           <Outlet />

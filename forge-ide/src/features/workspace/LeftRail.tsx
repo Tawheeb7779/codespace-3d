@@ -38,7 +38,7 @@ export function LeftRail() {
             // clearer than color alone at this icon size, and it survives
             // being viewed at a glance.
             leftPanel === item.id
-              ? 'bg-surface-hover text-ember-400 before:absolute before:-left-2.5 before:h-5 before:w-[2.5px] before:rounded-r-full before:bg-ember-500'
+              ? 'nav-pill-active text-ember-400 before:absolute before:-left-2.5 before:h-5 before:w-[2.5px] before:rounded-r-full before:bg-ember-500'
               : 'text-graphite-500 hover:bg-surface-raised hover:text-graphite-200',
           )}
         >

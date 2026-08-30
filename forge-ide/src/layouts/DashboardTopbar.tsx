@@ -13,6 +13,13 @@ const TITLES: Record<string, string> = {
   '/settings': 'Settings',
 }
 
+const ICON_BUTTON = clsx(
+  'flex h-8 w-8 items-center justify-center rounded-lg text-graphite-400',
+  'transition-[background-color,color,transform] duration-150 ease-out',
+  'hover:bg-surface-hover hover:text-graphite-100',
+  'active:scale-90 motion-reduce:active:scale-100',
+)
+
 /**
  * Thin, contextual bar above the routed content — a page title plus the
  * two things that don't belong in the sidebar: a real notification history
@@ -30,53 +37,62 @@ export function DashboardTopbar() {
   )
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-hairline bg-surface-base/80 px-4 backdrop-blur-xl sm:px-6">
+    <header className="surface-shell sticky top-0 z-20 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-hairline px-4 sm:px-6">
       <div className="flex items-center gap-3">
-        <button
-          onClick={toggleSidebar}
-          aria-label="Toggle navigation"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-graphite-400 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100 lg:hidden"
-        >
+        <button onClick={toggleSidebar} aria-label="Toggle navigation" className={clsx(ICON_BUTTON, 'lg:hidden')}>
           <Menu size={17} />
         </button>
-        <h1 className="type-heading text-graphite-50">{title}</h1>
+        <h1 className="text-[0.9375rem] font-semibold tracking-[-0.014em] text-graphite-50">{title}</h1>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      {/* Grouped in one recessed toolbar surface rather than two loose
+          icons — a small structural echo of the reference's paired
+          controls, without adding anything new to the information
+          architecture. */}
+      <div className="flex items-center gap-0.5 rounded-xl bg-surface-sunken/60 p-1 ring-1 ring-inset ring-hairline">
         <DropdownMenu.Root onOpenChange={(open) => open && markAllRead()}>
           <DropdownMenu.Trigger asChild>
-            <button
-              aria-label="Notifications"
-              className="relative flex h-8 w-8 items-center justify-center rounded-lg text-graphite-400 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
-            >
+            <button aria-label="Notifications" className={clsx(ICON_BUTTON, 'relative')}>
               <Bell size={16} />
               {unreadCount > 0 && (
-                <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-ember-500" aria-hidden />
+                <span
+                  className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-ember-500 shadow-[0_0_0_2px_var(--color-surface-sunken)]"
+                  aria-hidden
+                />
               )}
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content
               align="end"
-              sideOffset={8}
+              sideOffset={10}
               className={clsx(menuContentClass, 'w-80 max-w-[calc(100vw-2rem)] p-0')}
             >
-              <p className={clsx(menuLabelClass, 'px-3 pb-1.5 pt-2.5')}>Notifications</p>
-              <div className="scrollbar-thin max-h-80 overflow-y-auto">
+              <p className={clsx(menuLabelClass, 'px-3.5 pb-2 pt-3')}>Notifications</p>
+              <div className="scrollbar-thin max-h-80 overflow-y-auto pb-1">
                 {history.length === 0 ? (
-                  <p className="px-3 py-6 text-center text-[0.8125rem] text-graphite-600">Nothing yet</p>
+                  <p className="px-3.5 py-7 text-center text-[0.8125rem] text-graphite-600">Nothing yet</p>
                 ) : (
                   history.map((item) => (
-                    <div key={item.id} className="border-t border-hairline px-3 py-2.5 first:border-t-0">
-                      <p
+                    <div
+                      key={item.id}
+                      className="mx-1 flex gap-2.5 rounded-lg px-2.5 py-2.5 transition-colors duration-150 hover:bg-surface-hover"
+                    >
+                      <span
                         className={clsx(
-                          'text-[0.8125rem] font-medium',
-                          item.variant === 'error' ? 'text-signal-red' : 'text-graphite-100',
+                          'mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full',
+                          item.variant === 'error' && 'bg-signal-red',
+                          item.variant === 'success' && 'bg-signal-green',
+                          item.variant === 'info' && 'bg-graphite-500',
                         )}
-                      >
-                        {item.title}
-                      </p>
-                      {item.description && <p className="mt-0.5 text-xs text-graphite-500">{item.description}</p>}
+                        aria-hidden
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[0.8125rem] font-medium leading-snug text-graphite-100">{item.title}</p>
+                        {item.description && (
+                          <p className="mt-0.5 text-xs leading-snug text-graphite-500">{item.description}</p>
+                        )}
+                      </div>
                     </div>
                   ))
                 )}
@@ -85,11 +101,7 @@ export function DashboardTopbar() {
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
 
-        <button
-          onClick={toggleRightPanel}
-          aria-label="Toggle status panel"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-graphite-400 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
-        >
+        <button onClick={toggleRightPanel} aria-label="Toggle status panel" className={ICON_BUTTON}>
           <PanelRight size={16} />
         </button>
       </div>
