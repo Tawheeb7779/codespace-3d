@@ -8,7 +8,7 @@ export function Pricing() {
   return (
     <section id="pricing" className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-semibold tracking-tight text-graphite-50 sm:text-4xl">Simple, transparent pricing</h2>
+        <h2 className="font-display text-3xl font-semibold tracking-[-0.015em] text-graphite-50 sm:text-4xl">Simple, transparent pricing</h2>
         <p className="mt-4 text-graphite-400">Start free. Upgrade when your team needs more.</p>
       </div>
 

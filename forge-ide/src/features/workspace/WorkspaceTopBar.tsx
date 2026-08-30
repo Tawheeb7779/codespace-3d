@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Command, Loader2, Monitor, Play, RotateCw, Settings, Square } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/misc'
+import { RuntimeHeat } from '@/features/workspace/RuntimeHeat'
 import { QuickActions } from '@/features/ai/QuickActions'
 import { useWorkspace } from '@/features/workspace/WorkspaceContext'
 import { useRuntimeStore } from '@/stores/runtimeStore'
@@ -10,16 +10,6 @@ import { useAuthStore } from '@/stores/authStore'
 import { useEditorStore } from '@/stores/editorStore'
 import { usePresence } from '@/features/collaboration/usePresence'
 import { PresenceAvatars } from '@/features/collaboration/PresenceAvatars'
-
-const STATUS_VARIANT = {
-  idle: 'default',
-  unsupported: 'warning',
-  installing: 'warning',
-  starting: 'warning',
-  running: 'success',
-  stopped: 'default',
-  error: 'danger',
-} as const
 
 export function WorkspaceTopBar() {
   const { project, fs } = useWorkspace()
@@ -50,7 +40,7 @@ export function WorkspaceTopBar() {
         <span className="truncate text-[0.8125rem] font-medium tracking-[-0.008em] text-graphite-50">
           {project.name}
         </span>
-        <Badge variant={STATUS_VARIANT[status]}>{status}</Badge>
+        <RuntimeHeat status={status} />
       </div>
 
       <div className="flex items-center gap-1.5">

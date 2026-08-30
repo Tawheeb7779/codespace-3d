@@ -13,7 +13,7 @@ export function Integrations() {
   return (
     <section className="mx-auto max-w-5xl px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-3xl font-semibold tracking-tight text-graphite-50 sm:text-4xl">Real integrations, honestly labeled</h2>
+        <h2 className="font-display text-3xl font-semibold tracking-[-0.015em] text-graphite-50 sm:text-4xl">Real integrations, honestly labeled</h2>
         <p className="mt-4 text-graphite-400">We never dress up a planned feature as a working one.</p>
       </div>
 

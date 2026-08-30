@@ -11,7 +11,7 @@ export function Workflow() {
     <section id="workflow" className="border-y border-hairline/70 bg-surface-raised/30 px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-graphite-50 sm:text-4xl">From idea to shipped, in one tab</h2>
+          <h2 className="font-display text-3xl font-semibold tracking-[-0.015em] text-graphite-50 sm:text-4xl">From idea to shipped, in one tab</h2>
         </div>
 
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">

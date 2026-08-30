@@ -37,7 +37,7 @@ export function LegalPage() {
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-graphite-500 hover:text-graphite-300">
           <ArrowLeft size={14} /> Back home
         </Link>
-        <h1 className="mt-6 text-3xl font-semibold text-graphite-50">{entry.title}</h1>
+        <h1 className="mt-6 font-display text-3xl font-semibold tracking-[-0.015em] text-graphite-50">{entry.title}</h1>
         <div className="mt-6 space-y-4">
           {entry.body.map((p, i) => (
             <p key={i} className="text-sm leading-relaxed text-graphite-400">

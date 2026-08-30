@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Self-hosted rather than CDN-linked: this is a local-first IDE that must
+   render correctly offline, and a third-party font request is one more
+   thing that can fail between a developer and their editor. */
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource-variable/jetbrains-mono";
+
 @theme {
   /* Brand: "Forge" — molten ember accent on graphite. Distinct from the
      typical blue/purple dev-tool palette. */
@@ -50,8 +59,29 @@
   --color-hairline: rgb(255 255 255 / 0.07);
   --color-hairline-strong: rgb(255 255 255 / 0.12);
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /*
+   * Three roles, not two. Display carries the personality and is rationed
+   * to headings; body is the dense-UI workhorse; mono does double duty as
+   * both code and *structure* — labels, readouts, metadata — because an
+   * instrument panel is this product's own vernacular, not a borrowed one.
+   * (Previously these named Inter/JetBrains without ever loading either,
+   * so every screen has actually been rendering in system-ui.)
+   */
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /*
+   * Forge temperature scale. Steel glows through real colors as it heats —
+   * dull red around 500°C, orange near 900°C, yellow past 1100°C, white at
+   * forging heat. Runtime status is mapped onto that ramp (see RuntimeHeat),
+   * which is why the accent is a *range* rather than one flat vermilion.
+   */
+  --color-heat-cold: #4a5560;
+  --color-heat-dull: #b8321a;
+  --color-heat-orange: #f6540f;
+  --color-heat-yellow: #f5a623;
+  --color-heat-white: #ffd9a0;
 
   /* Radii scale up with the size of the surface they belong to, so a
      control, a card and a dialog stay in proportion to one another. */
@@ -168,6 +198,19 @@
   --color-surface-hover: #eef0f3;
   --color-hairline: rgb(0 0 0 / 0.08);
   --color-hairline-strong: rgb(0 0 0 / 0.14);
+
+  /*
+   * The heat ramp inverts for light mode. On a dark ground hotter metal
+   * reads as *brighter* (up to pale white-hot); against a near-white page
+   * that same pale end has almost no contrast, so here hotter reads as
+   * deeper and more saturated instead. Same ordering, same meaning,
+   * legible on both grounds.
+   */
+  --color-heat-cold: #7c8590;
+  --color-heat-dull: #a82d17;
+  --color-heat-orange: #cf440b;
+  --color-heat-yellow: #a76a08;
+  --color-heat-white: #8a2b00;
 }
 
 @layer base {
@@ -184,7 +227,6 @@
   body {
     @apply bg-surface-base text-graphite-100 font-sans antialiased;
     text-rendering: optimizeLegibility;
-    font-feature-settings: "cv05" 1, "ss01" 1; /* Inter: single-storey g, disambiguated I/l */
   }
 
   /*
@@ -246,17 +288,24 @@
    * as size grows, which is what keeps headings compact and body copy
    * readable at the same time.
    */
+  /* The display face is rationed to these two largest roles. Space Grotesk
+     has enough character that using it at panel-header size would turn
+     every surface noisy; below 22px the body face takes over. Its own
+     sidebearings are already tight, so it needs less negative tracking
+     than the previous system-ui fallback did. */
   .type-display {
+    font-family: var(--font-display);
     font-size: 1.875rem;   /* 30px */
-    line-height: 1.16;
+    line-height: 1.14;
     font-weight: 600;
-    letter-spacing: -0.028em;
+    letter-spacing: -0.02em;
   }
   .type-title {
+    font-family: var(--font-display);
     font-size: 1.375rem;   /* 22px */
-    line-height: 1.25;
+    line-height: 1.24;
     font-weight: 600;
-    letter-spacing: -0.021em;
+    letter-spacing: -0.014em;
   }
   .type-heading {
     font-size: 1rem;       /* 16px */
@@ -272,12 +321,20 @@
     font-size: 0.8125rem;  /* 13px */
     line-height: 1.5;
   }
-  /* Section labels above groups of controls. */
+  /*
+   * Section labels above groups of controls — set in mono, not the body
+   * face. Every eyebrow in the app ("EXPLORER", "RECENT PROJECTS",
+   * "RUNTIME") then reads as a panel readout rather than as small caps,
+   * which is the vernacular this product actually comes from. Mono is
+   * already wide, so it needs far less tracking and one less weight step
+   * than the proportional version did.
+   */
   .type-label {
+    font-family: var(--font-mono);
     font-size: 0.6875rem;  /* 11px */
     line-height: 1.3;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
   }
 

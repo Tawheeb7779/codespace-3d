@@ -28,7 +28,7 @@ export function DocsPage() {
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-graphite-500 hover:text-graphite-300">
           <ArrowLeft size={14} /> Back home
         </Link>
-        <h1 className="mt-6 text-3xl font-semibold text-graphite-50">Documentation</h1>
+        <h1 className="mt-6 font-display text-3xl font-semibold tracking-[-0.015em] text-graphite-50">Documentation</h1>
         <p className="mt-2 text-graphite-500">The essentials — see the project README for full setup instructions.</p>
 
         <div className="mt-10 space-y-8">

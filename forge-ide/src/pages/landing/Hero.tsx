@@ -13,7 +13,7 @@ export function Hero() {
           Real in-browser runtime · real AI agent · no fake demos
         </div>
 
-        <h1 className="animate-slide-up text-[2.75rem] font-semibold leading-[1.08] tracking-[-0.03em] text-graphite-50 sm:text-6xl">
+        <h1 className="animate-slide-up font-display text-[2.75rem] font-semibold leading-[1.06] tracking-[-0.018em] text-graphite-50 sm:text-6xl">
           Write, run, and ship code
           <br className="hidden sm:block" /> without leaving the browser.
         </h1>
