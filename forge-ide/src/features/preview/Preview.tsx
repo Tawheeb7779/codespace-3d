@@ -27,14 +27,23 @@ export function Preview() {
   return (
     <div className="flex h-full flex-col bg-surface-raised">
       <div className="flex items-center justify-between border-b border-hairline px-3 py-1.5">
-        <div className="flex items-center gap-1">
+        {/* Same filled-pill segmented control as the bottom panel and git
+            panel's view switches — one idiom for "switch between views"
+            across the workspace. */}
+        <div className="flex items-center gap-0.5 rounded-lg bg-surface-sunken p-0.5">
           {(['desktop', 'tablet', 'mobile'] as Device[]).map((d) => {
             const Icon = d === 'desktop' ? Monitor : d === 'tablet' ? Tablet : Smartphone
             return (
               <button
                 key={d}
                 onClick={() => setDevice(d)}
-                className={clsx('rounded p-1.5', device === d ? 'bg-surface-hover text-graphite-100' : 'text-graphite-500 hover:text-graphite-300')}
+                aria-pressed={device === d}
+                className={clsx(
+                  'rounded-[0.3125rem] p-1.5 transition-colors duration-150',
+                  device === d
+                    ? 'bg-surface-hover text-graphite-50 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.06)]'
+                    : 'text-graphite-500 hover:text-graphite-200',
+                )}
                 aria-label={`${d} preview`}
               >
                 <Icon size={14} />

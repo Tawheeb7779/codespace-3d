@@ -33,7 +33,12 @@ export function WorkspaceTopBar() {
   const isRunning = status === 'running' || isBusy
 
   return (
-    <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-hairline bg-surface-raised px-3">
+    // Same translucent, blurred chrome as the dashboard's topbar/sidebar
+    // (surface-shell) rather than a flat opaque bar — the two shells sit
+    // above the same ambient-glow wash, so their flush headers should
+    // pick it up the same way instead of one bleeding it through and the
+    // other blocking it.
+    <header className="surface-shell flex h-12 shrink-0 items-center justify-between gap-3 border-b border-hairline px-3">
       <div className="flex min-w-0 items-center gap-2.5">
         <Link
           to="/dashboard"
