@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { Mail, Plus, Trash2, UserPlus, Users } from 'lucide-react'
+import { FolderGit2, Mail, Plus, Trash2, UserPlus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Badge, EmptyState, Spinner } from '@/components/ui/misc'
 import { ConfigNotice } from '@/components/ConfigNotice'
 import { TeamService } from '@/services/TeamService'
+import { ProjectService } from '@/services/ProjectService'
 import type { Team, TeamInvitation, TeamMember, TeamRole } from '@/types/team'
+import type { Project } from '@/types/project'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
 
@@ -155,15 +158,21 @@ export function TeamsPage() {
 function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string | null }) {
   const [members, setMembers] = useState<TeamMember[]>([])
   const [invitations, setInvitations] = useState<TeamInvitation[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<TeamRole>('developer')
   const isOwner = members.some((m) => m.userId === currentUserId && m.role === 'owner')
   const isOwnerOrAdmin = isOwner || members.some((m) => m.userId === currentUserId && m.role === 'admin')
 
   async function refresh() {
-    const [m, i] = await Promise.all([TeamService.listMembers(team.id), TeamService.listInvitationsForTeam(team.id)])
+    const [m, i, p] = await Promise.all([
+      TeamService.listMembers(team.id),
+      TeamService.listInvitationsForTeam(team.id),
+      ProjectService.listForTeam(team.id),
+    ])
     setMembers(m)
     setInvitations(i.filter((inv) => inv.status === 'pending'))
+    setProjects(p)
   }
 
   useEffect(() => {
@@ -225,6 +234,30 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
             </div>
           )
         })}
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-graphite-500">
+          Team projects{projects.length > 0 ? ` (${projects.length})` : ''}
+        </p>
+        {projects.length === 0 ? (
+          <p className="text-sm text-graphite-500">
+            No projects shared with this team yet — share one from its card on the dashboard.
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            {projects.map((project) => (
+              <Link
+                key={project.id}
+                to={`/projects/${project.id}`}
+                className="flex items-center gap-2.5 rounded-lg border border-hairline px-3 py-2 text-sm text-graphite-300 transition-colors duration-150 hover:bg-surface-raised hover:text-graphite-100"
+              >
+                <FolderGit2 size={14} className="shrink-0 text-graphite-500" />
+                <span className="truncate">{project.name}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {isOwnerOrAdmin && (

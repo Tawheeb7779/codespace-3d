@@ -11,13 +11,21 @@ by reading the SQL.
 ```bash
 createdb forge_rls_test
 psql -d forge_rls_test -v ON_ERROR_STOP=1 -f supabase/tests/00_local_test_setup.sql
-psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0001_init.sql   # one expected
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0001_init.sql   # one expected error, see below
 psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0002_invitation_accept.sql
 psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0003_realtime_presence_authorization.sql
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0004_membership_privilege_fix.sql
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0005_project_team_sharing.sql
 psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 01_presence_authorization.test.sql
 psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 02_invitation_acceptance.test.sql
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 03_membership_privilege.test.sql
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 04_project_team_sharing.test.sql
 dropdb forge_rls_test
 ```
+
+Each `.test.sql` file seeds its own fixture data and is independent — run
+them against separate fresh databases (drop/recreate between files) rather
+than accumulating state from one into the next.
 
 `0001_init.sql` throws one expected error — `publication "supabase_realtime"
 does not exist` — because logical-replication publications are a Supabase
@@ -59,3 +67,14 @@ actually depend on:
   invitation with the correct role, and three escalation attempts (role
   smuggling, team redirect, self-insert with no invitation at all) that
   must all be rejected.
+- `03_membership_privilege.test.sql` — an admin cannot self-promote to
+  owner, remove the owner, promote another member to admin, or invite
+  someone as admin/owner; an owner can still do all of those.
+- `04_project_team_sharing.test.sql` — Teams↔Projects integration
+  (migration 0005): owner attaches/detaches a project, every team role's
+  resulting read/write access (including presence, reusing the same
+  `realtime.messages` fixture as test 01), an outsider and an
+  unauthenticated user denied even knowing the project's UUID, a team
+  admin blocked from managing sharing while still able to edit the project
+  otherwise, an owner blocked from sharing into a team they don't belong
+  to, and access revoked immediately on detachment or membership removal.

@@ -6,12 +6,15 @@ import { Input } from '@/components/ui/Input'
 import { EmptyState, Spinner } from '@/components/ui/misc'
 import { CreateProjectDialog } from '@/features/projects/CreateProjectDialog'
 import { ProjectCard } from '@/features/projects/ProjectCard'
+import { ShareProjectDialog } from '@/features/projects/ShareProjectDialog'
 import { ProjectService } from '@/services/ProjectService'
+import { TeamService } from '@/services/TeamService'
 import { exportProjectAsZip, importZipIntoProject } from '@/services/ProjectExport'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
 import { useDashboardUiStore } from '@/stores/dashboardUiStore'
 import type { Project } from '@/types/project'
+import type { Team } from '@/types/team'
 
 type SortKey = 'updated' | 'name'
 
@@ -23,6 +26,8 @@ export function DashboardPage() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortKey>('updated')
   const [createOpen, setCreateOpen] = useState(false)
+  const [teams, setTeams] = useState<Team[]>([])
+  const [sharingProjectId, setSharingProjectId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function refresh() {
@@ -39,8 +44,33 @@ export function DashboardPage() {
 
   useEffect(() => {
     refresh()
+    if (TeamService.isAvailable) {
+      TeamService.listForUser()
+        .then(setTeams)
+        .catch(() => {
+          // Team badges/sharing are a secondary affordance here; the Teams
+          // page itself surfaces a real load failure if there is one.
+        })
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
+
+  const teamNameById = useMemo(() => new Map(teams.map((t) => [t.id, t.name])), [teams])
+  const sharingProject = projects.find((p) => p.id === sharingProjectId) ?? null
+
+  async function handleAttachToTeam(teamId: string) {
+    if (!sharingProject) return
+    const updated = await ProjectService.attachToTeam(sharingProject.id, teamId)
+    setProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+    toast.success('Project shared with team')
+  }
+
+  async function handleDetachFromTeam() {
+    if (!sharingProject) return
+    const updated = await ProjectService.detachFromTeam(sharingProject.id)
+    setProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+    toast.success('Project removed from team')
+  }
 
   // The sidebar's "New Project" button lives outside this page (it's part
   // of the shared dashboard shell), so it asks for the dialog via a nonce
@@ -187,10 +217,13 @@ export function DashboardPage() {
               <ProjectCard
                 key={project.id}
                 project={project}
+                isOwner={TeamService.isAvailable && project.ownerId === user?.id}
+                teamName={project.teamId ? teamNameById.get(project.teamId) : undefined}
                 onRename={handleRename}
                 onDuplicate={handleDuplicate}
                 onDelete={handleDelete}
                 onExport={handleExport}
+                onManageTeam={setSharingProjectId}
               />
             ))}
           </div>
@@ -198,6 +231,16 @@ export function DashboardPage() {
       </div>
 
       <CreateProjectDialog open={createOpen} onOpenChange={setCreateOpen} onCreate={handleCreate} />
+      {sharingProject && (
+        <ShareProjectDialog
+          open={sharingProjectId !== null}
+          onOpenChange={(open) => !open && setSharingProjectId(null)}
+          project={sharingProject}
+          teams={teams}
+          onAttach={handleAttachToTeam}
+          onDetach={handleDetachFromTeam}
+        />
+      )}
     </div>
   )
 }

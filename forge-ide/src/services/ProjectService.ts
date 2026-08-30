@@ -141,6 +141,46 @@ export const ProjectService = {
     const projects = await readLocalIndex()
     await writeLocalIndex(projects.filter((p) => p.id !== id))
   },
+
+  /**
+   * Shares a project with a team, or moves it to a different one. Requires
+   * Supabase — team sharing is a cloud-only concept, same as teams
+   * themselves (spec: teams need a shared backend). Only the project owner
+   * can succeed here; the server enforces this too (migration 0005's
+   * `projects_guard_sharing` trigger), so a non-owner's request fails here
+   * with a real error rather than the UI ever assuming success.
+   */
+  async attachToTeam(id: string, teamId: string): Promise<Project> {
+    if (!supabase) throw new Error('Team sharing requires Supabase to be configured.')
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ team_id: teamId, visibility: 'team' })
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (error) throw error
+    return mapRow(data)
+  },
+
+  async detachFromTeam(id: string): Promise<Project> {
+    if (!supabase) throw new Error('Team sharing requires Supabase to be configured.')
+    const { data, error } = await supabase
+      .from('projects')
+      .update({ team_id: null, visibility: 'private' })
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (error) throw error
+    return mapRow(data)
+  },
+
+  /** Projects shared with a team — visible to any member per the same RLS as everything else. */
+  async listForTeam(teamId: string): Promise<Project[]> {
+    if (!supabase) return []
+    const { data, error } = await supabase.from('projects').select('*').eq('team_id', teamId)
+    if (error) throw error
+    return data.map(mapRow)
+  },
 }
 
 interface ProjectRow {

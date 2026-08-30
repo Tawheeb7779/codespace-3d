@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Copy, Download, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Copy, Download, MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/misc'
 import { Input } from '@/components/ui/Input'
 import { menuContentClass, menuItemClass, menuItemDangerClass, menuSeparatorClass } from '@/components/ui/menu'
@@ -22,16 +22,24 @@ function timeAgo(iso: string): string {
 
 export function ProjectCard({
   project,
+  isOwner,
+  teamName,
   onRename,
   onDuplicate,
   onDelete,
   onExport,
+  onManageTeam,
 }: {
   project: Project
+  /** Only the owner can change team sharing (enforced server-side too — migration 0005). */
+  isOwner: boolean
+  /** Resolved name of project.teamId, if this project is shared and the name is known. */
+  teamName?: string
   onRename: (id: string, name: string) => void
   onDuplicate: (id: string) => void
   onDelete: (id: string) => void
   onExport: (id: string) => void
+  onManageTeam?: (id: string) => void
 }) {
   const [renaming, setRenaming] = useState(false)
   const [name, setName] = useState(project.name)
@@ -102,6 +110,11 @@ export function ProjectCard({
               <DropdownMenu.Item onSelect={() => onExport(project.id)} className={menuItemClass}>
                 <Download size={14} className="text-graphite-500" /> Export ZIP
               </DropdownMenu.Item>
+              {isOwner && onManageTeam && (
+                <DropdownMenu.Item onSelect={() => onManageTeam(project.id)} className={menuItemClass}>
+                  <Users size={14} className="text-graphite-500" /> {project.teamId ? 'Manage team' : 'Share with team'}
+                </DropdownMenu.Item>
+              )}
               <DropdownMenu.Separator className={menuSeparatorClass} />
               <DropdownMenu.Item onSelect={() => onDelete(project.id)} className={menuItemDangerClass}>
                 <Trash2 size={14} /> Delete
@@ -119,6 +132,11 @@ export function ProjectCard({
 
       <div className="mt-5 flex items-center gap-2 pl-12 pt-0.5">
         {template && <Badge>{template.name}</Badge>}
+        {project.teamId && (
+          <Badge variant="violet">
+            <Users size={10} className="mr-1" /> {teamName ?? 'Shared with team'}
+          </Badge>
+        )}
         <span className="text-[0.75rem] text-graphite-600" data-numeric>
           {timeAgo(project.updatedAt)}
         </span>
