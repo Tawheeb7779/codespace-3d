@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { Button } from '@/components/ui/Button'
-import { Input, Label } from '@/components/ui/Input'
+import { Input, Label, FieldError } from '@/components/ui/Input'
 import { AuthService } from '@/services/AuthService'
 import { toast } from '@/stores/toastStore'
 
@@ -28,8 +28,8 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <AuthLayout title="Set a new password">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <AuthLayout key="form" title="Set a new password" subtitle="Choose something you haven't used before.">
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         <div>
           <Label htmlFor="password">New password</Label>
           <Input
@@ -37,13 +37,16 @@ export function ResetPasswordPage() {
             type="password"
             required
             minLength={8}
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="new-password"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? 'reset-error' : undefined}
           />
         </div>
-        {error && <p className="text-sm text-signal-red">{error}</p>}
-        <Button type="submit" variant="primary" className="w-full" disabled={loading}>
+        {error && <FieldError id="reset-error">{error}</FieldError>}
+        <Button type="submit" variant="primary" size="xl" loading={loading} className="w-full">
           {loading ? 'Updating…' : 'Update password'}
         </Button>
       </form>

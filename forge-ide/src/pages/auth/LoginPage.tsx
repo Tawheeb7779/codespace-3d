@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { Button } from '@/components/ui/Button'
 import { Input, Label, FieldError } from '@/components/ui/Input'
@@ -10,6 +11,10 @@ import { AuthService } from '@/services/AuthService'
 import { safeRedirectPath } from '@/features/auth/redirect'
 import { useAuthStore } from '@/stores/authStore'
 
+// How long the success state holds before navigating — purely a beat for
+// the checkmark to register, not part of the sign-in call itself.
+const SUCCESS_HOLD_MS = 380
+
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -17,6 +22,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const from = safeRedirectPath((location.state as { from?: string } | null)?.from)
@@ -28,7 +34,7 @@ export function LoginPage() {
 
   if (!AuthService.isConfigured) {
     return (
-      <AuthLayout title="Sign in" subtitle="Cloud accounts require a Supabase project.">
+      <AuthLayout key="config" title="Sign in" subtitle="Cloud accounts require a Supabase project.">
         <ConfigNotice>
           Supabase isn't configured for this deployment, so cloud accounts and Google/GitHub sign-in aren't
           available. You can still use Forge IDE in{' '}
@@ -47,16 +53,21 @@ export function LoginPage() {
     setLoading(true)
     try {
       await AuthService.signInWithPassword(email, password)
-      navigate(from, { replace: true })
+      // The credentials call is already done and the session already
+      // exists at this point — this is only a brief, visible confirmation
+      // before handing off to the redirect, not a retry or a second check.
+      setLoading(false)
+      setSuccess(true)
+      setTimeout(() => navigate(from, { replace: true }), SUCCESS_HOLD_MS)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed')
-    } finally {
       setLoading(false)
     }
   }
 
   return (
     <AuthLayout
+      key="form"
       title="Sign in"
       subtitle="Welcome back to Forge IDE."
       footer={
@@ -71,7 +82,7 @@ export function LoginPage() {
         </p>
       }
     >
-      <OAuthButtons disabled={loading} />
+      <OAuthButtons disabled={loading || success} />
 
       <AuthDivider />
 
@@ -86,6 +97,7 @@ export function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
+            disabled={success}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'login-error' : undefined}
           />
@@ -108,6 +120,7 @@ export function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
+            disabled={success}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? 'login-error' : undefined}
           />
@@ -115,8 +128,16 @@ export function LoginPage() {
 
         {error && <FieldError id="login-error">{error}</FieldError>}
 
-        <Button type="submit" variant="primary" size="xl" loading={loading} className="w-full">
-          {loading ? 'Signing in…' : 'Sign in'}
+        <Button type="submit" variant="primary" size="xl" loading={loading} disabled={success} className="w-full">
+          {success ? (
+            <>
+              <Check size={16} /> Signed in
+            </>
+          ) : loading ? (
+            'Signing in…'
+          ) : (
+            'Sign in'
+          )}
         </Button>
       </form>
     </AuthLayout>

@@ -65,14 +65,15 @@ export function OAuthButtons({ disabled = false }: { disabled?: boolean }) {
               aria-busy={isPending || undefined}
               aria-label={`Continue with ${label}`}
               className={clsx(
-                'group relative flex h-12 w-full items-center gap-3 rounded-control px-4',
+                'group relative flex h-12 w-full items-center gap-3 rounded-xl px-4',
                 'bg-surface-hover text-[0.9375rem] font-medium tracking-[-0.008em] text-graphite-50',
                 'border border-hairline-strong',
                 'shadow-[inset_0_1px_0_0_rgb(255_255_255/0.06),0_1px_2px_rgb(0_0_0/0.25)]',
-                'transition-[background-color,border-color,transform,opacity] duration-150 ease-out',
-                'hover:bg-surface-overlay hover:border-white/20',
-                'active:scale-[0.985] motion-reduce:active:scale-100',
-                'disabled:pointer-events-none disabled:opacity-45',
+                'transition-[background-color,border-color,transform,opacity,box-shadow] duration-150 ease-out',
+                'hover:-translate-y-px hover:border-white/20 hover:bg-surface-overlay',
+                'hover:shadow-[inset_0_1px_0_0_rgb(255_255_255/0.08),0_6px_16px_-6px_rgb(0_0_0/0.4)]',
+                'active:translate-y-0 active:scale-[0.985] motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100',
+                'disabled:pointer-events-none disabled:translate-y-0 disabled:opacity-45',
               )}
             >
               {/* Fixed-width mark column keeps both rows' labels aligned. */}

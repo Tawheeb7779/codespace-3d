@@ -48,10 +48,15 @@ export function Label({ children, htmlFor }: { children: React.ReactNode; htmlFo
   )
 }
 
-/** Inline validation/error text tied to a field via aria-describedby. */
+/**
+ * Inline validation/error text tied to a field via aria-describedby. Enters
+ * with the same restrained slide-up every other appearing element in the
+ * app uses — a plain instant appearance reads as the layout jumping, not as
+ * a message arriving.
+ */
 export function FieldError({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
-    <p id={id} role="alert" className="mt-2 text-[0.8125rem] leading-relaxed text-signal-red">
+    <p id={id} role="alert" className="animate-slide-up mt-2 text-[0.8125rem] leading-relaxed text-signal-red">
       {children}
     </p>
   )

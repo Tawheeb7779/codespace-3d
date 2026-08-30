@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
-import { Spinner } from '@/components/ui/misc'
 import { Button } from '@/components/ui/Button'
 import { AuthLayout } from '@/layouts/AuthLayout'
+import { AuthRedirectGate } from '@/pages/auth/authParts'
 import { safeRedirectPath } from '@/features/auth/redirect'
 
 type CallbackState =
@@ -81,18 +81,14 @@ export function AuthCallbackPage() {
   if (state.phase === 'done') return <Navigate to={state.next} replace />
 
   if (state.phase === 'working') {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-surface-base">
-        <Spinner size={22} />
-        <p className="text-sm text-graphite-500">Completing sign-in…</p>
-      </div>
-    )
+    return <AuthRedirectGate label="Completing sign-in…" />
   }
 
   const cancelled = state.phase === 'cancelled'
 
   return (
     <AuthLayout
+      key={cancelled ? 'cancelled' : 'failed'}
       title={cancelled ? 'Sign-in cancelled' : 'Sign-in failed'}
       subtitle={
         cancelled

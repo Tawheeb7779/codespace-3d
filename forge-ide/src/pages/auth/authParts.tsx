@@ -1,10 +1,17 @@
 import { Spinner } from '@/components/ui/misc'
 
-/** Neutral hold while the session is still being restored (prevents auth flicker). */
-export function AuthRedirectGate() {
+/**
+ * Neutral hold while the session is still being restored (prevents auth
+ * flicker), and reused by the OAuth callback screen's own "working" phase —
+ * one visual for "the app is figuring out who you are," on the same
+ * ambient-lit background as the rest of auth, instead of a bare flat one.
+ */
+export function AuthRedirectGate({ label }: { label?: string }) {
   return (
-    <div className="flex h-screen items-center justify-center bg-surface-base">
-      <Spinner size={22} />
+    <div className="relative flex h-screen flex-col items-center justify-center gap-3 overflow-hidden bg-surface-base">
+      <div className="ambient-glow" aria-hidden />
+      <Spinner size={22} className="relative z-10" />
+      {label && <p className="relative z-10 text-sm text-graphite-500">{label}</p>}
     </div>
   )
 }

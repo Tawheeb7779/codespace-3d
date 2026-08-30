@@ -25,7 +25,7 @@ export function SignupPage() {
 
   if (!AuthService.isConfigured) {
     return (
-      <AuthLayout title="Create your account" subtitle="Cloud accounts require a Supabase project.">
+      <AuthLayout key="config" title="Create your account" subtitle="Cloud accounts require a Supabase project.">
         <ConfigNotice>
           Supabase isn't configured for this deployment, so account creation and Google/GitHub sign-in aren't
           available. You can still use Forge IDE in{' '}
@@ -40,10 +40,10 @@ export function SignupPage() {
 
   if (sent) {
     return (
-      <AuthLayout title="Check your inbox" subtitle={`We sent a confirmation link to ${email}.`}>
+      <AuthLayout key="sent" title="Check your inbox" subtitle={`We sent a confirmation link to ${email}.`}>
         <div className="flex flex-col items-center gap-4 py-2 text-center">
-          <div className="rounded-full bg-signal-green/10 p-3 text-signal-green">
-            <MailCheck size={22} />
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-signal-green/12 text-signal-green ring-1 ring-inset ring-signal-green/20">
+            <MailCheck size={24} />
           </div>
           <p className="text-sm text-graphite-400">
             Click the link in the email to finish creating your account. You can close this tab.
@@ -76,6 +76,7 @@ export function SignupPage() {
 
   return (
     <AuthLayout
+      key="form"
       title="Create your account"
       subtitle="Start building for free."
       footer={
