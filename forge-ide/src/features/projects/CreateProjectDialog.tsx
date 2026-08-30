@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input, Label } from '@/components/ui/Input'
 import { PROJECT_TEMPLATES } from '@/features/projects/templates'
+import { templateIcon } from '@/features/projects/templateIcons'
 import { Badge } from '@/components/ui/misc'
 
 export function CreateProjectDialog({
@@ -71,29 +72,47 @@ export function CreateProjectDialog({
                 aria-label="Project template"
                 className="grid max-h-[17rem] grid-cols-1 gap-2 overflow-y-auto scrollbar-thin p-0.5 sm:grid-cols-2"
               >
-                {PROJECT_TEMPLATES.map((t) => (
-                  <button
-                    type="button"
-                    key={t.id}
-                    role="radio"
-                    aria-checked={templateId === t.id}
-                    onClick={() => setTemplateId(t.id)}
-                    className={clsx(
-                      'rounded-control border p-3.5 text-left',
-                      'transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out',
-                      'active:scale-[0.99] motion-reduce:active:scale-100',
-                      templateId === t.id
-                        ? 'border-ember-500/60 bg-ember-500/[0.08] shadow-[inset_0_1px_0_0_rgb(255_255_255/0.05),0_0_0_1px_var(--color-ember-500)]'
-                        : 'border-hairline bg-surface-raised hover:border-hairline-strong hover:bg-surface-hover',
-                    )}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-[0.875rem] font-medium tracking-[-0.008em] text-graphite-100">{t.name}</p>
-                      {!t.runnable && <Badge>Edit only</Badge>}
-                    </div>
-                    <p className="mt-1 text-[0.75rem] leading-relaxed text-graphite-500">{t.description}</p>
-                  </button>
-                ))}
+                {PROJECT_TEMPLATES.map((t) => {
+                  const Icon = templateIcon(t.icon)
+                  const active = templateId === t.id
+                  return (
+                    <button
+                      type="button"
+                      key={t.id}
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => setTemplateId(t.id)}
+                      className={clsx(
+                        'flex items-start gap-3 rounded-control border p-3.5 text-left',
+                        'transition-[border-color,background-color,box-shadow,transform] duration-150 ease-out',
+                        'active:scale-[0.99] motion-reduce:active:scale-100',
+                        active
+                          ? 'border-ember-500/60 bg-ember-500/[0.08] shadow-[inset_0_1px_0_0_rgb(255_255_255/0.05),0_0_0_1px_var(--color-ember-500)]'
+                          : 'border-hairline bg-surface-raised hover:border-hairline-strong hover:bg-surface-hover',
+                      )}
+                    >
+                      <span
+                        className={clsx(
+                          'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 ring-inset',
+                          active
+                            ? 'bg-ember-500/15 text-ember-400 ring-ember-500/25'
+                            : 'bg-surface-hover text-graphite-500 ring-hairline',
+                        )}
+                      >
+                        <Icon size={14} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-[0.875rem] font-medium tracking-[-0.008em] text-graphite-100">
+                            {t.name}
+                          </p>
+                          {!t.runnable && <Badge>Edit only</Badge>}
+                        </div>
+                        <p className="mt-1 text-[0.75rem] leading-relaxed text-graphite-500">{t.description}</p>
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
 

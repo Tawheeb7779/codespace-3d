@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { clsx } from 'clsx'
 import { Mail, Plus, Trash2, UserPlus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -36,8 +37,8 @@ export function TeamsPage() {
 
   if (!TeamService.isAvailable) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-semibold text-graphite-50">Teams</h1>
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+        <h1 className="type-display text-graphite-50">Teams</h1>
         <div className="mt-6">
           <ConfigNotice>Teams require Supabase to be configured — they need a shared backend to work across members.</ConfigNotice>
         </div>
@@ -70,23 +71,36 @@ export function TeamsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-graphite-50">Teams</h1>
-        <Button variant="primary" onClick={handleCreateTeam}>
-          <Plus size={15} /> New Team
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="type-display text-graphite-50">Teams</h1>
+          <p className="type-body mt-1.5 text-graphite-500">
+            <span data-numeric>{teams.length}</span> team{teams.length === 1 ? '' : 's'}
+          </p>
+        </div>
+        <Button variant="primary" size="lg" onClick={handleCreateTeam}>
+          <Plus size={16} /> New Team
         </Button>
       </div>
 
       {myInvitations.length > 0 && (
-        <div className="mt-6 space-y-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-graphite-500">Pending invitations</p>
+        <div className="mt-7 space-y-2">
+          <p className="type-label text-graphite-600">Pending invitations</p>
           {myInvitations.map((inv) => (
-            <div key={inv.id} className="flex items-center justify-between rounded-lg border border-hairline bg-surface-raised/50 px-4 py-2.5">
-              <p className="text-sm text-graphite-300">
-                Join <span className="font-medium text-graphite-100">{inv.teamName}</span> as {inv.role}
-              </p>
-              <div className="flex gap-2">
+            <div
+              key={inv.id}
+              className="surface-card flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+            >
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-signal-violet/12 text-signal-violet ring-1 ring-inset ring-signal-violet/20">
+                  <Mail size={15} />
+                </span>
+                <p className="text-[0.8125rem] text-graphite-300">
+                  Join <span className="font-medium text-graphite-100">{inv.teamName}</span> as {inv.role}
+                </p>
+              </div>
+              <div className="flex shrink-0 gap-2">
                 <Button variant="outline" size="sm" onClick={() => respond(inv, false)}>
                   Decline
                 </Button>
@@ -100,19 +114,27 @@ export function TeamsPage() {
       )}
 
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-[220px_1fr]">
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {loading ? (
             <Spinner />
           ) : teams.length === 0 ? (
-            <p className="text-sm text-graphite-500">No teams yet.</p>
+            <p className="px-1 text-sm text-graphite-500">No teams yet.</p>
           ) : (
             teams.map((team) => (
               <button
                 key={team.id}
                 onClick={() => setSelected(team)}
-                className={`w-full truncate rounded-lg px-3 py-2 text-left text-sm ${selected?.id === team.id ? 'bg-surface-hover text-graphite-100' : 'text-graphite-400 hover:bg-surface-raised'}`}
+                className={clsx(
+                  'flex w-full items-center gap-2.5 truncate rounded-lg px-3 py-2 text-left text-[0.8125rem] font-medium',
+                  'transition-[background-color,color,transform] duration-150 ease-out',
+                  'active:scale-[0.98] motion-reduce:active:scale-100',
+                  selected?.id === team.id
+                    ? 'nav-pill-active text-graphite-50'
+                    : 'text-graphite-400 hover:bg-surface-raised hover:text-graphite-100',
+                )}
               >
-                {team.name}
+                <Users size={14} className={selected?.id === team.id ? 'text-ember-400' : 'text-graphite-600'} />
+                <span className="truncate">{team.name}</span>
               </button>
             ))
           )}

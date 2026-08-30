@@ -20,32 +20,41 @@ export function SettingsPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-2xl font-semibold text-graphite-50">Settings</h1>
+    <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <h1 className="type-display text-graphite-50">Settings</h1>
+      <p className="type-body mt-1.5 text-graphite-500">Editor, appearance, AI, and account preferences.</p>
 
-      <Tabs.Root defaultValue="editor" className="mt-6">
-        <Tabs.List className="flex gap-1 border-b border-hairline">
+      <Tabs.Root defaultValue="editor" className="mt-8">
+        {/* Same filled-pill segmented control as the workspace's bottom
+            panel, rather than a second tab language for the same idea. */}
+        <Tabs.List className="inline-flex gap-0.5 rounded-xl bg-surface-sunken p-1 ring-1 ring-inset ring-hairline">
           {TABS.map((tab) => (
             <Tabs.Trigger
               key={tab}
               value={tab}
-              className="border-b-2 border-transparent px-3 py-2 text-sm capitalize text-graphite-500 data-[state=active]:border-ember-500 data-[state=active]:text-graphite-100"
+              className={clsx(
+                'rounded-lg px-3.5 py-1.5 text-[0.8125rem] font-medium capitalize text-graphite-500',
+                'transition-[background-color,color] duration-150',
+                'data-[state=active]:bg-surface-hover data-[state=active]:text-graphite-50',
+                'data-[state=active]:shadow-[inset_0_1px_0_0_rgb(255_255_255/0.06)]',
+                'hover:text-graphite-200',
+              )}
             >
               {tab}
             </Tabs.Trigger>
           ))}
         </Tabs.List>
 
-        <Tabs.Content value="editor" className="pt-6">
+        <Tabs.Content value="editor" className="animate-fade-in mt-7">
           <EditorSettingsPanel />
         </Tabs.Content>
-        <Tabs.Content value="appearance" className="pt-6">
+        <Tabs.Content value="appearance" className="animate-fade-in mt-7">
           <AppearanceSettingsPanel />
         </Tabs.Content>
-        <Tabs.Content value="ai" className="pt-6">
+        <Tabs.Content value="ai" className="animate-fade-in mt-7">
           <AiSettingsPanel />
         </Tabs.Content>
-        <Tabs.Content value="account" className="pt-6">
+        <Tabs.Content value="account" className="animate-fade-in mt-7">
           <AccountSettingsPanel onSignedOut={() => navigate('/')} />
         </Tabs.Content>
       </Tabs.Root>
@@ -109,8 +118,12 @@ function AppearanceSettingsPanel() {
           key={option}
           onClick={() => setTheme(option)}
           className={clsx(
-            'flex-1 rounded-lg border px-4 py-3 text-sm capitalize',
-            theme === option ? 'border-ember-500 bg-ember-500/[0.06] text-graphite-100' : 'border-hairline text-graphite-400 hover:border-hairline-strong',
+            'flex-1 rounded-control border px-4 py-3 text-sm font-medium capitalize',
+            'transition-[border-color,background-color,transform] duration-150 ease-out',
+            'active:scale-[0.98] motion-reduce:active:scale-100',
+            theme === option
+              ? 'border-ember-500/60 bg-ember-500/[0.08] text-graphite-100 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.05),0_0_0_1px_var(--color-ember-500)]'
+              : 'border-hairline text-graphite-400 hover:border-hairline-strong hover:bg-surface-hover',
           )}
         >
           {option}
@@ -150,7 +163,7 @@ function AiSettingsPanel() {
         <select
           value={ai.provider}
           onChange={(e) => updateAi({ provider: e.target.value as AiProvider })}
-          className="h-9 rounded-lg border border-hairline-strong bg-surface-raised px-3 text-sm text-graphite-200"
+          className="h-10 rounded-control border border-hairline bg-surface-sunken px-3 text-sm text-graphite-200 shadow-[inset_0_1px_2px_rgb(0_0_0/0.25)] outline-none transition-colors hover:border-hairline-strong focus:border-ember-500/70 focus:ring-[3.5px] focus:ring-ember-500/20"
         >
           <option value="anthropic">Anthropic</option>
           <option value="openai">OpenAI</option>
@@ -252,7 +265,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between rounded-lg border border-hairline px-3 py-2.5">
+    <label className="flex cursor-pointer items-center justify-between rounded-control border border-hairline px-3.5 py-2.5 transition-colors duration-150 hover:border-hairline-strong hover:bg-surface-hover/40">
       <span className="text-sm text-graphite-300">{label}</span>
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 accent-ember-500" />
     </label>

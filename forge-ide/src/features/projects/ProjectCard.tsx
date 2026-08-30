@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/misc'
 import { Input } from '@/components/ui/Input'
 import { menuContentClass, menuItemClass, menuItemDangerClass, menuSeparatorClass } from '@/components/ui/menu'
 import { getTemplate } from '@/features/projects/templates'
+import { templateIcon } from '@/features/projects/templateIcons'
 import type { Project } from '@/types/project'
 
 function timeAgo(iso: string): string {
@@ -41,36 +42,45 @@ export function ProjectCard({
     if (name.trim() && name !== project.name) onRename(project.id, name.trim())
   }
 
+  const Icon = templateIcon(template?.icon ?? 'file')
+
   return (
     // Lifts by 1px on hover: a small, physical response that makes the whole
     // grid feel like a set of objects rather than a list of rectangles.
     <div className="surface-card group relative flex flex-col rounded-card p-4 transition-[transform,border-color,background-color] duration-200 ease-out hover:-translate-y-px hover:border-hairline-strong hover:bg-surface-hover/40 motion-reduce:hover:translate-y-0">
       <div className="flex items-start justify-between gap-2">
-        {renaming ? (
-          <Input
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onBlur={submitRename}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') submitRename()
-              if (e.key === 'Escape') {
-                setName(project.name)
-                setRenaming(false)
-              }
-            }}
-            className="h-8 px-2 text-sm"
-          />
-        ) : (
-          <Link to={`/projects/${project.id}`} className="min-w-0 flex-1 rounded">
-            {/* Covers the card so the whole surface is the click target,
-                while the menu button above it stays independently clickable. */}
-            <span className="absolute inset-0 rounded-card" aria-hidden />
-            <p className="truncate text-[0.9375rem] font-medium tracking-[-0.011em] text-graphite-100 transition-colors group-hover:text-white">
-              {project.name}
-            </p>
-          </Link>
-        )}
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-graphite-400 ring-1 ring-inset ring-hairline transition-colors duration-200 group-hover:text-ember-400">
+            <Icon size={16} />
+          </span>
+          <div className="min-w-0 flex-1 pt-0.5">
+            {renaming ? (
+              <Input
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={submitRename}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') submitRename()
+                  if (e.key === 'Escape') {
+                    setName(project.name)
+                    setRenaming(false)
+                  }
+                }}
+                className="h-8 px-2 text-sm"
+              />
+            ) : (
+              <Link to={`/projects/${project.id}`} className="block rounded">
+                {/* Covers the card so the whole surface is the click target,
+                    while the menu button above it stays independently clickable. */}
+                <span className="absolute inset-0 rounded-card" aria-hidden />
+                <p className="truncate text-[0.9375rem] font-medium tracking-[-0.011em] text-graphite-100 transition-colors group-hover:text-white">
+                  {project.name}
+                </p>
+              </Link>
+            )}
+          </div>
+        </div>
 
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
@@ -102,10 +112,12 @@ export function ProjectCard({
       </div>
 
       {project.description && (
-        <p className="mt-1.5 line-clamp-2 text-[0.8125rem] leading-relaxed text-graphite-500">{project.description}</p>
+        <p className="mt-2 line-clamp-2 pl-12 text-[0.8125rem] leading-relaxed text-graphite-500">
+          {project.description}
+        </p>
       )}
 
-      <div className="mt-5 flex items-center gap-2 pt-0.5">
+      <div className="mt-5 flex items-center gap-2 pl-12 pt-0.5">
         {template && <Badge>{template.name}</Badge>}
         <span className="text-[0.75rem] text-graphite-600" data-numeric>
           {timeAgo(project.updatedAt)}

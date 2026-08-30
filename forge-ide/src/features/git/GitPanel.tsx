@@ -121,7 +121,7 @@ export function GitPanel() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
-        <div className="flex items-center gap-1.5 text-xs text-graphite-400">
+        <div className="flex items-center gap-1.5 text-xs font-medium text-graphite-400">
           <GitBranch size={13} /> {branch}
         </div>
         <div className="flex gap-1">
@@ -134,13 +134,34 @@ export function GitPanel() {
         </div>
       </div>
 
-      <div className="flex border-b border-hairline text-xs">
-        <button onClick={() => setView('changes')} className={clsx('flex-1 py-2', view === 'changes' ? 'border-b-2 border-ember-500 text-graphite-100' : 'text-graphite-500')}>
-          Changes {status.length > 0 && `(${status.length})`}
-        </button>
-        <button onClick={() => setView('history')} className={clsx('flex-1 py-2', view === 'history' ? 'border-b-2 border-ember-500 text-graphite-100' : 'text-graphite-500')}>
-          History
-        </button>
+      {/* Same filled-pill segmented control as the bottom panel's
+          terminal/problems switch — one "switch between two views" idiom
+          across the workspace instead of an underline here and a pill
+          there. */}
+      <div className="border-b border-hairline px-3 py-2">
+        <div className="inline-flex gap-0.5 rounded-lg bg-surface-sunken p-0.5">
+          {(['changes', 'history'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setView(tab)}
+              aria-pressed={view === tab}
+              className={clsx(
+                'rounded-[0.3125rem] px-2.5 py-1 text-[0.6875rem] font-medium capitalize tracking-[0.01em]',
+                'transition-colors duration-150',
+                view === tab
+                  ? 'bg-surface-hover text-graphite-50 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.06)]'
+                  : 'text-graphite-500 hover:text-graphite-200',
+              )}
+            >
+              {tab === 'changes' ? 'Changes' : 'History'}
+              {tab === 'changes' && status.length > 0 && (
+                <span className="ml-1 text-ember-400" data-numeric>
+                  {status.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       {view === 'changes' ? (
@@ -207,17 +228,25 @@ export function GitPanel() {
 }
 
 function SectionLabel({ label }: { label: string }) {
-  return <p className="px-3 pt-2 text-[11px] font-medium uppercase tracking-wide text-graphite-600">{label}</p>
+  return <p className="type-label px-3 pt-2.5 text-graphite-600">{label}</p>
 }
 
 function FileRow({ file, selected, onSelect, onToggle }: { file: GitFileStatus; selected: boolean; onSelect: () => void; onToggle: () => void }) {
   return (
-    <div className={clsx('flex items-center gap-2 px-3 py-1.5 text-sm', selected ? 'bg-surface-hover' : 'hover:bg-surface-raised')}>
+    <div
+      className={clsx(
+        'group flex items-center gap-2 px-3 py-1.5 text-sm transition-colors duration-150',
+        selected ? 'bg-surface-hover' : 'hover:bg-surface-raised',
+      )}
+    >
       <button onClick={onSelect} className="min-w-0 flex-1 truncate text-left text-graphite-300">
         {file.path}
       </button>
-      <span className={clsx('w-4 shrink-0 text-center text-xs font-medium', STATUS_COLOR[file.status])}>{STATUS_LABEL[file.status]}</span>
-      <button onClick={onToggle} className="shrink-0 rounded px-1.5 py-0.5 text-xs text-graphite-500 hover:bg-surface-overlay hover:text-graphite-200">
+      <span className={clsx('w-4 shrink-0 text-center text-xs font-semibold', STATUS_COLOR[file.status])}>{STATUS_LABEL[file.status]}</span>
+      <button
+        onClick={onToggle}
+        className="shrink-0 rounded px-1.5 py-0.5 text-xs text-graphite-500 transition-[background-color,color,transform] duration-150 hover:bg-surface-overlay hover:text-graphite-200 active:scale-90 motion-reduce:active:scale-100"
+      >
         {file.staged ? '−' : '+'}
       </button>
     </div>

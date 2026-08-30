@@ -1,23 +1,46 @@
 import { useEffect, useMemo, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
-import { File, Search } from 'lucide-react'
+import {
+  File,
+  FolderOpen,
+  GitCommit,
+  Hammer,
+  Play,
+  Save,
+  Search,
+  Sparkles,
+  Square,
+  Terminal as TerminalIcon,
+  X,
+} from 'lucide-react'
+import { clsx } from 'clsx'
 import { useWorkspace, useFileList } from '@/features/workspace/WorkspaceContext'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { useEditorStore } from '@/stores/editorStore'
 import { useRuntimeStore } from '@/stores/runtimeStore'
+import { menuLabelClass } from '@/components/ui/menu'
 
 interface Command {
   id: string
   label: string
+  icon: typeof File
   run: () => void
 }
 
+/**
+ * A real command menu — grouped results, one icon per row, keyboard hints —
+ * rather than a plain filtered list. Files and actions are kept as two
+ * labeled groups (like the sidebar's own nav/recent-projects split) so the
+ * eye can tell "open this file" from "do this thing" at a glance without
+ * reading every row.
+ */
 export function CommandPalette() {
   const open = useWorkspaceUiStore((s) => s.commandPaletteOpen)
   const setOpen = useWorkspaceUiStore((s) => s.setCommandPaletteOpen)
   const { fs } = useWorkspace()
   const files = useFileList().filter((n) => n.kind === 'file')
   const [query, setQuery] = useState('')
+  const isRunning = useRuntimeStore((s) => s.status === 'running' || s.status === 'installing' || s.status === 'starting')
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
@@ -40,22 +63,26 @@ export function CommandPalette() {
     const ui = useWorkspaceUiStore.getState()
     const runtime = useRuntimeStore.getState()
     return [
-      { id: 'save', label: 'Save File', run: () => editor.activePath && editor.save(fs, editor.activePath) },
-      { id: 'close-tab', label: 'Close Tab', run: () => editor.activePath && editor.close(editor.activePath) },
-      { id: 'close-all', label: 'Close All Tabs', run: () => editor.closeAll() },
-      { id: 'search', label: 'Search Project', run: () => ui.setLeftPanel('search') },
-      { id: 'toggle-terminal', label: 'Toggle Terminal', run: () => ui.toggleBottomPanel('terminal') },
-      { id: 'toggle-explorer', label: 'Toggle Explorer', run: () => ui.toggleLeftPanel('explorer') },
-      { id: 'run', label: 'Run Project', run: () => runtime.run(fs) },
-      { id: 'stop', label: 'Stop Project', run: () => runtime.stop() },
-      { id: 'build', label: 'Build Project', run: () => runtime.run(fs) },
-      { id: 'preview', label: 'Open Preview', run: () => ui.setRightPanelOpen(true) },
-      { id: 'git', label: 'Git Commit', run: () => ui.setLeftPanel('git') },
-      { id: 'ai', label: 'Open AI Assistant', run: () => ui.setRightPanelOpen(true) },
-      { id: 'new-file', label: 'Create File', run: () => ui.setLeftPanel('explorer') },
+      { id: 'save', label: 'Save File', icon: Save, run: () => editor.activePath && editor.save(fs, editor.activePath) },
+      { id: 'close-tab', label: 'Close Tab', icon: X, run: () => editor.activePath && editor.close(editor.activePath) },
+      { id: 'close-all', label: 'Close All Tabs', icon: X, run: () => editor.closeAll() },
+      { id: 'search', label: 'Search Project', icon: Search, run: () => ui.setLeftPanel('search') },
+      { id: 'toggle-terminal', label: 'Toggle Terminal', icon: TerminalIcon, run: () => ui.toggleBottomPanel('terminal') },
+      { id: 'toggle-explorer', label: 'Toggle Explorer', icon: FolderOpen, run: () => ui.toggleLeftPanel('explorer') },
+      {
+        id: 'run',
+        label: isRunning ? 'Stop Project' : 'Run Project',
+        icon: isRunning ? Square : Play,
+        run: () => (isRunning ? runtime.stop() : runtime.run(fs)),
+      },
+      { id: 'build', label: 'Build Project', icon: Hammer, run: () => runtime.run(fs) },
+      { id: 'preview', label: 'Open Preview', icon: FolderOpen, run: () => ui.setRightPanelOpen(true) },
+      { id: 'git', label: 'Git Commit', icon: GitCommit, run: () => ui.setLeftPanel('git') },
+      { id: 'ai', label: 'Open AI Assistant', icon: Sparkles, run: () => ui.setRightPanelOpen(true) },
+      { id: 'new-file', label: 'Create File', icon: File, run: () => ui.setLeftPanel('explorer') },
     ]
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fs])
+  }, [fs, isRunning])
 
   const filteredCommands = commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()))
   const filteredFiles = query ? files.filter((f) => f.path.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : []
@@ -68,41 +95,58 @@ export function CommandPalette() {
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60" />
-        <Dialog.Content className="fixed left-1/2 top-24 z-50 w-full max-w-lg -translate-x-1/2 overflow-hidden rounded-xl border border-hairline bg-surface-raised shadow-2xl">
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] data-[state=closed]:animate-fade-out data-[state=open]:animate-fade-in" />
+        <Dialog.Content className="surface-overlay fixed left-1/2 top-[18vh] z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-2xl data-[state=closed]:animate-scale-out data-[state=open]:animate-scale-in">
           <Dialog.Title className="sr-only">Command palette</Dialog.Title>
-          <div className="flex items-center gap-2 border-b border-hairline px-3 py-2.5">
-            <Search size={15} className="text-graphite-500" />
+          <div className="flex items-center gap-2.5 border-b border-hairline px-4 py-3.5">
+            <Search size={16} className="shrink-0 text-graphite-500" />
             <input
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Type a command or search files…"
-              className="flex-1 bg-transparent text-sm text-graphite-100 outline-none placeholder:text-graphite-500"
+              className="min-w-0 flex-1 bg-transparent text-[0.9375rem] text-graphite-100 outline-none placeholder:text-graphite-500"
             />
-            <kbd className="rounded bg-surface-hover px-1.5 py-0.5 text-[10px] text-graphite-500">Esc</kbd>
+            <kbd className="shrink-0 rounded-md bg-surface-sunken px-1.5 py-1 text-[10px] font-medium text-graphite-500 ring-1 ring-inset ring-hairline">
+              Esc
+            </kbd>
           </div>
-          <div className="max-h-80 overflow-y-auto scrollbar-thin p-1.5">
-            {filteredFiles.map((f) => (
-              <button
-                key={f.path}
-                onClick={() => runCommand(() => useEditorStore.getState().open(fs, f.path))}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-graphite-300 hover:bg-surface-hover"
-              >
-                <File size={14} className="text-graphite-500" /> {f.path}
-              </button>
-            ))}
-            {filteredCommands.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => runCommand(c.run)}
-                className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-sm text-graphite-300 hover:bg-surface-hover"
-              >
-                {c.label}
-              </button>
-            ))}
+
+          <div className="scrollbar-thin max-h-96 overflow-y-auto p-1.5">
+            {filteredFiles.length > 0 && (
+              <>
+                <p className={clsx(menuLabelClass, 'pt-2')}>Files</p>
+                {filteredFiles.map((f) => (
+                  <button
+                    key={f.path}
+                    onClick={() => runCommand(() => useEditorStore.getState().open(fs, f.path))}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.8125rem] text-graphite-300 transition-colors duration-100 hover:bg-surface-hover hover:text-graphite-50"
+                  >
+                    <File size={14} className="shrink-0 text-graphite-500" />
+                    <span className="truncate">{f.path}</span>
+                  </button>
+                ))}
+              </>
+            )}
+
+            {filteredCommands.length > 0 && (
+              <>
+                <p className={clsx(menuLabelClass, filteredFiles.length > 0 && 'mt-1')}>Actions</p>
+                {filteredCommands.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => runCommand(c.run)}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.8125rem] text-graphite-300 transition-colors duration-100 hover:bg-surface-hover hover:text-graphite-50"
+                  >
+                    <c.icon size={14} className="shrink-0 text-graphite-500" />
+                    {c.label}
+                  </button>
+                ))}
+              </>
+            )}
+
             {filteredCommands.length === 0 && filteredFiles.length === 0 && (
-              <p className="px-2.5 py-6 text-center text-sm text-graphite-600">No matches</p>
+              <p className="px-2.5 py-8 text-center text-[0.8125rem] text-graphite-600">No matches for “{query}”</p>
             )}
           </div>
         </Dialog.Content>

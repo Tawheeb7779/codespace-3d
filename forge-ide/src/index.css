@@ -74,6 +74,7 @@
   --animate-scale-in: scale-in 0.18s var(--ease-out-quint);
   --animate-scale-out: scale-out 0.12s var(--ease-in-out-quad);
   --animate-toast-in: toast-in 0.26s var(--ease-out-quint);
+  --animate-toast-out: toast-out 0.18s var(--ease-in-out-quad);
   --animate-screen-from-right: screen-from-right 0.22s var(--ease-out-quint);
   --animate-screen-from-left: screen-from-left 0.22s var(--ease-out-quint);
   --animate-panel-in-right: panel-in-right 0.22s var(--ease-out-quint);
@@ -116,6 +117,10 @@
   @keyframes toast-in {
     from { opacity: 0; transform: translateY(8px) scale(0.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(4px) scale(0.98); }
   }
   /* The right status panel enters/leaves from the edge it's anchored to,
      symmetrically — the same "spatial consistency" rule the mobile screen

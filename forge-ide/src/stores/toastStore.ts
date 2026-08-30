@@ -8,12 +8,17 @@ export interface Toast {
   description?: string
   variant: ToastVariant
   createdAt: number
+  /** True for the brief window between a dismiss and the toast actually
+   *  leaving the array — lets the Toaster play an exit animation instead of
+   *  the toast just vanishing (see `dismiss`). */
+  dismissing?: boolean
 }
 
 // Notifications shown in the topbar bell are this same real toast stream,
 // kept around after the toast itself auto-dismisses — never a fabricated
 // activity feed.
 const HISTORY_LIMIT = 30
+const EXIT_MS = 200
 
 interface ToastState {
   toasts: Toast[]
@@ -24,7 +29,7 @@ interface ToastState {
   markAllRead: () => void
 }
 
-export const useToastStore = create<ToastState>((set) => ({
+export const useToastStore = create<ToastState>((set, get) => ({
   toasts: [],
   history: [],
   unreadCount: 0,
@@ -36,11 +41,19 @@ export const useToastStore = create<ToastState>((set) => ({
       history: [entry, ...state.history].slice(0, HISTORY_LIMIT),
       unreadCount: state.unreadCount + 1,
     }))
+    setTimeout(() => get().dismiss(id), 5000)
+  },
+  dismiss: (id) => {
+    // Two-phase removal: mark it dismissing so the Toaster can animate it
+    // out symmetrically with how it animated in, then actually drop it
+    // from the array once that animation has had time to play.
+    set((state) => ({
+      toasts: state.toasts.map((t) => (t.id === id ? { ...t, dismissing: true } : t)),
+    }))
     setTimeout(() => {
       set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }))
-    }, 5000)
+    }, EXIT_MS)
   },
-  dismiss: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
   markAllRead: () => set({ unreadCount: 0 }),
 }))
 
