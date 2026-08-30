@@ -1,6 +1,6 @@
 import JSZip from 'jszip'
 import { FileSystemService } from '@/services/FileSystemService'
-import { InvalidPathError, normalizeProjectPath } from '@/lib/paths'
+import { InvalidPathError, isReservedPath, normalizeProjectPath } from '@/lib/paths'
 import type { Project } from '@/types/project'
 
 export async function exportProjectAsZip(project: Project): Promise<Blob> {
@@ -36,6 +36,15 @@ export async function importZipIntoProject(file: File | Blob, targetProjectId: s
     if (entry.dir) continue
     try {
       const normalized = normalizeProjectPath(entry.name)
+      // `.git/` is reserved for the Git subsystem's own adapter everywhere
+      // else in the VFS (FileSystemService.assertWritable) — seed() (used
+      // here for a fresh bulk import) doesn't re-check that, so a ZIP
+      // entry under `.git/` would otherwise land there directly and could
+      // corrupt or spoof the project's real git history.
+      if (isReservedPath(normalized)) {
+        skipped.push({ path: entry.name, reason: 'paths under .git/ are reserved and cannot be imported' })
+        continue
+      }
       const content = await entry.async('string')
       files.push({ path: normalized, content })
     } catch (err) {

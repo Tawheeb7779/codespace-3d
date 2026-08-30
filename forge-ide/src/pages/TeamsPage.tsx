@@ -157,7 +157,8 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
   const [invitations, setInvitations] = useState<TeamInvitation[]>([])
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<TeamRole>('developer')
-  const isOwnerOrAdmin = members.some((m) => m.userId === currentUserId && (m.role === 'owner' || m.role === 'admin'))
+  const isOwner = members.some((m) => m.userId === currentUserId && m.role === 'owner')
+  const isOwnerOrAdmin = isOwner || members.some((m) => m.userId === currentUserId && m.role === 'admin')
 
   async function refresh() {
     const [m, i] = await Promise.all([TeamService.listMembers(team.id), TeamService.listInvitationsForTeam(team.id)])
@@ -190,31 +191,40 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
       </div>
 
       <div className="space-y-1.5">
-        {members.map((m) => (
-          <div key={m.userId} className="flex items-center justify-between rounded-lg border border-hairline px-3 py-2">
-            <span className="text-sm text-graphite-200">{m.displayName}</span>
-            <div className="flex items-center gap-2">
-              {isOwnerOrAdmin && m.role !== 'owner' ? (
-                <select
-                  value={m.role}
-                  onChange={(e) => TeamService.updateMemberRole(team.id, m.userId, e.target.value as TeamRole).then(refresh)}
-                  className="rounded border border-hairline-strong bg-surface-raised px-1.5 py-0.5 text-xs text-graphite-300"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="developer">Developer</option>
-                  <option value="viewer">Viewer</option>
-                </select>
-              ) : (
-                <Badge>{m.role}</Badge>
-              )}
-              {isOwnerOrAdmin && m.role !== 'owner' && (
-                <button onClick={() => TeamService.removeMember(team.id, m.userId).then(refresh)} className="text-graphite-500 hover:text-signal-red">
-                  <Trash2 size={14} />
-                </button>
-              )}
+        {members.map((m) => {
+          // Mirrors the server's actual authority (migration 0004): an
+          // owner can manage anyone; a plain admin can only manage
+          // developer/viewer rows — never another owner or admin, and can
+          // never promote someone into owner/admin. Showing a control the
+          // backend would silently reject on click is worse than not
+          // showing it.
+          const canManage = isOwner || (isOwnerOrAdmin && m.role !== 'owner' && m.role !== 'admin')
+          return (
+            <div key={m.userId} className="flex items-center justify-between rounded-lg border border-hairline px-3 py-2">
+              <span className="text-sm text-graphite-200">{m.displayName}</span>
+              <div className="flex items-center gap-2">
+                {canManage ? (
+                  <select
+                    value={m.role}
+                    onChange={(e) => TeamService.updateMemberRole(team.id, m.userId, e.target.value as TeamRole).then(refresh)}
+                    className="rounded border border-hairline-strong bg-surface-raised px-1.5 py-0.5 text-xs text-graphite-300"
+                  >
+                    {isOwner && <option value="admin">Admin</option>}
+                    <option value="developer">Developer</option>
+                    <option value="viewer">Viewer</option>
+                  </select>
+                ) : (
+                  <Badge>{m.role}</Badge>
+                )}
+                {canManage && (
+                  <button onClick={() => TeamService.removeMember(team.id, m.userId).then(refresh)} className="text-graphite-500 hover:text-signal-red">
+                    <Trash2 size={14} />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {isOwnerOrAdmin && (
@@ -223,7 +233,7 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
           <div className="flex flex-wrap gap-2">
             <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="teammate@email.com" type="email" className="max-w-56" />
             <select value={role} onChange={(e) => setRole(e.target.value as TeamRole)} className="rounded-lg border border-hairline-strong bg-surface-raised px-2 text-sm text-graphite-300">
-              <option value="admin">Admin</option>
+              {isOwner && <option value="admin">Admin</option>}
               <option value="developer">Developer</option>
               <option value="viewer">Viewer</option>
             </select>

@@ -37,4 +37,22 @@ describe('importZipIntoProject', () => {
     const fs = await FileSystemService.load('imported-2')
     expect(fs.read('safe.txt')).toBe('ok')
   })
+
+  it('refuses to import entries under .git/, reserved for the Git subsystem', async () => {
+    const zip = new JSZip()
+    zip.file('.git/config', '[core]\n\tbare = false')
+    zip.file('.git/HEAD', 'ref: refs/heads/main')
+    zip.file('safe.txt', 'ok')
+    const blob = await zip.generateAsync({ type: 'blob' })
+
+    const result = await importZipIntoProject(blob, 'imported-3')
+    expect(result.imported).toBe(1)
+    expect(result.skipped).toHaveLength(2)
+    expect(result.skipped.every((s) => s.reason.includes('.git/'))).toBe(true)
+
+    const fs = await FileSystemService.load('imported-3')
+    expect(fs.exists('.git/config')).toBe(false)
+    expect(fs.exists('.git/HEAD')).toBe(false)
+    expect(fs.read('safe.txt')).toBe('ok')
+  })
 })
