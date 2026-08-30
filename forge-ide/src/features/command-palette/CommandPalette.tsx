@@ -5,13 +5,16 @@ import {
   FolderOpen,
   GitCommit,
   Hammer,
+  Moon,
   Play,
   RotateCw,
   Save,
   Search,
   Sparkles,
+  SunMedium,
   Square,
   Terminal as TerminalIcon,
+  Trash2,
   X,
 } from 'lucide-react'
 import { clsx } from 'clsx'
@@ -19,7 +22,9 @@ import { useWorkspace, useFileList } from '@/features/workspace/WorkspaceContext
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { useEditorStore } from '@/stores/editorStore'
 import { useRuntimeStore } from '@/stores/runtimeStore'
+import { useSettingsStore } from '@/stores/settingsStore'
 import { menuLabelClass } from '@/components/ui/menu'
+import { toast } from '@/stores/toastStore'
 
 interface Command {
   id: string
@@ -45,7 +50,12 @@ export function CommandPalette() {
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'p') {
+      // Cmd/Ctrl+K opens straight to file search; Cmd/Ctrl+Shift+P opens
+      // the same palette for its VS Code-familiar name ("Command
+      // Palette") — both are the one surface, not two competing UIs.
+      const isK = !e.shiftKey && e.key.toLowerCase() === 'k'
+      const isShiftP = e.shiftKey && e.key.toLowerCase() === 'p'
+      if ((e.metaKey || e.ctrlKey) && (isK || isShiftP)) {
         e.preventDefault()
         setOpen(true)
       }
@@ -65,13 +75,56 @@ export function CommandPalette() {
   }, [query, open])
 
   const commands: Command[] = useMemo(() => {
+    // Action methods (editor.save, ui.setLeftPanel, ...) are stable
+    // references that read live state internally, so capturing them here
+    // once is fine. Data fields like activePath are NOT — a memoized
+    // snapshot of `editor.activePath` stays frozen at whatever file was
+    // active when this list was last recomputed, so every run() below
+    // that needs "the current file" re-reads getState() fresh instead of
+    // closing over the outer snapshot.
     const editor = useEditorStore.getState()
     const ui = useWorkspaceUiStore.getState()
     const runtime = useRuntimeStore.getState()
+    const settings = useSettingsStore.getState()
     return [
-      { id: 'save', label: 'Save File', icon: Save, run: () => editor.activePath && editor.save(fs, editor.activePath) },
-      { id: 'close-tab', label: 'Close Tab', icon: X, run: () => editor.activePath && editor.close(editor.activePath) },
+      {
+        id: 'save',
+        label: 'Save File',
+        icon: Save,
+        run: () => {
+          const path = useEditorStore.getState().activePath
+          if (path) editor.save(fs, path)
+        },
+      },
+      {
+        id: 'close-tab',
+        label: 'Close Tab',
+        icon: X,
+        run: () => {
+          const path = useEditorStore.getState().activePath
+          if (path) editor.close(path)
+        },
+      },
       { id: 'close-all', label: 'Close All Tabs', icon: X, run: () => editor.closeAll() },
+      {
+        id: 'delete-active-file',
+        label: 'Delete Active File',
+        icon: Trash2,
+        run: () => {
+          const path = useEditorStore.getState().activePath
+          if (!path) {
+            toast.error('No active file to delete')
+            return
+          }
+          if (!confirm(`Delete "${path}"? This can't be undone.`)) return
+          // fs.subscribe()'s tab-sync deliberately ignores deletions (see
+          // useSyncTabsWithFs) and leaves closing the tab to the caller —
+          // the same contract FileTree's own delete already follows.
+          fs.delete(path)
+          editor.close(path)
+          toast.success('File deleted', path)
+        },
+      },
       { id: 'search', label: 'Search Project', icon: Search, run: () => ui.setLeftPanel('search') },
       { id: 'toggle-terminal', label: 'Toggle Terminal', icon: TerminalIcon, run: () => ui.toggleBottomPanel('terminal') },
       { id: 'toggle-explorer', label: 'Toggle Explorer', icon: FolderOpen, run: () => ui.toggleLeftPanel('explorer') },
@@ -87,6 +140,9 @@ export function CommandPalette() {
       { id: 'git', label: 'Git Commit', icon: GitCommit, run: () => ui.setLeftPanel('git') },
       { id: 'ai', label: 'Open AI Assistant', icon: Sparkles, run: () => ui.setRightPanelOpen(true) },
       { id: 'new-file', label: 'Create File', icon: File, run: () => ui.setLeftPanel('explorer') },
+      { id: 'theme-dark', label: 'Theme: Dark', icon: Moon, run: () => settings.setTheme('dark') },
+      { id: 'theme-light', label: 'Theme: Light', icon: SunMedium, run: () => settings.setTheme('light') },
+      { id: 'theme-system', label: 'Theme: Match System', icon: SunMedium, run: () => settings.setTheme('system') },
     ]
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fs, isRunning])
