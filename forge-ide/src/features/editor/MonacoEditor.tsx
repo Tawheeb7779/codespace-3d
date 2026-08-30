@@ -67,6 +67,7 @@ export function MonacoEditor() {
       theme={resolvedTheme === 'light' ? 'forge-light' : 'forge-dark'}
       options={{
         fontSize: editorSettings.fontSize,
+        fontFamily: '"JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace',
         tabSize: editorSettings.tabSize,
         wordWrap: editorSettings.wordWrap ? 'on' : 'off',
         minimap: { enabled: editorSettings.minimap },

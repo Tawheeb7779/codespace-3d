@@ -73,7 +73,7 @@ export function Terminal({ active }: { active: boolean }) {
 
     const term = new XTerm({
       convertEol: true,
-      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+      fontFamily: '"JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace',
       fontSize: 13,
       theme: initialThemeRef.current === 'light' ? LIGHT_THEME : DARK_THEME,
       cursorBlink: true,
