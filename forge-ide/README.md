@@ -25,9 +25,10 @@ is faked to look more finished than it is.
 | GitHub repository import/push | **Planned** | Needs a CORS proxy or server-side git operations; not implemented. |
 | AI coding agent | **Config required** | Needs Supabase (the provider call is proxied through a Supabase Edge Function so API keys never reach the browser) and an API key for OpenAI, Anthropic, or Gemini, added in Settings → AI. The tool-calling loop, file read/write/search, run/build, and the diff-based change review are all real once configured. |
 | Teams, roles, invitations | **Config required** | Needs Supabase; enforced server-side via Postgres RLS, not just a frontend check. |
-| Real-time presence | **Config required** | Needs Supabase Realtime; shows genuinely connected users, never fabricated ones. |
+| Real-time presence | **Config required** | Needs Supabase Realtime; shows genuinely connected users, never fabricated ones. Presence channels are keyed by (unguessable UUID) project ID, not gated by Realtime Authorization — anyone with the ID could join the channel and see who's active, though not read any file content (that stays behind Postgres RLS). Tightening this needs Supabase's Realtime Authorization feature enabled per-project. |
 | Comments on files/lines | **Planned** | The `comments` table and RLS policies exist in the schema; no UI yet. |
-| Deployment (Vercel/Netlify/AWS) | **Planned** | Not implemented — would need its own OAuth + API integration per provider. |
+| Static hosting (Vercel/Netlify/any CDN) | **Real** | It's a standard Vite SPA build (`npm run build` → `dist/`); `public/_headers` and `vercel.json` ship the COOP/COEP headers WebContainer needs for Netlify/Cloudflare Pages and Vercel. Other hosts (AWS CloudFront/S3, etc.) need those two headers set at the CDN/server layer — see [WebContainer](#the-in-browser-runtime-webcontainer). |
+| One-click "Deploy my project" integration (Vercel/Netlify/AWS APIs) | **Planned** | Not implemented — would need its own OAuth + API integration per provider, distinct from hosting Forge IDE itself. |
 
 ## Tech stack
 
@@ -75,9 +76,9 @@ show a clear "needs setup" notice instead of pretending to work.
    VITE_SUPABASE_URL=https://xxxx.supabase.co
    VITE_SUPABASE_ANON_KEY=xxxx
    ```
-4. Run the schema migration: open the SQL editor in your Supabase project
-   and paste the contents of `supabase/migrations/0001_init.sql`, or use
-   the Supabase CLI: `supabase db push`.
+4. Run the schema migrations: open the SQL editor in your Supabase project
+   and paste the contents of each file in `supabase/migrations/`, in
+   filename order, or use the Supabase CLI: `supabase db push`.
 5. Enable Realtime for the project (Database → Replication) if not already
    on — the migration adds `comments` and `activities` to the
    `supabase_realtime` publication; presence uses ephemeral Realtime
@@ -172,8 +173,11 @@ browser never sees it again.
 Running a project, using the terminal, and live preview all go through
 `@webcontainer/api`, which needs:
 - **Cross-origin isolation** (COOP/COEP headers) — already configured in
-  `vite.config.ts` for `npm run dev` and `npm run preview`. If you deploy
-  behind your own server/CDN, you must set these two headers yourself:
+  `vite.config.ts` for `npm run dev` and `npm run preview`, in `public/_headers`
+  for Netlify/Cloudflare Pages, and in `vercel.json` for Vercel, so those two
+  hosts need no extra setup. If you deploy behind your own server/CDN
+  (including AWS — CloudFront/S3 has no repo-level config file for this),
+  set these two headers yourself on every response:
   ```
   Cross-Origin-Embedder-Policy: require-corp
   Cross-Origin-Opener-Policy: same-origin

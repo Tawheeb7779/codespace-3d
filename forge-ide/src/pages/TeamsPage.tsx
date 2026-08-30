@@ -61,7 +61,7 @@ export function TeamsPage() {
   async function respond(invitation: TeamInvitation, accept: boolean) {
     if (!user) return
     try {
-      await TeamService.respondToInvitation(invitation.id, invitation.teamId, user.id, accept)
+      await TeamService.respondToInvitation(invitation.id, invitation.teamId, user.id, invitation.role, accept)
       setMyInvitations((prev) => prev.filter((i) => i.id !== invitation.id))
       if (accept) refreshTeams()
       toast.success(accept ? 'Invitation accepted' : 'Invitation declined')

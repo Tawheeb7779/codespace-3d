@@ -118,7 +118,7 @@ export const TeamService = {
     }))
   },
 
-  async respondToInvitation(invitationId: string, teamId: string, userId: string, accept: boolean): Promise<void> {
+  async respondToInvitation(invitationId: string, teamId: string, userId: string, role: TeamRole, accept: boolean): Promise<void> {
     const client = requireClient()
     const { error } = await client
       .from('team_invitations')
@@ -126,7 +126,10 @@ export const TeamService = {
       .eq('id', invitationId)
     if (error) throw error
     if (accept) {
-      const { error: memberError } = await client.from('team_members').insert({ team_id: teamId, user_id: userId, role: 'developer' })
+      // Must match the invitation's own role: the RLS policy permitting an
+      // invitee to insert themselves checks role against the accepted
+      // invitation row, so hardcoding a role here would just be rejected.
+      const { error: memberError } = await client.from('team_members').insert({ team_id: teamId, user_id: userId, role })
       if (memberError) throw memberError
     }
   },
