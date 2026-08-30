@@ -25,7 +25,11 @@ export function usePresence(projectId: string, user: UserProfile | null, activeF
     if (!client || !user) return
 
     const channel = client.channel(`presence:project:${projectId}`, {
-      config: { presence: { key: user.id } },
+      // `private: true` routes the subscribe attempt through Supabase
+      // Realtime Authorization (RLS on realtime.messages — see migration
+      // 0003) instead of allowing any authenticated client to join by
+      // guessing the project id.
+      config: { presence: { key: user.id }, private: true },
     })
     channelRef.current = channel
 
