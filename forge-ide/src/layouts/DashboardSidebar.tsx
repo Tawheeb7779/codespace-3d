@@ -4,7 +4,6 @@ import { clsx } from 'clsx'
 import { Flame, Folder, LayoutGrid, LogOut, Plus, Search, Settings, Users } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useAuthStore } from '@/stores/authStore'
-import { useDashboardUiStore } from '@/stores/dashboardUiStore'
 import { toast } from '@/stores/toastStore'
 import { Badge } from '@/components/ui/misc'
 import { ProjectService } from '@/services/ProjectService'
@@ -25,7 +24,6 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
   const { user, status, signOut } = useAuthStore(
     useShallow((s) => ({ user: s.user, status: s.status, signOut: s.signOut })),
   )
-  const requestCreateProject = useDashboardUiStore((s) => s.requestCreateProject)
   const navigate = useNavigate()
   const [recent, setRecent] = useState<Project[]>([])
   const [filter, setFilter] = useState('')
@@ -61,8 +59,15 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
   }
 
   function handleNewProject() {
-    requestCreateProject()
-    navigate('/dashboard')
+    // Carried as navigation state rather than a global "request" counter:
+    // a counter incremented before DashboardPage mounts (triggering this
+    // from any page other than the dashboard itself) is invisible to a
+    // `useState(count)` initializer that captures the already-incremented
+    // value as its own starting point — the dialog would silently never
+    // open. Router state arrives together with the navigation itself, so
+    // it can't be missed regardless of whether DashboardPage was already
+    // mounted.
+    navigate('/dashboard', { state: { openCreateProject: true } })
     onNavigate?.()
   }
 

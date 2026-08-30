@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FolderPlus, Search, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -12,7 +12,6 @@ import { TeamService } from '@/services/TeamService'
 import { exportProjectAsZip, importZipIntoProject } from '@/services/ProjectExport'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
-import { useDashboardUiStore } from '@/stores/dashboardUiStore'
 import type { Project } from '@/types/project'
 import type { Team } from '@/types/team'
 
@@ -73,14 +72,22 @@ export function DashboardPage() {
   }
 
   // The sidebar's "New Project" button lives outside this page (it's part
-  // of the shared dashboard shell), so it asks for the dialog via a nonce
-  // in shared state rather than this page reaching up into the layout.
-  const createProjectRequest = useDashboardUiStore((s) => s.createProjectRequest)
-  const [seenRequest, setSeenRequest] = useState(createProjectRequest)
-  if (createProjectRequest !== seenRequest) {
-    setSeenRequest(createProjectRequest)
-    setCreateOpen(true)
-  }
+  // of the shared dashboard shell) and can be clicked from any page, so it
+  // asks for the dialog via router state on the navigation to /dashboard —
+  // delivered atomically with the navigation itself, so it can't be missed
+  // regardless of whether this page was already mounted (a global "request"
+  // counter incremented before this component mounts is invisible to a
+  // useState initializer that captures the post-increment value as its own
+  // start — that was the actual bug behind "Create Project" silently doing
+  // nothing when triggered from outside the dashboard page).
+  const location = useLocation()
+  useEffect(() => {
+    if ((location.state as { openCreateProject?: boolean } | null)?.openCreateProject) {
+      setCreateOpen(true)
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state])
 
   const visible = useMemo(() => {
     const filtered = projects.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))

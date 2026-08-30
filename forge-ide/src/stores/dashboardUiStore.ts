@@ -10,22 +10,17 @@ import { create } from 'zustand'
 interface DashboardUiState {
   sidebarOpen: boolean
   rightPanelOpen: boolean
-  /** Incremented to ask the dashboard page to open its create-project dialog. */
-  createProjectRequest: number
   setSidebarOpen: (open: boolean) => void
   toggleSidebar: () => void
   setRightPanelOpen: (open: boolean) => void
   toggleRightPanel: () => void
-  requestCreateProject: () => void
 }
 
 export const useDashboardUiStore = create<DashboardUiState>((set, get) => ({
   sidebarOpen: false,
   rightPanelOpen: false,
-  createProjectRequest: 0,
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   toggleSidebar: () => set({ sidebarOpen: !get().sidebarOpen }),
   setRightPanelOpen: (open) => set({ rightPanelOpen: open }),
   toggleRightPanel: () => set({ rightPanelOpen: !get().rightPanelOpen }),
-  requestCreateProject: () => set({ createProjectRequest: get().createProjectRequest + 1 }),
 }))
