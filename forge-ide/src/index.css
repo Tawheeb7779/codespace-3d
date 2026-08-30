@@ -40,6 +40,7 @@
   --color-signal-green: #3ecf8e;
   --color-signal-amber: #f5b93d;
   --color-signal-red: #f2495c;
+  --color-signal-blue: #4ea8f5;
 
   /*
    * Surfaces form an elevation ladder instead of every panel being the same
@@ -219,6 +220,10 @@
    * same hue, same meaning, ≥4.85:1 on every light surface it appears on.
    */
   --color-signal-red: #c8203a;
+
+  /* Same problem, same fix, for the info/blue signal: the dark-theme value
+     (#4ea8f5) is ~2.5:1 on white. Deepened here to ~5.8:1, same hue. */
+  --color-signal-blue: #0f62c9;
 }
 
 @layer base {

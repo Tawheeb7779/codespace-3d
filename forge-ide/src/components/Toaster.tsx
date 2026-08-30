@@ -11,7 +11,7 @@ const ICONS = {
 const BADGES = {
   success: 'bg-signal-green/12 text-signal-green ring-signal-green/20',
   error: 'bg-signal-red/12 text-signal-red ring-signal-red/20',
-  info: 'bg-signal-violet/12 text-signal-violet ring-signal-violet/20',
+  info: 'bg-signal-blue/12 text-signal-blue ring-signal-blue/20',
 }
 
 export function Toaster() {
