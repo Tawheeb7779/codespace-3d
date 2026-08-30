@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, Command, Loader2, Monitor, Play, Settings, Square } from 'lucide-react'
+import { ArrowLeft, Command, Loader2, Monitor, Play, RotateCw, Settings, Square } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/misc'
 import { QuickActions } from '@/features/ai/QuickActions'
@@ -69,9 +69,21 @@ export function WorkspaceTopBar() {
         </button>
 
         {isRunning ? (
-          <Button variant="outline" size="sm" onClick={() => useRuntimeStore.getState().stop()} disabled={isBusy}>
-            {isBusy ? <Loader2 size={14} className="animate-spin" /> : <Square size={14} />} Stop
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => useRuntimeStore.getState().restart(fs)}
+              disabled={isBusy}
+              aria-label="Restart project"
+              title="Restart project"
+            >
+              <RotateCw size={14} />
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => useRuntimeStore.getState().stop()} disabled={isBusy}>
+              {isBusy ? <Loader2 size={14} className="animate-spin" /> : <Square size={14} />} Stop
+            </Button>
+          </>
         ) : (
           <Button variant="primary" size="sm" onClick={() => useRuntimeStore.getState().run(fs)}>
             <Play size={14} /> Run

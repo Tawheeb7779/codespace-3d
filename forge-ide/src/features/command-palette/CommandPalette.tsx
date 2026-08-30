@@ -6,6 +6,7 @@ import {
   GitCommit,
   Hammer,
   Play,
+  RotateCw,
   Save,
   Search,
   Sparkles,
@@ -58,6 +59,11 @@ export function CommandPalette() {
     if (open) setQuery('')
   }, [open])
 
+  const [highlighted, setHighlighted] = useState(0)
+  useEffect(() => {
+    setHighlighted(0)
+  }, [query, open])
+
   const commands: Command[] = useMemo(() => {
     const editor = useEditorStore.getState()
     const ui = useWorkspaceUiStore.getState()
@@ -75,6 +81,7 @@ export function CommandPalette() {
         icon: isRunning ? Square : Play,
         run: () => (isRunning ? runtime.stop() : runtime.run(fs)),
       },
+      { id: 'restart', label: 'Restart Project', icon: RotateCw, run: () => runtime.restart(fs) },
       { id: 'build', label: 'Build Project', icon: Hammer, run: () => runtime.run(fs) },
       { id: 'preview', label: 'Open Preview', icon: FolderOpen, run: () => ui.setRightPanelOpen(true) },
       { id: 'git', label: 'Git Commit', icon: GitCommit, run: () => ui.setLeftPanel('git') },
@@ -87,9 +94,31 @@ export function CommandPalette() {
   const filteredCommands = commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()))
   const filteredFiles = query ? files.filter((f) => f.path.toLowerCase().includes(query.toLowerCase())).slice(0, 8) : []
 
+  // One flat, ordered list (files first, then actions) so arrow keys and
+  // Enter operate on exactly what's visible, in the order it's drawn.
+  const flatItems = [
+    ...filteredFiles.map((f) => ({ key: f.path, run: () => useEditorStore.getState().open(fs, f.path) })),
+    ...filteredCommands.map((c) => ({ key: c.id, run: c.run })),
+  ]
+
   function runCommand(fn: () => void) {
     fn()
     setOpen(false)
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (flatItems.length === 0) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlighted((i) => (i + 1) % flatItems.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlighted((i) => (i - 1 + flatItems.length) % flatItems.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const item = flatItems[highlighted] ?? flatItems[0]
+      if (item) runCommand(item.run)
+    }
   }
 
   return (
@@ -104,6 +133,7 @@ export function CommandPalette() {
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Type a command or search files…"
               className="min-w-0 flex-1 bg-transparent text-[0.9375rem] text-graphite-100 outline-none placeholder:text-graphite-500"
             />
@@ -116,11 +146,15 @@ export function CommandPalette() {
             {filteredFiles.length > 0 && (
               <>
                 <p className={clsx(menuLabelClass, 'pt-2')}>Files</p>
-                {filteredFiles.map((f) => (
+                {filteredFiles.map((f, i) => (
                   <button
                     key={f.path}
                     onClick={() => runCommand(() => useEditorStore.getState().open(fs, f.path))}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.8125rem] text-graphite-300 transition-colors duration-100 hover:bg-surface-hover hover:text-graphite-50"
+                    onMouseEnter={() => setHighlighted(i)}
+                    className={clsx(
+                      'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.8125rem] text-graphite-300 transition-colors duration-100 hover:bg-surface-hover hover:text-graphite-50',
+                      highlighted === i && 'bg-surface-hover text-graphite-50',
+                    )}
                   >
                     <File size={14} className="shrink-0 text-graphite-500" />
                     <span className="truncate">{f.path}</span>
@@ -132,16 +166,23 @@ export function CommandPalette() {
             {filteredCommands.length > 0 && (
               <>
                 <p className={clsx(menuLabelClass, filteredFiles.length > 0 && 'mt-1')}>Actions</p>
-                {filteredCommands.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => runCommand(c.run)}
-                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.8125rem] text-graphite-300 transition-colors duration-100 hover:bg-surface-hover hover:text-graphite-50"
-                  >
-                    <c.icon size={14} className="shrink-0 text-graphite-500" />
-                    {c.label}
-                  </button>
-                ))}
+                {filteredCommands.map((c, i) => {
+                  const flatIndex = filteredFiles.length + i
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => runCommand(c.run)}
+                      onMouseEnter={() => setHighlighted(flatIndex)}
+                      className={clsx(
+                        'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[0.8125rem] text-graphite-300 transition-colors duration-100 hover:bg-surface-hover hover:text-graphite-50',
+                        highlighted === flatIndex && 'bg-surface-hover text-graphite-50',
+                      )}
+                    >
+                      <c.icon size={14} className="shrink-0 text-graphite-500" />
+                      {c.label}
+                    </button>
+                  )
+                })}
               </>
             )}
 
