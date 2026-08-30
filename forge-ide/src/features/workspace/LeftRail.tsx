@@ -14,7 +14,15 @@ export function LeftRail() {
   const toggleLeftPanel = useWorkspaceUiStore((s) => s.toggleLeftPanel)
 
   return (
-    <div className="relative z-30 flex w-12 shrink-0 flex-col items-center gap-1 border-r border-hairline bg-surface-base py-2.5">
+    // Its own floating surface rather than a flush strip against the
+    // viewport edge — one of several panels in the workspace now composed
+    // as distinct rounded cards with gaps between them, instead of one
+    // continuous bordered IDE chrome.
+    // z-40, above the sliding drawer's z-30: the drawer's closing animation
+    // passes leftward through the rail's screen position on its way
+    // offscreen, and the rail must stay clickable throughout that transit,
+    // not just before/after it.
+    <div className="surface-card relative z-40 flex w-14 shrink-0 flex-col items-center gap-1 rounded-2xl py-3">
       {ITEMS.map((item) => (
         <button
           key={item.id}

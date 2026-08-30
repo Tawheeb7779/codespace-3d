@@ -74,6 +74,8 @@
   --animate-scale-in: scale-in 0.18s var(--ease-out-quint);
   --animate-scale-out: scale-out 0.12s var(--ease-in-out-quad);
   --animate-toast-in: toast-in 0.26s var(--ease-out-quint);
+  --animate-screen-from-right: screen-from-right 0.22s var(--ease-out-quint);
+  --animate-screen-from-left: screen-from-left 0.22s var(--ease-out-quint);
 
   @keyframes fade-in {
     from { opacity: 0; }
@@ -94,6 +96,20 @@
   @keyframes scale-out {
     from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
     to { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
+  }
+  /*
+   * Mobile screen switches move in from the side the destination sits on
+   * in the bottom nav (spatial consistency — motion should point at where
+   * a thing conceptually lives, not just fade). A few px, not a full-width
+   * slide: this is a tab switch, not a navigation push.
+   */
+  @keyframes screen-from-right {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes screen-from-left {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
   }
   @keyframes toast-in {
     from { opacity: 0; transform: translateY(8px) scale(0.98); }

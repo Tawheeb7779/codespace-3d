@@ -13,7 +13,9 @@ export function BottomPanel() {
   if (bottomPanel === 'hidden') return null
 
   return (
-    <div className="flex h-56 shrink-0 flex-col border-t border-hairline bg-surface-sunken">
+    // A floating card like the rest of the workspace's panels, not a strip
+    // flush against the window edge with only a top border to separate it.
+    <div className="surface-card animate-slide-up flex h-56 shrink-0 flex-col overflow-hidden rounded-2xl">
       {/* Segmented control rather than underlined tabs: at this scale a
           filled pill is easier to hit and to read at a glance than a 2px
           rule, and it matches the pill language used elsewhere. */}
@@ -49,7 +51,7 @@ export function BottomPanel() {
           <X size={13} />
         </button>
       </div>
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden bg-surface-sunken">
         <div className={bottomPanel === 'terminal' ? 'h-full' : 'hidden'}>
           <Terminal active={bottomPanel === 'terminal'} />
         </div>
