@@ -211,6 +211,14 @@
   --color-heat-orange: #cf440b;
   --color-heat-yellow: #a76a08;
   --color-heat-white: #8a2b00;
+
+  /*
+   * The dark-theme signal-red (#f2495c) drops to ~3:1 against a light
+   * page — fails WCAG AA for text. Deepened for light mode only, matching
+   * the red already used for light-theme terminal output (Terminal.tsx);
+   * same hue, same meaning, ≥4.85:1 on every light surface it appears on.
+   */
+  --color-signal-red: #c8203a;
 }
 
 @layer base {
