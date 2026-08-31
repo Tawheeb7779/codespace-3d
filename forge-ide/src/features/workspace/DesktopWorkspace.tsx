@@ -8,6 +8,7 @@ import { GitPanel } from '@/features/git/GitPanel'
 import { PackagesPanel } from '@/features/packages/PackagesPanel'
 import { TasksPanel } from '@/features/tasks/TasksPanel'
 import { SqlStudioPanel } from '@/features/sql/SqlStudioPanel'
+import { AssetsPanel } from '@/features/assets/AssetsPanel'
 import { EditorTabs } from '@/features/editor/EditorTabs'
 import { SplitEditor } from '@/features/editor/SplitEditor'
 import { Preview } from '@/features/preview/Preview'
@@ -107,6 +108,7 @@ function SidebarPanelBody({ panel }: { panel: LeftPanel }) {
   if (panel === 'packages') return <PackagesPanel />
   if (panel === 'tasks') return <TasksPanel />
   if (panel === 'sql') return <SqlStudioPanel />
+  if (panel === 'assets') return <AssetsPanel />
   return null
 }
 
