@@ -1,14 +1,21 @@
 import { useState } from 'react'
-import { Bot, Code2, Files, Monitor, TerminalSquare } from 'lucide-react'
+import { ArrowLeft, BarChart3, Bot, Code2, Database, Files, GitBranch, Image, ListTodo, MoreHorizontal, Monitor, Package, Search, TerminalSquare } from 'lucide-react'
 import { clsx } from 'clsx'
 import { EditorTabs } from '@/features/editor/EditorTabs'
 import { MonacoEditor } from '@/features/editor/MonacoEditor'
 import { FileTree } from '@/features/explorer/FileTree'
+import { ProjectSearch } from '@/features/search/ProjectSearch'
+import { GitPanel } from '@/features/git/GitPanel'
+import { PackagesPanel } from '@/features/packages/PackagesPanel'
+import { TasksPanel } from '@/features/tasks/TasksPanel'
+import { SqlStudioPanel } from '@/features/sql/SqlStudioPanel'
+import { AssetsPanel } from '@/features/assets/AssetsPanel'
+import { AnalyticsPanel } from '@/features/analytics/AnalyticsPanel'
 import { Terminal } from '@/features/terminal/Terminal'
 import { Preview } from '@/features/preview/Preview'
 import { AiPanel } from '@/features/ai/AiPanel'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
-import type { MobileScreen } from '@/stores/workspaceUiStore'
+import type { MobileExtraPanel, MobileScreen } from '@/stores/workspaceUiStore'
 
 const SCREENS: Array<{ id: MobileScreen; icon: typeof Files; label: string }> = [
   { id: 'explorer', icon: Files, label: 'Files' },
@@ -16,13 +23,75 @@ const SCREENS: Array<{ id: MobileScreen; icon: typeof Files; label: string }> = 
   { id: 'terminal', icon: TerminalSquare, label: 'Terminal' },
   { id: 'preview', icon: Monitor, label: 'Preview' },
   { id: 'ai', icon: Bot, label: 'AI' },
+  { id: 'more', icon: MoreHorizontal, label: 'More' },
 ]
 
 const SCREEN_INDEX = new Map(SCREENS.map((s, i) => [s.id, i]))
 
+const EXTRA_PANELS: Array<{ id: MobileExtraPanel; icon: typeof Files; label: string }> = [
+  { id: 'search', icon: Search, label: 'Search' },
+  { id: 'git', icon: GitBranch, label: 'Source control' },
+  { id: 'packages', icon: Package, label: 'Packages' },
+  { id: 'tasks', icon: ListTodo, label: 'Tasks' },
+  { id: 'sql', icon: Database, label: 'SQL Studio' },
+  { id: 'assets', icon: Image, label: 'Assets' },
+  { id: 'analytics', icon: BarChart3, label: 'Analytics' },
+]
+
+function MoreScreen() {
+  const extraPanel = useWorkspaceUiStore((s) => s.mobileExtraPanel)
+  const setExtraPanel = useWorkspaceUiStore((s) => s.setMobileExtraPanel)
+
+  if (extraPanel) {
+    const meta = EXTRA_PANELS.find((p) => p.id === extraPanel)
+    return (
+      <div className="flex h-full flex-col">
+        <div className="flex shrink-0 items-center gap-2 border-b border-hairline px-3 py-2.5">
+          <button onClick={() => setExtraPanel(null)} aria-label="Back to more" className="-m-1 rounded-lg p-1 text-graphite-400 hover:bg-surface-hover">
+            <ArrowLeft size={16} />
+          </button>
+          <span className="text-[0.8125rem] font-medium text-graphite-100">{meta?.label}</span>
+        </div>
+        <div className="min-h-0 flex-1">
+          {extraPanel === 'search' && <ProjectSearch />}
+          {extraPanel === 'git' && <GitPanel />}
+          {extraPanel === 'packages' && <PackagesPanel />}
+          {extraPanel === 'tasks' && <TasksPanel />}
+          {extraPanel === 'sql' && <SqlStudioPanel />}
+          {extraPanel === 'assets' && <AssetsPanel />}
+          {extraPanel === 'analytics' && <AnalyticsPanel />}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="scrollbar-thin h-full overflow-y-auto p-3">
+      <p className="type-label px-1 text-graphite-600">More</p>
+      <div className="mt-2 space-y-0.5">
+        {EXTRA_PANELS.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => setExtraPanel(p.id)}
+            className="flex w-full items-center gap-3 rounded-lg px-2.5 py-3 text-left text-[0.9375rem] text-graphite-200 hover:bg-surface-hover"
+          >
+            <p.icon size={17} className="text-graphite-500" />
+            {p.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /**
  * Editor-first, single-panel mobile experience with a bottom nav — not a
- * shrunk desktop layout (spec §41-42). Each screen is full height.
+ * shrunk desktop layout (spec §41-42). Each screen is full height. The
+ * desktop LeftRail has more panels than fit in a bottom nav (Search, Git,
+ * Packages, Tasks, SQL Studio, Assets, Analytics) — rather than shrinking
+ * them into a cramped strip of tiny icons, they live behind a "More" sheet,
+ * the same drill-down pattern most mobile apps use for secondary
+ * destinations.
  */
 export function MobileWorkspace() {
   const screen = useWorkspaceUiStore((s) => s.mobileScreen)
@@ -57,6 +126,7 @@ export function MobileWorkspace() {
           {screen === 'terminal' && <Terminal active={screen === 'terminal'} />}
           {screen === 'preview' && <Preview />}
           {screen === 'ai' && <AiPanel />}
+          {screen === 'more' && <MoreScreen />}
         </div>
       </div>
 

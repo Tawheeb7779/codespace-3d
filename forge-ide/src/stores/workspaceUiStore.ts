@@ -2,13 +2,19 @@ import { create } from 'zustand'
 
 export type LeftPanel = 'explorer' | 'search' | 'git' | 'packages' | 'tasks' | 'sql' | 'assets' | 'analytics' | 'hidden'
 export type BottomPanel = 'terminal' | 'problems' | 'logs' | 'hidden'
-export type MobileScreen = 'editor' | 'explorer' | 'terminal' | 'preview' | 'ai'
+export type MobileScreen = 'editor' | 'explorer' | 'terminal' | 'preview' | 'ai' | 'more'
+/** The panels reachable only through the mobile "More" sheet — everything
+ *  the LeftRail has beyond what already has its own bottom-nav tab
+ *  (explorer, terminal via its own tab, ai). Reuses LeftPanel's values
+ *  rather than a separate enum so a panel is defined once. */
+export type MobileExtraPanel = Exclude<LeftPanel, 'explorer' | 'hidden'>
 
 interface WorkspaceUiState {
   leftPanel: LeftPanel
   rightPanelOpen: boolean
   bottomPanel: BottomPanel
   mobileScreen: MobileScreen
+  mobileExtraPanel: MobileExtraPanel | null
   commandPaletteOpen: boolean
   aiDraftPrompt: { text: string; nonce: number } | null
   setLeftPanel: (panel: LeftPanel) => void
@@ -17,6 +23,7 @@ interface WorkspaceUiState {
   toggleBottomPanel: (panel: BottomPanel) => void
   setRightPanelOpen: (open: boolean) => void
   setMobileScreen: (screen: MobileScreen) => void
+  setMobileExtraPanel: (panel: MobileExtraPanel | null) => void
   setCommandPaletteOpen: (open: boolean) => void
   requestAiAction: (text: string) => void
   /** Closes the side drawer after a selection, but only where it overlays content. */
@@ -42,6 +49,7 @@ export const useWorkspaceUiStore = create<WorkspaceUiState>((set, get) => ({
   rightPanelOpen: !panelsAreOverlays(),
   bottomPanel: 'terminal',
   mobileScreen: 'editor',
+  mobileExtraPanel: null,
   commandPaletteOpen: false,
   aiDraftPrompt: null,
 
@@ -55,7 +63,8 @@ export const useWorkspaceUiStore = create<WorkspaceUiState>((set, get) => ({
   toggleBottomPanel: (panel) => set({ bottomPanel: get().bottomPanel === panel ? 'hidden' : panel }),
   setRightPanelOpen: (open) =>
     set(open && panelsAreOverlays() ? { rightPanelOpen: true, leftPanel: 'hidden' } : { rightPanelOpen: open }),
-  setMobileScreen: (screen) => set({ mobileScreen: screen }),
+  setMobileScreen: (screen) => set(screen === 'more' ? { mobileScreen: screen } : { mobileScreen: screen, mobileExtraPanel: null }),
+  setMobileExtraPanel: (panel) => set({ mobileExtraPanel: panel }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
 
   dismissOverlayPanels: () => {
