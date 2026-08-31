@@ -17,6 +17,10 @@ interface RuntimeState {
   status: RuntimeStatus
   logs: RuntimeLogEntry[]
   previewUrl: string | null
+  /** Bumped every time a file write is mirrored into a running container
+   *  (see syncFileToRuntime.ts) — Preview remounts its iframe on change so
+   *  an edit actually shows up without a manual refresh click. */
+  previewReloadNonce: number
   runConfig: RunConfig | null
   errorMessage: string | null
   boot: (fs: FileSystemService) => Promise<void>
@@ -24,6 +28,7 @@ interface RuntimeState {
   stop: () => Promise<void>
   restart: (fs: FileSystemService) => Promise<void>
   clearLogs: () => void
+  bumpPreviewReload: () => void
   /** Full teardown for a project switch (not just Stop): tears down the
    *  WebContainer instance itself so the next project gets a clean
    *  sandbox, and clears logs/errors/runConfig so they don't leak into
@@ -55,6 +60,7 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
   status: WebContainerService.isSupported ? 'idle' : 'unsupported',
   logs: [],
   previewUrl: null,
+  previewReloadNonce: 0,
   runConfig: null,
   errorMessage: null,
 
@@ -123,6 +129,8 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
   },
 
   clearLogs: () => set({ logs: [] }),
+
+  bumpPreviewReload: () => set((s) => ({ previewReloadNonce: s.previewReloadNonce + 1 })),
 
   reset: async () => {
     unsubscribeServerReady?.()

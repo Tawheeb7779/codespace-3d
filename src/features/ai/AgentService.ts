@@ -95,7 +95,7 @@ async function callModel(
     // the toast names the concrete thing to check.
     if (err instanceof DOMException && err.name === 'AbortError') throw err
     throw new Error(
-      `Could not reach the AI agent at ${functionUrl}. This means the request never got a response — check that (1) VITE_SUPABASE_URL points at your actual Supabase project, (2) the "ai-agent" Edge Function is deployed ("supabase functions deploy ai-agent"), and (3) this browser has network access to Supabase.`,
+      `Could not reach the AI agent at ${functionUrl}. The browser gives no more detail than this for a failed request, so check each of: (1) VITE_SUPABASE_URL points at your actual Supabase project, (2) the "ai-agent" Edge Function is deployed ("supabase functions deploy ai-agent"), (3) this browser has network access to Supabase, and (4) if you modified supabase/functions/_shared/cors.ts, that it still returns Access-Control-Allow-Origin for this app's origin — a CORS rejection looks identical to a network failure from here.`,
     )
   }
 

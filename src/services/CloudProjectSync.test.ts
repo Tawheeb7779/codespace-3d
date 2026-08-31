@@ -3,6 +3,7 @@ import { idbSet } from '@/lib/idbStore'
 import type { Project } from '@/types/project'
 
 const mockSelectResult = vi.fn()
+const mockUpsert = vi.fn()
 
 vi.mock('@/lib/supabaseClient', () => ({
   supabase: {
@@ -10,6 +11,8 @@ vi.mock('@/lib/supabaseClient', () => ({
       select: () => ({
         eq: () => mockSelectResult(),
       }),
+      upsert: (...args: unknown[]) => mockUpsert(...args),
+      delete: () => ({ eq: () => ({ in: () => Promise.resolve({ error: null }) }) }),
     }),
   },
 }))
@@ -34,6 +37,7 @@ function makeProject(overrides: Partial<Project> = {}): Project {
 describe('openProjectFileSystem', () => {
   beforeEach(() => {
     mockSelectResult.mockReset()
+    mockUpsert.mockReset().mockResolvedValue({ error: null })
   })
 
   it('never lets a stale remote row overwrite a newer local edit that has not finished syncing yet', async () => {
@@ -73,5 +77,26 @@ describe('openProjectFileSystem', () => {
     })
     const { fs } = await openProjectFileSystem(makeProject({ id: 'proj-2' }))
     expect(fs.read('style.css')).toBe('body{}')
+  })
+
+  it('flushes a pending debounced cloud sync on dispose instead of dropping it (navigating away right after a save)', async () => {
+    mockSelectResult.mockResolvedValue({ data: [], error: null })
+
+    const { fs, dispose } = await openProjectFileSystem(makeProject({ id: 'proj-3' }))
+    fs.write('index.html', '<h1>edited</h1>')
+
+    // The debounced reconcile is scheduled 800ms out — dispose() (e.g. the
+    // user navigating back to the dashboard) happens well before that would
+    // ever fire on its own.
+    expect(mockUpsert).not.toHaveBeenCalled()
+    dispose()
+
+    // Let the flushed reconcile's own async upsert call actually run.
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ project_id: 'proj-3', path: 'index.html', content: '<h1>edited</h1>' })]),
+      { onConflict: 'project_id,path' },
+    )
   })
 })

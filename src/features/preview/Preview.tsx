@@ -14,11 +14,12 @@ const DEVICE_WIDTH: Record<Device, string> = {
 }
 
 export function Preview() {
-  const { status, previewUrl, errorMessage } = useRuntimeStore(
+  const { status, previewUrl, errorMessage, previewReloadNonce } = useRuntimeStore(
     useShallow((s) => ({
       status: s.status,
       previewUrl: s.previewUrl,
       errorMessage: s.errorMessage,
+      previewReloadNonce: s.previewReloadNonce,
     })),
   )
   const [device, setDevice] = useState<Device>('desktop')
@@ -70,7 +71,7 @@ export function Preview() {
       <div className="flex flex-1 items-center justify-center overflow-auto bg-surface-base p-3">
         {previewUrl ? (
           <iframe
-            key={reloadKey}
+            key={`${reloadKey}-${previewReloadNonce}`}
             src={previewUrl}
             title="Project preview"
             className="h-full rounded-md border border-hairline bg-white"
