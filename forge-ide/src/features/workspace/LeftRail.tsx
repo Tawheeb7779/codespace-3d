@@ -1,4 +1,4 @@
-import { Files, GitBranch, ListTodo, Package, Search } from 'lucide-react'
+import { Database, Files, GitBranch, ListTodo, Package, Search } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import type { LeftPanel } from '@/stores/workspaceUiStore'
@@ -9,6 +9,7 @@ const ITEMS: Array<{ id: LeftPanel; icon: typeof Files; label: string }> = [
   { id: 'git', icon: GitBranch, label: 'Source control' },
   { id: 'packages', icon: Package, label: 'Packages' },
   { id: 'tasks', icon: ListTodo, label: 'Tasks' },
+  { id: 'sql', icon: Database, label: 'SQL Studio' },
 ]
 
 export function LeftRail() {
