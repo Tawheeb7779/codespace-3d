@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useEditorStore } from '@/stores/editorStore'
 import { usePresence } from '@/features/collaboration/usePresence'
 import { PresenceAvatars } from '@/features/collaboration/PresenceAvatars'
+import { ActivityService } from '@/services/ActivityService'
 
 export function WorkspaceTopBar() {
   const { project, fs } = useWorkspace()
@@ -75,7 +76,21 @@ export function WorkspaceTopBar() {
             </Button>
           </>
         ) : (
-          <Button variant="primary" size="sm" onClick={() => useRuntimeStore.getState().run(fs)}>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={async () => {
+              await useRuntimeStore.getState().run(fs)
+              const finalStatus = useRuntimeStore.getState().status
+              if (finalStatus === 'running' || finalStatus === 'starting') {
+                void ActivityService.log(project.id, user?.id ?? null, 'runtime_start')
+              } else if (finalStatus === 'error') {
+                void ActivityService.log(project.id, user?.id ?? null, 'runtime_error', {
+                  message: useRuntimeStore.getState().errorMessage,
+                })
+              }
+            }}
+          >
             <Play size={14} /> Run
           </Button>
         )}

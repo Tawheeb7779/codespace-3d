@@ -8,6 +8,7 @@ import type { Task, TaskStatus, CreateTaskInput } from '@/types/task'
 import { NewTaskDialog } from '@/features/tasks/NewTaskDialog'
 import { Spinner, EmptyState } from '@/components/ui/misc'
 import { toast } from '@/stores/toastStore'
+import { ActivityService } from '@/services/ActivityService'
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'done']
 const STATUS_LABEL: Record<TaskStatus, string> = { todo: 'To do', in_progress: 'In progress', done: 'Done' }
@@ -46,6 +47,7 @@ export function TasksPanel() {
   async function handleCreate(input: CreateTaskInput) {
     try {
       await TaskService.create(project.id, input, user?.id ?? null)
+      void ActivityService.log(project.id, user?.id ?? null, 'task_created', { title: input.title })
       await refresh()
     } catch (err) {
       toast.error('Could not create task', err instanceof Error ? err.message : undefined)
@@ -57,6 +59,7 @@ export function TasksPanel() {
     setTasks((prev) => prev?.map((t) => (t.id === task.id ? { ...t, status } : t)) ?? prev)
     try {
       await TaskService.setStatus(project.id, task.id, status)
+      if (status === 'done') void ActivityService.log(project.id, user?.id ?? null, 'task_completed', { title: task.title })
     } catch (err) {
       toast.error('Could not update task', err instanceof Error ? err.message : undefined)
       refresh()

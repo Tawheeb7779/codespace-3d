@@ -1,4 +1,4 @@
-import { Database, Files, GitBranch, Image, ListTodo, Package, Search } from 'lucide-react'
+import { BarChart3, Database, Files, GitBranch, Image, ListTodo, Package, Search } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import type { LeftPanel } from '@/stores/workspaceUiStore'
@@ -11,6 +11,7 @@ const ITEMS: Array<{ id: LeftPanel; icon: typeof Files; label: string }> = [
   { id: 'tasks', icon: ListTodo, label: 'Tasks' },
   { id: 'sql', icon: Database, label: 'SQL Studio' },
   { id: 'assets', icon: Image, label: 'Assets' },
+  { id: 'analytics', icon: BarChart3, label: 'Analytics' },
 ]
 
 export function LeftRail() {

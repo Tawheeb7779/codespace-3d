@@ -11,6 +11,7 @@ import { GitService } from '@/services/GitService'
 import type { GitCommitInfo, GitFileStatus } from '@/services/GitService'
 import { useWorkspace, useFileList } from '@/features/workspace/WorkspaceContext'
 import { useAuthStore } from '@/stores/authStore'
+import { ActivityService } from '@/services/ActivityService'
 import { toast } from '@/stores/toastStore'
 import { languageForPath } from '@/lib/languageMap'
 import { useResolvedTheme } from '@/app/useThemeEffect'
@@ -92,7 +93,9 @@ export function GitPanel() {
     if (!git || !message.trim()) return
     setBusy(true)
     try {
+      const filesChanged = staged.length
       await git.commit(message.trim(), { name: user?.displayName ?? 'Forge IDE User', email: user?.email ?? 'user@local' })
+      void ActivityService.log(project.id, user?.id ?? null, 'commit', { message: message.trim(), filesChanged })
       setMessage('')
       toast.success('Commit created')
       await refresh()
