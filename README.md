@@ -101,6 +101,19 @@ show a clear "needs setup" notice instead of pretending to work.
 4. Run the schema migrations: open the SQL editor in your Supabase project
    and paste the contents of each file in `supabase/migrations/`, in
    filename order, or use the Supabase CLI: `supabase db push`.
+
+   **Already have a Supabase project with `profiles`/`projects`/
+   `project_files` tables from before this repo's current schema existed?**
+   Migrations 0001-0010 assume they're creating those tables from nothing,
+   and will not reshape a pre-existing, differently-shaped version of them
+   (this is exactly the cause of a `Could not find the 'owner_id' column of
+   'projects' in the schema cache` error on Create Project). Run
+   `0011_upgrade_legacy_database_pre.sql` **before** 0001, then 0001-0010 as
+   normal, then `0012_upgrade_legacy_database_post.sql`. Read
+   `0011_upgrade_legacy_database_pre.sql`'s own header comment first — it
+   explains exactly what it changes, what it backs up, and what it refuses
+   to guess at (it stops with a clear error rather than silently dropping
+   or misplacing data it can't safely resolve on its own).
 5. Enable Realtime for the project (Database → Replication) if not already
    on — the migration adds `comments` and `activities` to the
    `supabase_realtime` publication.
