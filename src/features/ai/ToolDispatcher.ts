@@ -1,6 +1,7 @@
 import type { FileSystemService } from '@/services/FileSystemService'
 import { detectFramework, detectPackageManager, runScriptCommand } from '@/services/RuntimeDetection'
 import { WebContainerService } from '@/services/WebContainerService'
+import { syncFileToRunningContainer } from '@/services/syncFileToRuntime'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useTerminalStore } from '@/stores/terminalStore'
 import { ChangeTracker } from '@/features/ai/ChangeTracker'
@@ -66,6 +67,7 @@ export async function executeTool(name: string, args: Record<string, unknown>, c
         if (fs.exists(path)) return `Error: "${path}" already exists. Use edit_file to modify it.`
         changeTracker.recordWrite(fs, path)
         fs.write(path, content)
+        syncFileToRunningContainer(path, content)
         return `Created ${path}`
       }
 
@@ -75,6 +77,7 @@ export async function executeTool(name: string, args: Record<string, unknown>, c
         if (!fs.exists(path)) return `Error: "${path}" does not exist. Use create_file to create it.`
         changeTracker.recordWrite(fs, path)
         fs.write(path, content)
+        syncFileToRunningContainer(path, content)
         return `Updated ${path}`
       }
 

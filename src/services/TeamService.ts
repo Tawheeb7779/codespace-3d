@@ -6,18 +6,6 @@ function requireClient() {
   return supabase
 }
 
-interface TeamMemberRow {
-  team_id: string
-  user_id: string
-  role: TeamRole
-  profiles: { display_name: string } | { display_name: string }[] | null
-}
-
-function memberDisplayName(row: TeamMemberRow): string {
-  const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles
-  return profile?.display_name ?? 'Unknown'
-}
-
 export const TeamService = {
   isAvailable: Boolean(supabase),
 
@@ -50,14 +38,30 @@ export const TeamService = {
     const client = requireClient()
     const { data, error } = await client
       .from('team_members')
-      .select('team_id, user_id, role, profiles(display_name)')
+      .select('team_id, user_id, role')
       .eq('team_id', teamId)
     if (error) throw error
-    return (data as unknown as TeamMemberRow[]).map((row) => ({
+
+    // No FK links team_members.user_id to profiles.id (both independently
+    // reference auth.users), so a PostgREST embed (`profiles(display_name)`)
+    // isn't resolvable and would reject the whole query with a schema-cache
+    // relationship error — fetch and join manually instead.
+    const userIds = data.map((row) => row.user_id)
+    const displayNames = new Map<string, string>()
+    if (userIds.length > 0) {
+      const { data: profiles, error: profilesError } = await client
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', userIds)
+      if (profilesError) throw profilesError
+      for (const p of profiles) displayNames.set(p.id, p.display_name)
+    }
+
+    return data.map((row) => ({
       teamId: row.team_id,
       userId: row.user_id,
       role: row.role,
-      displayName: memberDisplayName(row),
+      displayName: displayNames.get(row.user_id) ?? 'Unknown',
       email: null,
     }))
   },

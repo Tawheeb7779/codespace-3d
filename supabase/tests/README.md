@@ -32,6 +32,14 @@ psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0010_sql_studio_enfor
 psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 05_sql_studio_read_only.test.sql
 ```
 
+`06_team_bootstrap_membership.test.sql` additionally needs migration
+`0014` applied (it tests the team-creation bootstrap policy fix):
+
+```bash
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0014_team_bootstrap_membership.sql
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 06_team_bootstrap_membership.test.sql
+```
+
 `0008_project_assets_storage.sql` can't be applied to a plain Postgres at
 all — it targets `storage.buckets`, which only exists inside a real Supabase
 project. Skip it locally; it has no bearing on the tests here.

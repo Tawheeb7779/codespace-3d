@@ -108,6 +108,27 @@
 
 begin;
 
+-- Hard precondition check, added after a real bug: this file assumes
+-- `project_members` and the pre-Forge `projects` shape (`user_id`,
+-- `template`, no `owner_id`/`team_id`) already exist, but nothing enforced
+-- that before running the rest of the file. The README's own primary setup
+-- instruction ("paste each file in filename order, or `supabase db push`")
+-- applies every file in this directory unconditionally, including this one
+-- — so on a brand-new Supabase project (or one where 0001-0010 already ran
+-- and created the CURRENT, correct schema), this file would previously
+-- crash immediately and confusingly on `select count(*) from
+-- project_members` (a table that plain Forge migrations never create) or,
+-- had that check been patched away, on the very next `user_id`/`template`
+-- column reference a few statements later. Fail loudly with an actionable
+-- message instead of a bare "relation/column does not exist" error deep in
+-- unrelated internals.
+do $$
+begin
+  if not exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'project_members') then
+    raise exception 'Do not run 0011_upgrade_legacy_database_pre.sql here: no "project_members" table exists in this database, which means this is either a brand-new Supabase project or one where 0001-0010 have already created the current schema. This file is ONLY for upgrading a pre-existing Supabase project that predates this repo (see its header comment). For a brand-new project, apply 0001_init.sql through 0010_sql_studio_enforce_read_only.sql only — do not run 0011, 0012, or 0013.';
+  end if;
+end $$;
+
 do $$
 begin
   raise notice '=== Row counts BEFORE upgrade ===';

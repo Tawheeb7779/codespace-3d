@@ -177,7 +177,7 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
   }
 
   useEffect(() => {
-    refresh()
+    refresh().catch((err) => toast.error('Failed to load team', describeError(err)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [team.id])
 

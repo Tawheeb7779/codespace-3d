@@ -7,6 +7,7 @@ interface RemoteFileRow {
   path: string
   kind: 'file' | 'directory'
   content: string | null
+  updated_at: string
 }
 
 /**
@@ -25,19 +26,34 @@ export async function openProjectFileSystem(project: Project): Promise<{ fs: Fil
 
   const { data, error } = await supabase
     .from('project_files')
-    .select('path, kind, content')
+    .select('path, kind, content, updated_at')
     .eq('project_id', project.id)
   if (error) throw error
 
   const remoteSnapshot = new Map<string, RemoteFileRow>()
   if (data && data.length > 0) {
-    fs.seed(data.filter((r) => r.kind === 'file').map((r) => ({ path: r.path, content: r.content ?? '' })))
-    for (const row of data) remoteSnapshot.set(row.path, row)
+    // The local IndexedDB copy just loaded above may hold an edit that
+    // hasn't finished its debounced upload to `project_files` yet (see
+    // `reconcile` below — up to 800ms behind). Blindly seeding every
+    // remote row here would silently discard that edit on a reload that
+    // lands inside that window. Only let a remote row overwrite a file
+    // that already exists locally when it is verifiably newer.
+    const localByPath = new Map(fs.list().filter((n) => n.kind === 'file').map((n) => [n.path, n]))
+    const toSeed: Array<{ path: string; content: string }> = []
+    for (const row of data) {
+      remoteSnapshot.set(row.path, row)
+      if (row.kind !== 'file') continue
+      const local = localByPath.get(row.path)
+      if (!local || new Date(row.updated_at).getTime() > new Date(local.updatedAt).getTime()) {
+        toSeed.push({ path: row.path, content: row.content ?? '' })
+      }
+    }
+    if (toSeed.length > 0) await fs.seed(toSeed)
   } else {
     // First open of a cloud project with no rows yet (e.g. created before
     // this sync existed) — push the locally cached/seeded state up.
     for (const node of fs.list()) {
-      if (node.kind === 'file') remoteSnapshot.set(node.path, { path: node.path, kind: 'file', content: null })
+      if (node.kind === 'file') remoteSnapshot.set(node.path, { path: node.path, kind: 'file', content: null, updated_at: new Date(0).toISOString() })
     }
   }
 
@@ -62,7 +78,7 @@ export async function openProjectFileSystem(project: Project): Promise<{ fs: Fil
     if (upserts.length > 0) {
       const { error: upsertError } = await supabase.from('project_files').upsert(upserts, { onConflict: 'project_id,path' })
       if (!upsertError) {
-        for (const u of upserts) remoteSnapshot.set(u.path, { path: u.path, kind: 'file', content: u.content })
+        for (const u of upserts) remoteSnapshot.set(u.path, { path: u.path, kind: 'file', content: u.content, updated_at: new Date().toISOString() })
       }
     }
     if (deletions.length > 0) {
@@ -85,9 +101,19 @@ export async function openProjectFileSystem(project: Project): Promise<{ fs: Fil
   return {
     fs,
     dispose: () => {
+      // A pending debounced reconcile (up to 800ms out) must still run —
+      // otherwise navigating away (or switching projects) shortly after an
+      // edit cancels the pending timer outright and the edit never reaches
+      // Supabase at all: it looks saved (durable in local IndexedDB) but
+      // silently never syncs to the cloud.
+      const hadPendingSync = syncTimer !== null
+      if (syncTimer) {
+        clearTimeout(syncTimer)
+        syncTimer = null
+      }
+      if (hadPendingSync) void reconcile()
       disposed = true
       unsubscribe()
-      if (syncTimer) clearTimeout(syncTimer)
     },
   }
 }

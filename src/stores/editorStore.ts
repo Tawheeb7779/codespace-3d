@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import type { FileSystemService } from '@/services/FileSystemService'
-import { WebContainerService } from '@/services/WebContainerService'
-import { useRuntimeStore } from '@/stores/runtimeStore'
+import { syncFileToRunningContainer } from '@/services/syncFileToRuntime'
 
 interface OpenTab {
   path: string
@@ -152,16 +151,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     fs.write(path, tab.buffer)
     set((state) => ({ tabs: state.tabs.map((t) => (t.path === path ? { ...t, dirty: false } : t)) }))
 
-    // Keep a running WebContainer's own filesystem in sync with edits, so
-    // Run/Preview reflects saved changes without needing a full re-run.
-    // Only when a container is actually up (`running`) — writing here
-    // before Run has ever been pressed would otherwise silently trigger a
-    // WebContainer boot just from saving a file.
-    if (WebContainerService.isSupported && useRuntimeStore.getState().status === 'running') {
-      WebContainerService.writeFile(path, tab.buffer).catch((err) => {
-        console.warn(`Failed to sync "${path}" to the running preview:`, err)
-      })
-    }
+    syncFileToRunningContainer(path, tab.buffer)
   },
 
   saveActive: (fs) => {

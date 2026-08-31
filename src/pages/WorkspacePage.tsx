@@ -51,7 +51,7 @@ export function WorkspacePage() {
       useEditorStore.getState().reset()
       useDiagnosticsStore.getState().reset()
       useTerminalTabsStore.getState().reset()
-      useRuntimeStore.getState().stop()
+      void useRuntimeStore.getState().reset()
     }
   }, [projectId, user?.id])
 

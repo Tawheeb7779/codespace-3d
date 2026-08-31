@@ -24,6 +24,11 @@ interface RuntimeState {
   stop: () => Promise<void>
   restart: (fs: FileSystemService) => Promise<void>
   clearLogs: () => void
+  /** Full teardown for a project switch (not just Stop): tears down the
+   *  WebContainer instance itself so the next project gets a clean
+   *  sandbox, and clears logs/errors/runConfig so they don't leak into
+   *  the next project's workspace. */
+  reset: () => Promise<void>
 }
 
 const ERROR_PATTERN = /(error|exception|failed|enoent|cannot find module)/i
@@ -39,6 +44,13 @@ function appendLog(get: () => RuntimeState, set: (partial: Partial<RuntimeState>
   set({ logs })
 }
 
+// WebContainer is a page-lifetime singleton (see WebContainerService), but
+// `boot()` runs once per opened project. Without tracking this, every
+// project navigation registered a new 'server-ready' listener that was
+// never unsubscribed, permanently leaking one closure per project switch
+// for the life of the tab.
+let unsubscribeServerReady: (() => void) | null = null
+
 export const useRuntimeStore = create<RuntimeState>((set, get) => ({
   status: WebContainerService.isSupported ? 'idle' : 'unsupported',
   logs: [],
@@ -51,9 +63,14 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
       set({ status: 'unsupported' })
       return
     }
+    // Registered unconditionally, before mount() — a transient boot
+    // failure here (e.g. the 20s stackblitz.com timeout) must not leave
+    // Preview permanently blank: a later Run that succeeds still needs a
+    // listener in place to catch that server's 'server-ready' event.
+    unsubscribeServerReady?.()
+    unsubscribeServerReady = WebContainerService.onServerReady((_port, url) => set({ previewUrl: url }))
     try {
       await WebContainerService.mount(fs.toFileSystemTree())
-      WebContainerService.onServerReady((_port, url) => set({ previewUrl: url }))
     } catch (err) {
       set({ status: 'error', errorMessage: err instanceof Error ? err.message : 'Failed to boot runtime' })
     }
@@ -106,4 +123,17 @@ export const useRuntimeStore = create<RuntimeState>((set, get) => ({
   },
 
   clearLogs: () => set({ logs: [] }),
+
+  reset: async () => {
+    unsubscribeServerReady?.()
+    unsubscribeServerReady = null
+    await WebContainerService.teardown()
+    set({
+      status: WebContainerService.isSupported ? 'idle' : 'unsupported',
+      logs: [],
+      previewUrl: null,
+      runConfig: null,
+      errorMessage: null,
+    })
+  },
 }))

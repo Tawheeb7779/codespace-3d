@@ -79,7 +79,15 @@ export const ProjectService = {
       const { error: filesError } = await supabase.from('project_files').insert(
         files.map((f) => ({ project_id: project.id, path: f.path, kind: 'file', content: f.content })),
       )
-      if (filesError) throw filesError
+      if (filesError) {
+        // These are two separate statements, not a transaction — if the
+        // second fails, don't leave a permanent, empty, unrecoverable
+        // project behind for the user to find on their next dashboard
+        // load. Best-effort: if the cleanup delete itself fails, the
+        // original error is still what the caller sees.
+        await supabase.from('projects').delete().eq('id', project.id)
+        throw filesError
+      }
       return project
     }
 
@@ -127,8 +135,29 @@ export const ProjectService = {
       source.ownerId === 'local' ? null : source.ownerId,
     )
     const sourceFs = await FileSystemService.load(id)
+    const sourceFiles = sourceFs.list().filter((n) => n.kind === 'file').map((n) => ({ path: n.path, content: n.content ?? '' }))
+
     const targetFs = await FileSystemService.load(created.id)
-    await targetFs.seed(sourceFs.list().filter((n) => n.kind === 'file').map((n) => ({ path: n.path, content: n.content ?? '' })))
+    await targetFs.seed(sourceFiles)
+
+    if (supabase && created.ownerId !== 'local') {
+      // create() seeded this new cloud project's `project_files` from the
+      // *template* (it has no way to know this create() call is really a
+      // duplicate) — replace those rows with the actual source content so
+      // Supabase itself reflects the duplicate, not just this browser's
+      // local cache. Without this, the source's real edits never reach
+      // the cloud copy: another device (or this one after IndexedDB is
+      // cleared) would see the bare template instead of the duplicate.
+      const { error: deleteError } = await supabase.from('project_files').delete().eq('project_id', created.id)
+      if (deleteError) throw deleteError
+      if (sourceFiles.length > 0) {
+        const { error: insertError } = await supabase
+          .from('project_files')
+          .insert(sourceFiles.map((f) => ({ project_id: created.id, path: f.path, kind: 'file', content: f.content })))
+        if (insertError) throw insertError
+      }
+    }
+
     return created
   },
 

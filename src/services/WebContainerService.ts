@@ -87,6 +87,11 @@ class WebContainerServiceImpl {
     this.getInstance().then((instance) => {
       if (cancelled) return
       unsubscribe = instance.on('server-ready', listener)
+    }).catch(() => {
+      // A boot failure here is already surfaced to the caller through
+      // whatever else awaited getInstance() (e.g. mount()/run()) — this
+      // registration racing that same failure must not also produce an
+      // unhandled promise rejection.
     })
     return () => {
       cancelled = true
@@ -124,6 +129,29 @@ class WebContainerServiceImpl {
   async stop(): Promise<void> {
     this.currentProcess?.kill()
     this.currentProcess = null
+  }
+
+  /**
+   * Fully tears down the booted instance (not just the running process),
+   * so the next project opened gets a genuinely clean sandbox. Without
+   * this, WebContainer's page-lifetime singleton kept whatever a previous
+   * project mounted — `mount()` only ever merges a tree in, it never wipes
+   * one — so a second project's Run could see the first project's leftover
+   * files (node_modules included) still sitting in the same container.
+   * Safe to call even if nothing ever booted.
+   */
+  async teardown(): Promise<void> {
+    this.currentProcess?.kill()
+    this.currentProcess = null
+    const pending = this.bootPromise
+    this.bootPromise = null
+    if (!pending) return
+    try {
+      const instance = await pending
+      instance.teardown()
+    } catch {
+      // Never booted, or boot itself failed — nothing to tear down.
+    }
   }
 
   async spawnShell(

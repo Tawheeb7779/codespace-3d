@@ -98,9 +98,20 @@ show a clear "needs setup" notice instead of pretending to work.
    VITE_SUPABASE_URL=https://xxxx.supabase.co
    VITE_SUPABASE_ANON_KEY=xxxx
    ```
-4. Run the schema migrations: open the SQL editor in your Supabase project
-   and paste the contents of each file in `supabase/migrations/`, in
-   filename order, or use the Supabase CLI: `supabase db push`.
+4. Run the schema migrations. **Not every file in `supabase/migrations/` is
+   a sequential step** — 0011, 0012, and 0013 are alternate paths for two
+   specific pre-existing-database scenarios, not part of the normal
+   sequence. Pick exactly one of the three cases below; don't blindly paste
+   or push every file in filename order.
+
+   **Setting up a brand-new Supabase project (the common case):** apply
+   `0001_init.sql` through `0010_sql_studio_enforce_read_only.sql`, then
+   `0014_team_bootstrap_membership.sql` — either paste each file's contents
+   into the SQL editor in that order, or `supabase db push` with only those
+   11 files present locally. Do **not** run 0011, 0012, or 0013 here — they
+   exist only for the two cases below, and 0011 will now refuse to run with
+   a clear explanation if you do anyway (rather than the confusing
+   "relation does not exist" failure it used to produce).
 
    **Already have a Supabase project with `profiles`/`projects`/
    `project_files` tables from before this repo's current schema existed?**
@@ -109,7 +120,8 @@ show a clear "needs setup" notice instead of pretending to work.
    (this is exactly the cause of a `Could not find the 'owner_id' column of
    'projects' in the schema cache` error on Create Project). Run
    `0011_upgrade_legacy_database_pre.sql` **before** 0001, then 0001-0010 as
-   normal, then `0012_upgrade_legacy_database_post.sql`. Read
+   normal, then `0012_upgrade_legacy_database_post.sql`, then
+   `0014_team_bootstrap_membership.sql`. Read
    `0011_upgrade_legacy_database_pre.sql`'s own header comment first — it
    explains exactly what it changes, what it backs up, and what it refuses
    to guess at (it stops with a clear error rather than silently dropping
@@ -125,7 +137,13 @@ show a clear "needs setup" notice instead of pretending to work.
    completes the 4 existing tables without assuming exactly how far your
    manual edits went (every change is existence-checked first), then
    creates everything still missing. Read its header comment first, same
-   reason as above.
+   reason as above. Follow it with `0014_team_bootstrap_membership.sql`.
+
+   Whichever path you took, `0014_team_bootstrap_membership.sql` is
+   required — without it, RLS has no policy that lets a team's creator add
+   themselves as its first member, so Create Team succeeds but the new
+   team is permanently stuck with zero members and every team feature
+   (invites, sharing, roles) is unreachable.
 5. Enable Realtime for the project (Database → Replication) if not already
    on — the migration adds `comments` and `activities` to the
    `supabase_realtime` publication.
