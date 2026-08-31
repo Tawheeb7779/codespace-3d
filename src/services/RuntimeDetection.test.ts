@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { detectFramework, detectPackageManager, detectRunConfig } from './RuntimeDetection'
+import { detectFramework, detectPackageManager, detectRunConfig, STATIC_SERVER_PORT } from './RuntimeDetection'
 import type { ProjectFilesLike } from './RuntimeDetection'
 
 function makeFiles(entries: Record<string, string>): ProjectFilesLike {
@@ -69,9 +69,15 @@ describe('detectRunConfig', () => {
     expect(detectRunConfig(files)?.command).toEqual(['npm', 'run', 'start'])
   })
 
-  it('treats a plain static HTML project as directly servable, not npm-run', () => {
+  it('treats a plain static HTML project as directly servable via a built-in static server, not npm-run', () => {
     const config = detectRunConfig(makeFiles({ 'index.html': '<html></html>' }))
-    expect(config?.command).toEqual([])
+    expect(config?.command[0]).toBe('node')
+    expect(config?.command[1]).toBe('-e')
+    // The inline script should be a real, non-empty server, not the old
+    // empty-command placeholder — and should actually listen on the
+    // documented static-server port so Preview can reach it.
+    expect(config?.command[2]).toContain(`port = ${STATIC_SERVER_PORT}`)
+    expect(config?.command[2]).toContain('createServer')
   })
 
   it('returns null when nothing runnable is detected', () => {

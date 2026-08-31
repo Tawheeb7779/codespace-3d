@@ -97,6 +97,90 @@ export interface RunConfig {
   script?: string
 }
 
+/** Port the built-in static file server listens on for plain HTML/CSS/JS
+ *  projects (no package.json, nothing to `npm install`). WebContainer's
+ *  `server-ready` event fires whenever anything inside it binds a port, so
+ *  this only needs to be a fixed, unused-by-anything-else port. */
+export const STATIC_SERVER_PORT = 4173
+
+/**
+ * Self-contained Node script (built-in `http`/`fs`/`path` modules only, no
+ * npm install required) that serves the mounted project root as static
+ * files. This is what actually fulfills the "served directly" promise for
+ * plain HTML/CSS/JS projects — previously `detectRunConfig` returned an
+ * empty `command: []` here, which `runtimeStore.run()` correctly treats as
+ * "nothing to run" and never starts a server, so Preview never got a URL.
+ */
+const STATIC_SERVER_SCRIPT = `
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+
+const root = process.cwd();
+const port = ${STATIC_SERVER_PORT};
+
+const MIME = {
+  '.html': 'text/html; charset=utf-8',
+  '.htm': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.txt': 'text/plain; charset=utf-8',
+  '.wasm': 'application/wasm',
+};
+
+function send(res, status, body, contentType) {
+  res.writeHead(status, contentType ? { 'Content-Type': contentType } : undefined);
+  res.end(body);
+}
+
+const server = http.createServer((req, res) => {
+  let reqPath = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (reqPath === '/') reqPath = '/index.html';
+
+  let filePath = path.normalize(path.join(root, reqPath));
+  if (!filePath.startsWith(root)) {
+    send(res, 403, 'Forbidden');
+    return;
+  }
+
+  fs.readFile(filePath, (err, data) => {
+    if (!err) {
+      send(res, 200, data, MIME[path.extname(filePath).toLowerCase()] || 'application/octet-stream');
+      return;
+    }
+    const withHtml = filePath + '.html';
+    fs.readFile(withHtml, (err2, data2) => {
+      if (!err2) {
+        send(res, 200, data2, 'text/html; charset=utf-8');
+        return;
+      }
+      fs.readFile(path.join(root, 'index.html'), (err3, data3) => {
+        if (!err3) {
+          send(res, 200, data3, 'text/html; charset=utf-8');
+        } else {
+          send(res, 404, 'Not found: ' + reqPath, 'text/plain; charset=utf-8');
+        }
+      });
+    });
+  });
+});
+
+server.listen(port, () => {
+  console.log('Static server listening on port ' + port);
+});
+`.trim()
+
 interface PackageJsonShape {
   scripts?: Record<string, string>
   dependencies?: Record<string, string>
@@ -123,7 +207,10 @@ export function detectRunConfig(files: ProjectFilesLike): RunConfig | null {
 
   if (!pkg) {
     if (files.exists('index.html')) {
-      return { reason: 'Static HTML project (no package.json) — served directly.', command: [] }
+      return {
+        reason: 'Static HTML project (no package.json) — served directly.',
+        command: ['node', '-e', STATIC_SERVER_SCRIPT],
+      }
     }
     return null
   }

@@ -24,9 +24,20 @@ export function AiPanel() {
   const abortRef = useRef<AbortController | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const aiDraftPrompt = useWorkspaceUiStore((s) => s.aiDraftPrompt)
+  const lastAppliedDraft = useRef<number | null>(null)
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
+
+  useEffect(() => {
+    if (aiDraftPrompt && aiDraftPrompt.nonce !== lastAppliedDraft.current) {
+      lastAppliedDraft.current = aiDraftPrompt.nonce
+      handleSend(aiDraftPrompt.text)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiDraftPrompt])
 
   if (!isSupabaseConfigured) {
     return (
@@ -38,17 +49,6 @@ export function AiPanel() {
       </div>
     )
   }
-
-  const aiDraftPrompt = useWorkspaceUiStore((s) => s.aiDraftPrompt)
-  const lastAppliedDraft = useRef<number | null>(null)
-
-  useEffect(() => {
-    if (aiDraftPrompt && aiDraftPrompt.nonce !== lastAppliedDraft.current) {
-      lastAppliedDraft.current = aiDraftPrompt.nonce
-      handleSend(aiDraftPrompt.text)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aiDraftPrompt])
 
   async function handleSend(explicitText?: string) {
     const text = (explicitText ?? input).trim()

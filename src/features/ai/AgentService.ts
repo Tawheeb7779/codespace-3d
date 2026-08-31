@@ -27,8 +27,12 @@ interface AgentTurnResult {
 }
 
 export class AiNotConfiguredError extends Error {
-  constructor() {
-    super('AI features require Supabase to be configured (the agent proxy runs as a Supabase Edge Function).')
+  constructor(missingVars: string[] = []) {
+    super(
+      missingVars.length > 0
+        ? `AI features need Supabase configured, but ${missingVars.join(' and ')} ${missingVars.length > 1 ? 'are' : 'is'} missing. Set ${missingVars.join(' and ')} in .env.local (see .env.example), then restart the dev server.`
+        : 'AI features require Supabase to be configured (the agent proxy runs as a Supabase Edge Function).',
+    )
     this.name = 'AiNotConfiguredError'
   }
 }
@@ -46,33 +50,63 @@ async function callModel(
   messages: AgentMessage[],
   signal: AbortSignal,
 ): Promise<AgentTurnResult> {
-  if (!supabase) throw new AiNotConfiguredError()
+  if (!supabase) {
+    const missingVars: string[] = []
+    if (!import.meta.env.VITE_SUPABASE_URL) missingVars.push('VITE_SUPABASE_URL')
+    if (!import.meta.env.VITE_SUPABASE_ANON_KEY) missingVars.push('VITE_SUPABASE_ANON_KEY')
+    throw new AiNotConfiguredError(missingVars)
+  }
 
   const { data: sessionData } = await supabase.auth.getSession()
   const token = sessionData.session?.access_token
   if (!token) throw new Error('You must be signed in to use the AI agent.')
 
-  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-agent`, {
-    method: 'POST',
-    signal,
-    headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify({
-      provider: ai.provider,
-      model: ai.model,
-      baseUrl: ai.baseUrl,
-      system: SYSTEM_PROMPT,
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-        toolCallId: m.toolCallId,
-        toolName: m.toolName,
-        toolCalls: m.toolCalls,
-      })),
-      tools: AGENT_TOOLS,
-    }),
-  })
+  // Trim a trailing slash: a Supabase URL copied with one produces a
+  // double-slash path (".co//functions/v1/...") that some proxies 404 on.
+  const functionUrl = `${(import.meta.env.VITE_SUPABASE_URL as string).replace(/\/+$/, '')}/functions/v1/ai-agent`
 
-  const data = (await res.json()) as AgentTurnResult
+  let res: Response
+  try {
+    res = await fetch(functionUrl, {
+      method: 'POST',
+      signal,
+      headers: { Authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        provider: ai.provider,
+        model: ai.model,
+        baseUrl: ai.baseUrl,
+        system: SYSTEM_PROMPT,
+        messages: messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+          toolCallId: m.toolCallId,
+          toolName: m.toolName,
+          toolCalls: m.toolCalls,
+        })),
+        tools: AGENT_TOOLS,
+      }),
+    })
+  } catch (err) {
+    // A raw "Failed to fetch" here is a network-level failure, not an API
+    // error — the request never reached (or never got a response from) the
+    // Edge Function. Re-throwing it unexplained (the previous behavior)
+    // just shows the user that same opaque browser message. Distinguish a
+    // real user cancellation from an actual connectivity/config problem so
+    // the toast names the concrete thing to check.
+    if (err instanceof DOMException && err.name === 'AbortError') throw err
+    throw new Error(
+      `Could not reach the AI agent at ${functionUrl}. This means the request never got a response — check that (1) VITE_SUPABASE_URL points at your actual Supabase project, (2) the "ai-agent" Edge Function is deployed ("supabase functions deploy ai-agent"), and (3) this browser has network access to Supabase.`,
+    )
+  }
+
+  let data: AgentTurnResult
+  try {
+    data = (await res.json()) as AgentTurnResult
+  } catch {
+    throw new Error(
+      `The AI agent returned a non-JSON response (HTTP ${res.status}) from ${functionUrl}. The "ai-agent" Edge Function may not be deployed, or something between the browser and Supabase returned an error page instead of the function's response.`,
+    )
+  }
   if (!res.ok) {
     return { content: null, toolCalls: [], stopReason: 'error', error: data.error ?? `Request failed (${res.status})` }
   }
