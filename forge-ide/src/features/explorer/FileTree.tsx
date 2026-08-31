@@ -7,6 +7,7 @@ import type { TreeNode } from '@/features/explorer/buildTree'
 import { FileIcon } from '@/lib/fileIcon'
 import { useFileList, useWorkspace } from '@/features/workspace/WorkspaceContext'
 import { useEditorStore } from '@/stores/editorStore'
+import { useDiagnosticsStore } from '@/stores/diagnosticsStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { toast } from '@/stores/toastStore'
 import { InvalidPathError } from '@/lib/paths'
@@ -60,6 +61,7 @@ export function FileTree() {
     try {
       fs.rename(node.path, to)
       useEditorStore.getState().close(node.path)
+      useDiagnosticsStore.getState().clearPath(node.path)
     } catch (err) {
       toast.error('Could not rename', err instanceof Error ? err.message : undefined)
     }
@@ -78,6 +80,7 @@ export function FileTree() {
     if (!confirm(`Delete "${node.path}"?`)) return
     fs.delete(node.path)
     useEditorStore.getState().close(node.path)
+    useDiagnosticsStore.getState().clearPath(node.path)
   }
 
   return (

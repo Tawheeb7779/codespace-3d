@@ -10,6 +10,7 @@ interface OpenTab {
 interface PendingReveal {
   path: string
   line: number
+  column?: number
   /** Distinguishes two requests for the same path+line (e.g. re-clicking
    *  the same search hit twice) so MonacoEditor's effect fires again. */
   nonce: number
@@ -23,7 +24,7 @@ interface EditorState {
    *  consumed by MonacoEditor once it acts on it. */
   pendingReveal: PendingReveal | null
   open: (fs: FileSystemService, path: string) => void
-  openAtLine: (fs: FileSystemService, path: string, line: number) => void
+  openAtLine: (fs: FileSystemService, path: string, line: number, column?: number) => void
   clearPendingReveal: () => void
   close: (path: string) => void
   closeAll: () => void
@@ -50,9 +51,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => ({ tabs: [...state.tabs, { path, buffer, dirty: false }], activePath: path }))
   },
 
-  openAtLine: (fs, path, line) => {
+  openAtLine: (fs, path, line, column) => {
     get().open(fs, path)
-    set({ pendingReveal: { path, line, nonce: Date.now() + Math.random() } })
+    set({ pendingReveal: { path, line, column, nonce: Date.now() + Math.random() } })
   },
 
   clearPendingReveal: () => set({ pendingReveal: null }),

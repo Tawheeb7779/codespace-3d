@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react'
 import Editor from '@monaco-editor/react'
-import type { OnMount } from '@monaco-editor/react'
+import type { OnMount, OnValidate } from '@monaco-editor/react'
 import { useShallow } from 'zustand/react/shallow'
 import { useEditorStore } from '@/stores/editorStore'
+import { useDiagnosticsStore } from '@/stores/diagnosticsStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { useWorkspace } from '@/features/workspace/WorkspaceContext'
 import { useResolvedTheme } from '@/app/useThemeEffect'
@@ -33,7 +34,7 @@ export function MonacoEditor() {
     const reveal = useEditorStore.getState().pendingReveal
     if (!editor || !reveal || reveal.path !== activeTab?.path) return
     editor.revealLineInCenter(reveal.line)
-    editor.setPosition({ lineNumber: reveal.line, column: 1 })
+    editor.setPosition({ lineNumber: reveal.line, column: reveal.column ?? 1 })
     editor.focus()
     useEditorStore.getState().clearPendingReveal()
   }
@@ -59,6 +60,15 @@ export function MonacoEditor() {
     revealIfPending()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingReveal])
+
+  // Real diagnostics from Monaco's own TS/JS language service — not a
+  // separate analysis pass. Scoped to whichever file is currently open in
+  // this editor instance, since Monaco only type-checks files that have a
+  // live model (see diagnosticsStore's doc comment for why closed-file
+  // entries are kept around rather than pruned immediately).
+  const handleValidate: OnValidate = (markers) => {
+    if (activeTab) useDiagnosticsStore.getState().setForPath(activeTab.path, markers)
+  }
 
   function handleChange(value: string | undefined) {
     if (!activePath) return
@@ -89,6 +99,7 @@ export function MonacoEditor() {
       value={activeTab.buffer}
       onChange={handleChange}
       onMount={handleMount}
+      onValidate={handleValidate}
       theme={resolvedTheme === 'light' ? 'forge-light' : 'forge-dark'}
       options={{
         fontSize: editorSettings.fontSize,

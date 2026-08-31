@@ -21,6 +21,7 @@ import { clsx } from 'clsx'
 import { useWorkspace, useFileList } from '@/features/workspace/WorkspaceContext'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { useEditorStore } from '@/stores/editorStore'
+import { useDiagnosticsStore } from '@/stores/diagnosticsStore'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useSettingsStore } from '@/stores/settingsStore'
 import { menuLabelClass } from '@/components/ui/menu'
@@ -110,6 +111,7 @@ export function CommandPalette() {
           // the same contract FileTree's own delete already follows.
           fs.delete(path)
           editor.close(path)
+          useDiagnosticsStore.getState().clearPath(path)
           toast.success('File deleted', path)
         },
       },

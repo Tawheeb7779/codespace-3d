@@ -4,11 +4,18 @@ import { Terminal } from '@/features/terminal/Terminal'
 import { ProblemsPanel } from '@/features/runtime/ProblemsPanel'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
+import { useDiagnosticsStore } from '@/stores/diagnosticsStore'
 
 export function BottomPanel() {
   const bottomPanel = useWorkspaceUiStore((s) => s.bottomPanel)
   const setBottomPanel = useWorkspaceUiStore((s) => s.setBottomPanel)
-  const errorCount = useRuntimeStore((s) => s.logs.filter((l) => l.isError).length)
+  const runtimeErrorCount = useRuntimeStore((s) => s.logs.filter((l) => l.isError).length)
+  const diagnosticErrorCount = useDiagnosticsStore((s) =>
+    Object.values(s.byPath)
+      .flat()
+      .filter((d) => d.severity === 'error').length,
+  )
+  const errorCount = runtimeErrorCount + diagnosticErrorCount
 
   if (bottomPanel === 'hidden') return null
 
