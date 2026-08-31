@@ -1,0 +1,25 @@
+-- Phase 6 AI security review finding: 0001_init.sql's own comment says
+-- "Deliberately no SELECT policy exposing encrypted_api_key to the
+-- client; only the service-role Edge Function (ai-agent) reads this
+-- table" — but the policy actually created right below that comment was
+-- `for all ... using (user_id = auth.uid())`, which DOES include SELECT.
+-- Any authenticated user could read their own encrypted_api_key ciphertext
+-- straight from the browser (e.g. via the Supabase client in devtools),
+-- contradicting the stated design.
+--
+-- The ciphertext alone doesn't decrypt without AI_KEY_ENCRYPTION_SECRET
+-- (a server-only Edge Function env var), so this was not a direct key
+-- leak — but it's still a real defense-in-depth gap, and the mismatch
+-- between the comment's intent and the actual policy is itself a
+-- maintainability hazard. Every real read and write already goes through
+-- the service-role client in the ai-agent / connections-save Edge
+-- Functions (see their source), never through the user's own RLS-scoped
+-- session — so the client needs zero access to this table, not scoped
+-- access to "their own" row.
+drop policy if exists "users manage existence of their own connections" on connections;
+
+-- RLS stays enabled with no policies for the authenticated/anon roles,
+-- which denies all client access by default — matching the file's
+-- original stated intent exactly. Service-role access is unaffected:
+-- it bypasses RLS entirely, which is how the two Edge Functions already
+-- read and write this table.
