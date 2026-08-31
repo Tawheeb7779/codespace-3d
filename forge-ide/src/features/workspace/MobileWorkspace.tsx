@@ -141,14 +141,19 @@ export function MobileWorkspace() {
               className={clsx(
                 'relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium',
                 'transition-[color,transform] duration-150 active:scale-90 motion-reduce:active:scale-100',
-                active ? 'text-ember-400' : 'text-graphite-500',
+                active && s.id === 'ai' ? 'text-signal-violet' : active ? 'text-ember-400' : 'text-graphite-500',
               )}
             >
               {/* Moving indicator rather than a static underline per tab —
                   the same "one element travels" language as the sidebar's
-                  edge accent and the editor tab's top accent. */}
+                  edge accent and the editor tab's top accent. The AI tab
+                  gets the secondary (violet) accent instead of primary
+                  orange, giving that color a clear, consistent home. */}
               {active && (
-                <span className="absolute inset-x-5 top-0 h-[2px] rounded-full bg-ember-500" aria-hidden />
+                <span
+                  className={clsx('absolute inset-x-5 top-0 h-[2px] rounded-full', s.id === 'ai' ? 'bg-signal-violet' : 'bg-ember-500')}
+                  aria-hidden
+                />
               )}
               <s.icon size={19} />
               {s.label}

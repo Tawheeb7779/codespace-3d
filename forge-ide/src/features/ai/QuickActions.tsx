@@ -52,8 +52,13 @@ export function QuickActions() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <Button variant="ghost" size="sm" disabled={!activePath}>
-          <Zap size={14} /> AI Actions
+        {/* Text label hidden below sm: on a narrow phone topbar this button
+            sits next to the project title, Run, and status badge with no
+            room to spare — without this it forced the (ellipsis-eligible)
+            title down to 1-2 characters to make room, since it's the only
+            neighbor allowed to shrink. Icon-only still opens the same menu. */}
+        <Button variant="ghost" size="sm" disabled={!activePath} aria-label="AI Actions">
+          <Zap size={14} /> <span className="hidden sm:inline">AI Actions</span>
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

@@ -57,15 +57,18 @@ monaco.editor.defineTheme('forge-dark', {
   rules: [
     { token: 'comment', foreground: '5f6b78', fontStyle: 'italic' },
     { token: 'keyword', foreground: 'fb7332' },
-    { token: 'string', foreground: '3ecf8e' },
+    { token: 'string', foreground: '22c55e' },
     { token: 'number', foreground: 'f5b93d' },
-    { token: 'type', foreground: '8b7cf6' },
+    { token: 'type', foreground: '9b5cff' },
     { token: 'function', foreground: 'adb4bd' },
     { token: 'variable', foreground: 'd5d9de' },
     { token: 'delimiter', foreground: '7f8a96' },
   ],
   colors: {
-    'editor.background': '#0b0d0f',
+    // Kept in lockstep with --color-surface-* / --color-hairline-* in
+    // index.css (Monaco's theme API requires literal hex, not CSS vars) —
+    // see the identical note in Terminal.tsx.
+    'editor.background': '#060708',
     'editor.foreground': '#d5d9de',
     'editorLineNumber.foreground': '#3b434c',
     'editorLineNumber.activeForeground': '#7f8a96',
@@ -75,12 +78,12 @@ monaco.editor.defineTheme('forge-dark', {
     'editor.lineHighlightBackground': '#ffffff08',
     'editorIndentGuide.background1': '#ffffff0d',
     'editorIndentGuide.activeBackground1': '#ffffff1f',
-    'editorWidget.background': '#1c2023',
+    'editorWidget.background': '#272c33',
     'editorWidget.border': '#ffffff1f',
-    'editorGutter.background': '#0b0d0f',
+    'editorGutter.background': '#060708',
     'scrollbarSlider.background': '#ffffff14',
     'scrollbarSlider.hoverBackground': '#ffffff24',
-    'minimap.background': '#0b0d0f',
+    'minimap.background': '#060708',
   },
 })
 
@@ -90,9 +93,9 @@ monaco.editor.defineTheme('forge-light', {
   rules: [{ token: 'comment', foreground: '7c8590', fontStyle: 'italic' }],
   colors: {
     'editor.background': '#ffffff',
-    'editor.foreground': '#16191c',
-    'editorLineNumber.foreground': '#c7ccd1',
-    'editorLineNumber.activeForeground': '#626b74',
+    'editor.foreground': '#191c1f',
+    'editorLineNumber.foreground': '#b7bbc0',
+    'editorLineNumber.activeForeground': '#63696f',
     'editorCursor.foreground': '#e13d05',
     'editor.selectionBackground': '#f6540f26',
     'editor.lineHighlightBackground': '#0000000a',

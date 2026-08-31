@@ -93,8 +93,8 @@ export function AiPanel() {
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-3 scrollbar-thin">
         {messages.length === 0 && (
           <div className="flex flex-col items-center gap-3.5 px-4 pt-10 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-overlay ring-1 ring-inset ring-hairline">
-              <Bot size={20} className="text-ember-400" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-signal-violet/12 ring-1 ring-inset ring-signal-violet/25">
+              <Bot size={20} className="text-signal-violet" />
             </div>
             <p className="max-w-[15rem] text-[0.8125rem] leading-relaxed text-graphite-500">
               Ask the agent to build, fix, or explain something. It can read and edit your files and run your
@@ -109,7 +109,7 @@ export function AiPanel() {
           ))}
         {running && (
           <div className="flex items-center gap-2 text-xs text-graphite-500">
-            <Bot size={14} className="animate-pulse" /> Working…
+            <Bot size={14} className="animate-pulse text-signal-violet" /> Working…
           </div>
         )}
       </div>
@@ -166,7 +166,7 @@ function MessageBubble({ message }: { message: AgentMessage }) {
   const isUser = message.role === 'user'
   return (
     <div className={clsx('flex gap-2', isUser && 'flex-row-reverse')}>
-      <div className={clsx('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full', isUser ? 'bg-graphite-700' : 'bg-ember-500/20 text-ember-400')}>
+      <div className={clsx('mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full', isUser ? 'bg-graphite-700' : 'bg-signal-violet/20 text-signal-violet')}>
         {isUser ? <User size={13} /> : <Bot size={13} />}
       </div>
       <div className={clsx('max-w-[85%] rounded-lg px-3 py-2 text-sm', isUser ? 'bg-surface-hover text-graphite-100' : 'bg-surface-raised text-graphite-200')}>

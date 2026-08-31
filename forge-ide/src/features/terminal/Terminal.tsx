@@ -15,38 +15,38 @@ import { useResolvedTheme } from '@/app/useThemeEffect'
    xterm needs concrete colors (no CSS variables), so these are kept in
    sync with index.css by hand rather than read from it. */
 const DARK_THEME: ITheme = {
-  background: '#090b0c', // --color-surface-sunken
+  background: '#020303', // --color-surface-sunken
   foreground: '#d5d9de',
   cursor: '#f6540f',
-  cursorAccent: '#090b0c',
+  cursorAccent: '#020303',
   selectionBackground: '#f6540f40',
-  black: '#0b0d0f',
+  black: '#060708',
   red: '#f2495c',
-  green: '#3ecf8e',
+  green: '#22c55e',
   yellow: '#f5b93d',
   blue: '#7f8a96',
-  magenta: '#8b7cf6',
-  cyan: '#3ecf8e',
+  magenta: '#9b5cff',
+  cyan: '#22c55e',
   white: '#d5d9de',
   brightBlack: '#5f6b78',
   brightWhite: '#f6f7f8',
 }
 const LIGHT_THEME: ITheme = {
-  background: '#eceef1', // --color-surface-sunken (light)
-  foreground: '#2b3036',
+  background: '#ececea', // --color-surface-sunken (light)
+  foreground: '#2e3237',
   cursor: '#e13d05',
-  cursorAccent: '#eceef1',
+  cursorAccent: '#ececea',
   selectionBackground: '#f6540f30',
-  black: '#16191c',
+  black: '#191c1f',
   red: '#c8203a',
   green: '#0f8a5f',
   yellow: '#8a6008',
-  blue: '#454c54',
-  magenta: '#6d43d6',
+  blue: '#484d53',
+  magenta: '#7c3aed',
   cyan: '#0f8a7d',
-  white: '#454c54',
-  brightBlack: '#7c8590',
-  brightWhite: '#0b0d0f',
+  white: '#484d53',
+  brightBlack: '#7a8087',
+  brightWhite: '#060708',
 }
 
 /**

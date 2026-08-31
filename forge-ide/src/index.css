@@ -36,11 +36,18 @@
   --color-graphite-900: #14171a;
   --color-graphite-950: #0b0d0f;
 
-  --color-signal-violet: #8b7cf6;
-  --color-signal-green: #3ecf8e;
+  /*
+   * "Forge Obsidian" signal colors. Violet is the SECONDARY accent — used
+   * deliberately (AI/assistant surfaces, secondary actions, selected-tab
+   * indicators) rather than sprinkled everywhere — pushed to a genuinely
+   * electric saturation so it reads as a real second color, not a muted
+   * afterthought next to the orange primary.
+   */
+  --color-signal-violet: #9b5cff;
+  --color-signal-green: #22c55e;
   --color-signal-amber: #f5b93d;
   --color-signal-red: #f2495c;
-  --color-signal-blue: #4ea8f5;
+  --color-signal-blue: #3b9eff;
 
   /*
    * Surfaces form an elevation ladder instead of every panel being the same
@@ -48,17 +55,23 @@
    * lighter as it comes forward — page, then panels, then the things that
    * float above them — so depth is carried by value and shadow, and borders
    * can drop back to a hairline that separates without drawing attention.
+   * Obsidian: the page sits at true near-black, and each rung above it
+   * steps up by a wider margin than before so the ladder is visible at a
+   * glance instead of reading as one flat dark mass.
    */
-  --color-surface-base: #0b0d0f;   /* page */
-  --color-surface-sunken: #090b0c;  /* wells: inputs, editor gutter, terminal */
-  --color-surface-raised: #141719;  /* panels, cards, headers */
-  --color-surface-overlay: #1c2023; /* dialogs, menus, popovers */
-  --color-surface-hover: #22262a;   /* transient control fills */
+  --color-surface-base: #060708;    /* page */
+  --color-surface-sunken: #020303;  /* wells: inputs, editor gutter, terminal */
+  --color-surface-raised: #1b1f25;  /* panels, cards, headers */
+  --color-surface-overlay: #272c33; /* dialogs, menus, popovers */
+  --color-surface-hover: #333941;   /* transient control fills */
 
   /* Hairlines: low-alpha white rather than a solid grey, so a border reads
-     as the edge of a surface instead of a drawn line on top of it. */
-  --color-hairline: rgb(255 255 255 / 0.07);
-  --color-hairline-strong: rgb(255 255 255 / 0.12);
+     as the edge of a surface instead of a drawn line on top of it. Alpha
+     is high enough to actually register in a screenshot, not just in
+     theory — a border that only "exists" in the token value and not on
+     screen doesn't do its job. */
+  --color-hairline: rgb(255 255 255 / 0.12);
+  --color-hairline-strong: rgb(255 255 255 / 0.22);
 
   /*
    * Three roles, not two. Display carries the personality and is rationed
@@ -165,40 +178,67 @@
     from { opacity: 1; transform: translateX(0) scale(1); }
     to { opacity: 0; transform: translateX(14px) scale(0.98); }
   }
+
+  /*
+   * Semantic aliases onto the palette above, under the exact names the
+   * design spec calls for. Declared as var() indirection (not copied
+   * values) so they track the light-theme override below automatically —
+   * one definition, both themes. These also register as Tailwind color
+   * utilities (bg-background, text-text-primary, border-border, bg-accent,
+   * bg-accent-secondary, bg-success/warning/error/info, …) so new or
+   * touched code can reach the design system without a hardcoded value.
+   */
+  --color-background: var(--color-surface-base);
+  --color-surface: var(--color-surface-raised);
+  --color-surface-elevated: var(--color-surface-overlay);
+  --color-border: var(--color-hairline);
+  --color-text-primary: var(--color-graphite-100);
+  --color-text-secondary: var(--color-graphite-300);
+  --color-text-muted: var(--color-graphite-500);
+  --color-accent: var(--color-ember-500);
+  --color-accent-secondary: var(--color-signal-violet);
+  --color-success: var(--color-signal-green);
+  --color-warning: var(--color-signal-amber);
+  --color-error: var(--color-signal-red);
+  --color-info: var(--color-signal-blue);
 }
 
 /*
- * Light theme: re-declares the same token names with the ramp reversed
- * (950 = near-white background ... 50 = near-black text) rather than a
- * flat color inversion, so contrast and hierarchy stay intentional in
- * both themes (spec §40). Every component references these tokens by
- * name only, so no component-level styling changes with the theme.
+ * Light theme: an independently-designed palette under the same token
+ * names — not a mechanical inversion of the dark ramp. Warm off-white
+ * surfaces (not the cool blue-grey a flat invert would produce), near-black
+ * warm-neutral text, and hairlines dark enough to actually read as borders
+ * on white rather than disappearing into it. Every component references
+ * these tokens by name only, so no component-level styling changes with
+ * the theme.
  */
 :root[data-theme='light'] {
   color-scheme: light;
-  --color-graphite-50: #0b0d0f;
-  --color-graphite-100: #16191c;
-  --color-graphite-200: #2b3036;
-  --color-graphite-300: #454c54;
-  --color-graphite-400: #626b74;
-  --color-graphite-500: #7c8590;
-  --color-graphite-600: #99a1a9;
-  --color-graphite-700: #c7ccd1;
-  --color-graphite-800: #e2e5e8;
-  --color-graphite-850: #edeff1;
-  --color-graphite-900: #f5f6f7;
-  --color-graphite-950: #fbfbfc;
+  --color-graphite-50: #050607;
+  --color-graphite-100: #191c1f;
+  --color-graphite-200: #2e3237;
+  --color-graphite-300: #484d53;
+  --color-graphite-400: #63696f;
+  --color-graphite-500: #7a8087;
+  --color-graphite-600: #979da3;
+  --color-graphite-700: #b7bbc0;
+  --color-graphite-800: #d8dade;
+  --color-graphite-850: #e6e7ea;
+  --color-graphite-900: #f1f1ef;
+  --color-graphite-950: #f9f8f6;
 
-  /* Light mode inverts the elevation logic: the page is the mid value and
-     surfaces come forward by getting closer to white, with hairlines as
-     low-alpha black. */
-  --color-surface-base: #f4f5f7;
-  --color-surface-sunken: #eceef1;
+  /* The page sits at a warm off-white (not pure white) so raised white
+     cards and panels have something to visibly separate from — the same
+     "elevation ladder" idea as dark mode, just compressed into a lighter
+     range, with real borders doing more of the separation work than
+     shadows since a light surface can't rely on a glow to read as raised. */
+  --color-surface-base: #f6f5f2;
+  --color-surface-sunken: #ececea;
   --color-surface-raised: #ffffff;
   --color-surface-overlay: #ffffff;
-  --color-surface-hover: #eef0f3;
-  --color-hairline: rgb(0 0 0 / 0.08);
-  --color-hairline-strong: rgb(0 0 0 / 0.14);
+  --color-surface-hover: #efeee9;
+  --color-hairline: rgb(20 18 15 / 0.12);
+  --color-hairline-strong: rgb(20 18 15 / 0.22);
 
   /*
    * The heat ramp inverts for light mode. On a dark ground hotter metal
@@ -222,8 +262,16 @@
   --color-signal-red: #c8203a;
 
   /* Same problem, same fix, for the info/blue signal: the dark-theme value
-     (#4ea8f5) is ~2.5:1 on white. Deepened here to ~5.8:1, same hue. */
+     (#3b9eff) is too light on white. Deepened here to ~5.8:1, same hue. */
   --color-signal-blue: #0f62c9;
+
+  /* Electric violet (#9b5cff) reads at ~3.9:1 on white — fine for a badge
+     fill or icon, not for text. Deepened to violet-600 for ~5.7:1. */
+  --color-signal-violet: #7c3aed;
+
+  /* The dark-theme green (#22c55e) is ~2.3:1 on white — well short of AA.
+     Deepened to a forest green for ~5:1, same hue family. */
+  --color-signal-green: #15803d;
 }
 
 @layer base {
@@ -389,12 +437,12 @@
    * itself.
    */
   .surface-shell {
-    background-color: rgb(20 23 25 / 0.86);
+    background-color: rgb(9 10 12 / 0.88);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
   :root[data-theme='light'] .surface-shell {
-    background-color: rgb(255 255 255 / 0.86);
+    background-color: rgb(255 255 255 / 0.88);
   }
 
   /*
@@ -424,7 +472,15 @@
   /* Active nav state: a soft filled pill rather than a hard-edged
      selection, with the faintest lift so it reads as raised, not painted. */
   .nav-pill-active {
-    background: linear-gradient(180deg, rgb(246 84 15 / 0.16), rgb(246 84 15 / 0.08));
+    background: linear-gradient(180deg, rgb(246 84 15 / 0.22), rgb(246 84 15 / 0.1));
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  }
+
+  /* Secondary accent counterpart — reserved for AI/assistant surfaces so
+     the violet accent has one clear, consistent home instead of never
+     appearing anywhere in real UI. */
+  .nav-pill-accent {
+    background: linear-gradient(180deg, rgb(155 92 255 / 0.2), rgb(155 92 255 / 0.09));
     box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
   }
 }
