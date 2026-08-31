@@ -8,6 +8,7 @@ import { detectPackageManager, addPackageCommand, removePackageCommand, lockfile
 import { ConfigNotice } from '@/components/ConfigNotice'
 import { Spinner, EmptyState } from '@/components/ui/misc'
 import { toast } from '@/stores/toastStore'
+import { describeError } from '@/lib/describeError'
 
 interface ParsedPackageJson {
   dependencies?: Record<string, string>
@@ -74,7 +75,7 @@ export function PackagesPanel() {
       }
       toast.success(successMessage)
     } catch (err) {
-      toast.error('Command failed', err instanceof Error ? err.message : undefined)
+      toast.error('Command failed', describeError(err))
     } finally {
       setBusy(null)
     }

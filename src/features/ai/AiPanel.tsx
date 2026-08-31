@@ -12,6 +12,7 @@ import { useSettingsStore } from '@/stores/settingsStore'
 import { isSupabaseConfigured } from '@/lib/supabaseClient'
 import { toast } from '@/stores/toastStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
+import { describeError } from '@/lib/describeError'
 
 export function AiPanel() {
   const { fs, changeTracker } = useWorkspace()
@@ -74,7 +75,7 @@ export function AiPanel() {
       if (err instanceof AiNotConfiguredError) {
         toast.error('AI not configured', err.message)
       } else if (!(err instanceof DOMException && err.name === 'AbortError')) {
-        toast.error('Agent error', err instanceof Error ? err.message : undefined)
+        toast.error('Agent error', describeError(err))
       }
     } finally {
       setRunning(false)

@@ -13,6 +13,7 @@ import { toast } from '@/stores/toastStore'
 import { InvalidPathError } from '@/lib/paths'
 import { refreshFromCloud } from '@/services/CloudProjectSync'
 import { menuContentClass, menuItemClass, menuItemDangerClass, menuSeparatorClass } from '@/components/ui/menu'
+import { describeError } from '@/lib/describeError'
 
 export function FileTree() {
   const { fs, project } = useWorkspace()
@@ -49,7 +50,7 @@ export function FileTree() {
         )
       }
     } catch (err) {
-      toast.error('Could not refresh from the cloud', err instanceof Error ? err.message : undefined)
+      toast.error('Could not refresh from the cloud', describeError(err))
     } finally {
       setRefreshing(false)
     }
@@ -98,7 +99,7 @@ export function FileTree() {
       useEditorStore.getState().close(node.path)
       useDiagnosticsStore.getState().clearPath(node.path)
     } catch (err) {
-      toast.error('Could not rename', err instanceof Error ? err.message : undefined)
+      toast.error('Could not rename', describeError(err))
     }
   }
 
@@ -107,7 +108,7 @@ export function FileTree() {
     try {
       fs.duplicate(node.path, to)
     } catch (err) {
-      toast.error('Could not duplicate', err instanceof Error ? err.message : undefined)
+      toast.error('Could not duplicate', describeError(err))
     }
   }
 

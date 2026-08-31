@@ -13,6 +13,7 @@ import { AuthService } from '@/services/AuthService'
 import { ConnectionsService } from '@/services/ConnectionsService'
 import { toast } from '@/stores/toastStore'
 import { isSupabaseConfigured } from '@/lib/supabaseClient'
+import { describeError } from '@/lib/describeError'
 
 const TABS = ['editor', 'appearance', 'ai', 'account'] as const
 
@@ -151,7 +152,7 @@ function AiSettingsPanel() {
       setApiKey('')
       toast.success('API key saved', 'Encrypted and stored for your account.')
     } catch (err) {
-      toast.error('Failed to save key', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to save key', describeError(err))
     } finally {
       setSaving(false)
     }
@@ -213,7 +214,7 @@ function AccountSettingsPanel({ onSignedOut }: { onSignedOut: () => void }) {
       setPassword('')
       toast.success('Password updated')
     } catch (err) {
-      toast.error('Failed to update password', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to update password', describeError(err))
     } finally {
       setSaving(false)
     }
@@ -243,7 +244,7 @@ function AccountSettingsPanel({ onSignedOut }: { onSignedOut: () => void }) {
             await signOut()
             onSignedOut()
           } catch (err) {
-            toast.error('Sign out failed', err instanceof Error ? err.message : undefined)
+            toast.error('Sign out failed', describeError(err))
             setSigningOut(false)
           }
         }}

@@ -52,10 +52,9 @@ export function normalizeProjectPath(rawPath: string): string {
     if (segment.length > MAX_SEGMENT_LENGTH) {
       throw new InvalidPathError(rawPath, `segment "${segment}" exceeds ${MAX_SEGMENT_LENGTH} chars`)
     }
-    if (segment === '.git' || segment === 'node_modules') {
-      // Allowed to exist (e.g. produced by npm install) but never writable
-      // via user/AI file operations — enforced by callers using isReservedPath.
-    }
+    // `.git` / `node_modules` segments are allowed to exist here (npm install
+    // produces the latter, isomorphic-git the former); write protection is a
+    // separate concern enforced by callers via `isReservedPath`.
     resolved.push(segment)
   }
 

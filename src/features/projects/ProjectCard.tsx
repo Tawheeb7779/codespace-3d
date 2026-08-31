@@ -1,15 +1,17 @@
 import { useState } from 'react'
+import { clsx } from 'clsx'
 import { Link } from 'react-router-dom'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { Copy, Download, MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
+import { ArrowRight, Cloud, Copy, Download, HardDrive, MoreHorizontal, Pencil, Trash2, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/misc'
 import { Input } from '@/components/ui/Input'
+import { ProjectService } from '@/services/ProjectService'
 import { menuContentClass, menuItemClass, menuItemDangerClass, menuSeparatorClass } from '@/components/ui/menu'
 import { getTemplate } from '@/features/projects/templates'
 import { templateIcon } from '@/features/projects/templateIcons'
 import type { Project } from '@/types/project'
 
-function timeAgo(iso: string): string {
+export function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const minutes = Math.floor(diff / 60000)
   if (minutes < 1) return 'just now'
@@ -55,7 +57,7 @@ export function ProjectCard({
   return (
     // Lifts by 1px on hover: a small, physical response that makes the whole
     // grid feel like a set of objects rather than a list of rectangles.
-    <div className="surface-card group relative flex flex-col rounded-card p-4 transition-[transform,border-color,background-color] duration-200 ease-out hover:-translate-y-px hover:border-hairline-strong hover:bg-surface-hover/40 motion-reduce:hover:translate-y-0">
+    <div className="surface-panel group relative flex flex-col rounded-card p-4 transition-[transform,border-color,background-color,box-shadow] duration-200 ease-out hover:-translate-y-px hover:border-ember-500/30 hover:bg-surface-hover/30 motion-reduce:hover:translate-y-0">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-hover text-graphite-400 ring-1 ring-inset ring-hairline transition-colors duration-200 group-hover:text-ember-400">
@@ -130,8 +132,17 @@ export function ProjectCard({
         </p>
       )}
 
-      <div className="mt-5 flex items-center gap-2 pl-12 pt-0.5">
+      {/* Tight against the title when there's no description to separate them:
+          the fixed larger gap left a conspicuous empty band mid-card. */}
+      <div className={clsx('flex flex-wrap items-center gap-x-2 gap-y-1.5 pl-12', project.description ? 'mt-3.5' : 'mt-2.5')}>
         {template && <Badge>{template.name}</Badge>}
+        {/* Where the project actually lives. Previously the card gave no hint
+            at all, so a local-only project looked identical to a synced one —
+            the single most consequential thing to know before relying on it. */}
+        <Badge variant="info" className="gap-1">
+          {ProjectService.isCloud ? <Cloud size={10} /> : <HardDrive size={10} />}
+          {ProjectService.isCloud ? 'Cloud' : 'Local'}
+        </Badge>
         {project.teamId && (
           <Badge variant="violet">
             <Users size={10} className="mr-1" /> {teamName ?? 'Shared with team'}
@@ -139,6 +150,11 @@ export function ProjectCard({
         )}
         <span className="text-[0.75rem] text-graphite-600" data-numeric>
           {timeAgo(project.updatedAt)}
+        </span>
+        {/* An explicit affordance next to the implicit whole-card link: the
+            card being clickable is discoverable only by trying it. */}
+        <span className="ml-auto inline-flex items-center gap-1 text-[0.75rem] font-medium text-graphite-500 transition-colors group-hover:text-ember-400">
+          Open <ArrowRight size={12} />
         </span>
       </div>
     </div>

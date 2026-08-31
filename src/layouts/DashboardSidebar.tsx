@@ -8,6 +8,7 @@ import { toast } from '@/stores/toastStore'
 import { Badge } from '@/components/ui/misc'
 import { ProjectService } from '@/services/ProjectService'
 import type { Project } from '@/types/project'
+import { describeError } from '@/lib/describeError'
 
 // Grouped by the areas of the app they belong to (spec §2: Workspace /
 // Collaboration / System) rather than one flat list. Development, AI, and
@@ -72,7 +73,7 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
     try {
       await signOut()
     } catch (err) {
-      toast.error('Sign out failed', err instanceof Error ? err.message : undefined)
+      toast.error('Sign out failed', describeError(err))
       return
     }
     navigate('/')

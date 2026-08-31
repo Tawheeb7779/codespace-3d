@@ -12,6 +12,7 @@ import type { Team, TeamInvitation, TeamMember, TeamRole } from '@/types/team'
 import type { Project } from '@/types/project'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
+import { describeError } from '@/lib/describeError'
 
 export function TeamsPage() {
   const user = useAuthStore((s) => s.user)
@@ -33,7 +34,7 @@ export function TeamsPage() {
     }
     Promise.all([refreshTeams(), user?.email ? TeamService.listInvitationsForEmail(user.email) : Promise.resolve([])])
       .then(([, invitations]) => setMyInvitations(invitations))
-      .catch((err) => toast.error('Failed to load teams', err instanceof Error ? err.message : undefined))
+      .catch((err) => toast.error('Failed to load teams', describeError(err)))
       .finally(() => setLoading(false))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -57,7 +58,7 @@ export function TeamsPage() {
       setTeams((prev) => [team, ...prev])
       setSelected(team)
     } catch (err) {
-      toast.error('Failed to create team', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to create team', describeError(err))
     }
   }
 
@@ -69,7 +70,7 @@ export function TeamsPage() {
       if (accept) refreshTeams()
       toast.success(accept ? 'Invitation accepted' : 'Invitation declined')
     } catch (err) {
-      toast.error('Failed to respond', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to respond', describeError(err))
     }
   }
 
@@ -188,7 +189,7 @@ function TeamDetail({ team, currentUserId }: { team: Team; currentUserId: string
       toast.success('Invitation sent')
       refresh()
     } catch (err) {
-      toast.error('Failed to invite', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to invite', describeError(err))
     }
   }
 

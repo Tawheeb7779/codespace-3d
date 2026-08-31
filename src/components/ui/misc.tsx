@@ -5,11 +5,14 @@ export function Spinner({ className, size = 16 }: { className?: string; size?: n
   return <Loader2 size={size} className={clsx('animate-spin text-graphite-500', className)} />
 }
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'violet'
+type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'violet' | 'info'
 
 /*
  * Badges are tinted fills with a matching hairline rather than outlined
  * chips: at this size a solid border competes with the label for attention.
+ * One variant per meaning, matching the palette's roles: violet is AI,
+ * blue is neutral information (where a project lives, what mode it's in),
+ * and green/amber/red keep their usual success/warning/error duties.
  */
 const BADGE_CLASSES: Record<BadgeVariant, string> = {
   default: 'bg-white/[0.06] text-graphite-300 ring-white/[0.08]',
@@ -17,6 +20,7 @@ const BADGE_CLASSES: Record<BadgeVariant, string> = {
   warning: 'bg-signal-amber/12 text-signal-amber ring-signal-amber/25',
   danger: 'bg-signal-red/12 text-signal-red ring-signal-red/25',
   violet: 'bg-signal-violet/12 text-signal-violet ring-signal-violet/25',
+  info: 'bg-signal-blue/12 text-signal-blue ring-signal-blue/25',
 }
 
 export function Badge({

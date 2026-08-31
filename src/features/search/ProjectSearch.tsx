@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/misc'
 import { useFileList, useWorkspace } from '@/features/workspace/WorkspaceContext'
 import { useEditorStore } from '@/stores/editorStore'
 import { toast } from '@/stores/toastStore'
+import { describeError } from '@/lib/describeError'
 
 interface Hit {
   path: string
@@ -89,7 +90,7 @@ export function ProjectSearch() {
       }
       return true
     } catch (err) {
-      toast.error(`Could not replace in ${path}`, err instanceof Error ? err.message : undefined)
+      toast.error(`Could not replace in ${path}`, describeError(err))
       return false
     }
   }

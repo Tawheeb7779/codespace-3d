@@ -8,6 +8,7 @@ import { ConfigNotice } from '@/components/ConfigNotice'
 import { Input } from '@/components/ui/Input'
 import { Spinner, EmptyState } from '@/components/ui/misc'
 import { toast } from '@/stores/toastStore'
+import { describeError } from '@/lib/describeError'
 
 type TypeFilter = 'all' | 'image' | 'other'
 
@@ -60,7 +61,7 @@ export function AssetsPanel() {
     try {
       setAssets(await AssetService.list(project.id))
     } catch (err) {
-      toast.error('Could not load assets', err instanceof Error ? err.message : undefined)
+      toast.error('Could not load assets', describeError(err))
       setAssets([])
     }
   }
@@ -91,7 +92,7 @@ export function AssetsPanel() {
       toast.success('Uploaded', file.name)
       await refresh()
     } catch (err) {
-      toast.error('Upload failed', err instanceof Error ? err.message : undefined)
+      toast.error('Upload failed', describeError(err))
     } finally {
       setUploading(false)
     }
@@ -104,7 +105,7 @@ export function AssetsPanel() {
       await AssetService.rename(project.id, asset.name, name)
       await refresh()
     } catch (err) {
-      toast.error('Could not rename', err instanceof Error ? err.message : undefined)
+      toast.error('Could not rename', describeError(err))
     }
   }
 
@@ -114,7 +115,7 @@ export function AssetsPanel() {
       await AssetService.remove(project.id, asset.name)
       await refresh()
     } catch (err) {
-      toast.error('Could not delete', err instanceof Error ? err.message : undefined)
+      toast.error('Could not delete', describeError(err))
     }
   }
 
@@ -123,7 +124,7 @@ export function AssetsPanel() {
       const url = await AssetService.signedUrl(project.id, asset.name)
       window.open(url, '_blank', 'noopener')
     } catch (err) {
-      toast.error('Could not open file', err instanceof Error ? err.message : undefined)
+      toast.error('Could not open file', describeError(err))
     }
   }
 

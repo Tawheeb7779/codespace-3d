@@ -361,3 +361,14 @@ as Supabase Edge Function secrets, never in a client `.env` file.
 - AI provider API keys are encrypted at rest and only decrypted inside the
   `ai-agent` Edge Function to make the provider call; they are never sent
   back to the browser after being saved.
+- SQL Studio's `run_readonly_query` is read-only as a **transaction-level
+  guarantee**, not a pattern match on the submitted SQL. The original
+  version relied on requiring the statement to start with `SELECT`/`WITH`,
+  which a reproduced exploit defeated: `SELECT some_function_that_writes()`
+  is a single statement, starts with `SELECT`, and deleted rows through a
+  feature the UI labels read-only (it also reached any `security definer`
+  function the caller could execute). `0010_sql_studio_enforce_read_only.sql`
+  sets `transaction_read_only` for the duration of the call, so every write
+  — inline, inside a function body, or via a CTE — is refused by Postgres
+  itself. Verified both ways against a live Postgres 16 in
+  `supabase/tests/05_sql_studio_read_only.test.sql`.

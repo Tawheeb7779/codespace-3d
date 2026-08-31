@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { FolderPlus, Search, Upload } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { ArrowRight, Cloud, FolderPlus, HardDrive, Search, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { EmptyState, Spinner } from '@/components/ui/misc'
+import { Badge, EmptyState, Spinner } from '@/components/ui/misc'
 import { CreateProjectDialog } from '@/features/projects/CreateProjectDialog'
-import { ProjectCard } from '@/features/projects/ProjectCard'
+import { ProjectCard, timeAgo } from '@/features/projects/ProjectCard'
+import { getTemplate } from '@/features/projects/templates'
+import { templateIcon } from '@/features/projects/templateIcons'
 import { ShareProjectDialog } from '@/features/projects/ShareProjectDialog'
 import { ProjectService } from '@/services/ProjectService'
 import { TeamService } from '@/services/TeamService'
@@ -14,8 +16,10 @@ import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
 import type { Project } from '@/types/project'
 import type { Team } from '@/types/team'
+import { describeError } from '@/lib/describeError'
 
 type SortKey = 'updated' | 'name'
+type FilterKey = 'all' | 'personal' | 'shared'
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -24,6 +28,7 @@ export function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortKey>('updated')
+  const [filter, setFilter] = useState<FilterKey>('all')
   const [createOpen, setCreateOpen] = useState(false)
   const [teams, setTeams] = useState<Team[]>([])
   const [sharingProjectId, setSharingProjectId] = useState<string | null>(null)
@@ -35,7 +40,7 @@ export function DashboardPage() {
       const list = await ProjectService.list(user?.id ?? null)
       setProjects(list)
     } catch (err) {
-      toast.error('Failed to load projects', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to load projects', describeError(err))
     } finally {
       setLoading(false)
     }
@@ -90,11 +95,28 @@ export function DashboardPage() {
   }, [location.state])
 
   const visible = useMemo(() => {
-    const filtered = projects.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
+    const filtered = projects.filter((p) => {
+      if (!p.name.toLowerCase().includes(query.toLowerCase())) return false
+      if (filter === 'shared') return p.teamId != null
+      if (filter === 'personal') return p.teamId == null
+      return true
+    })
     return [...filtered].sort((a, b) =>
       sort === 'name' ? a.name.localeCompare(b.name) : b.updatedAt.localeCompare(a.updatedAt),
     )
-  }, [projects, query, sort])
+  }, [projects, query, sort, filter])
+
+  /*
+   * "Recent" is only worth its screen space once there are enough projects
+   * that scanning the full grid is a chore, and only when the user isn't
+   * already narrowing the list themselves — showing a Recent strip above
+   * filtered results would just repeat rows the filter already surfaced.
+   */
+  const showRecent = projects.length > 3 && query === '' && filter === 'all'
+  const recent = useMemo(
+    () => (showRecent ? [...projects].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 4) : []),
+    [projects, showRecent],
+  )
 
   async function handleCreate(input: { name: string; templateId: string }) {
     try {
@@ -102,7 +124,7 @@ export function DashboardPage() {
       toast.success('Project created')
       navigate(`/projects/${project.id}`)
     } catch (err) {
-      toast.error('Failed to create project', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to create project', describeError(err))
     }
   }
 
@@ -117,7 +139,7 @@ export function DashboardPage() {
       toast.success('Project duplicated')
       refresh()
     } catch (err) {
-      toast.error('Failed to duplicate project', err instanceof Error ? err.message : undefined)
+      toast.error('Failed to duplicate project', describeError(err))
     }
   }
 
@@ -150,7 +172,7 @@ export function DashboardPage() {
       toast.success(`Imported ${result.imported} files`, result.skipped.length ? `${result.skipped.length} entries skipped as unsafe` : undefined)
       navigate(`/projects/${project.id}`)
     } catch (err) {
-      toast.error('Import failed', err instanceof Error ? err.message : undefined)
+      toast.error('Import failed', describeError(err))
     }
   }
 
@@ -159,9 +181,20 @@ export function DashboardPage() {
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="type-display text-graphite-50">Projects</h1>
-          <p className="type-body mt-1.5 text-graphite-500">
-            <span data-numeric>{projects.length}</span> project{projects.length === 1 ? '' : 's'}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="type-body text-graphite-500">
+              <span data-numeric>{projects.length}</span> project{projects.length === 1 ? '' : 's'}
+            </p>
+            <span className="text-graphite-700" aria-hidden>
+              ·
+            </span>
+            {/* States the storage mode up front instead of leaving the user to
+                infer it: local mode has real consequences (no sync, no teams). */}
+            <Badge variant="info" className="gap-1">
+              {ProjectService.isCloud ? <Cloud size={10} /> : <HardDrive size={10} />}
+              {ProjectService.isCloud ? 'Cloud workspace' : 'Local workspace'}
+            </Badge>
+          </div>
         </div>
         <div className="flex gap-2.5">
           <input ref={fileInputRef} type="file" accept=".zip" className="hidden" onChange={handleImport} />
@@ -185,6 +218,18 @@ export function DashboardPage() {
             aria-label="Search projects"
           />
         </div>
+        {TeamService.isAvailable && (
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as FilterKey)}
+            aria-label="Filter projects"
+            className="h-11 rounded-control border border-hairline bg-surface-raised px-3.5 text-sm text-graphite-300 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.04)] outline-none transition-colors hover:border-hairline-strong hover:text-graphite-100 focus:ring-[3.5px] focus:ring-ember-500/20 sm:w-40"
+          >
+            <option value="all">All projects</option>
+            <option value="personal">Personal</option>
+            <option value="shared">Shared with team</option>
+          </select>
+        )}
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
@@ -195,6 +240,45 @@ export function DashboardPage() {
           <option value="name">Name</option>
         </select>
       </div>
+
+      {recent.length > 0 && (
+        <section className="mt-8" aria-labelledby="recent-projects-heading">
+          <div className="flex items-center gap-3">
+            <h2 id="recent-projects-heading" className="type-label text-graphite-500">
+              Recent
+            </h2>
+            <div className="hairline-fade flex-1" aria-hidden />
+          </div>
+          {/* Deliberately not the same card as the grid below. Recent and All
+              overlap by definition, so rendering identical cards twice reads
+              as a bug; this is a compact jump-back-in row instead — one line
+              per project, tuned for "resume what I was doing". */}
+          <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {recent.map((project) => {
+              const t = getTemplate(project.templateId)
+              const Icon = templateIcon(t?.icon ?? 'file')
+              return (
+                <Link
+                  key={project.id}
+                  to={`/projects/${project.id}`}
+                  className="surface-panel group flex items-center gap-2.5 rounded-control px-3 py-2.5 transition-[border-color,background-color] duration-150 hover:border-ember-500/40 hover:bg-surface-hover/50"
+                >
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-surface-hover text-graphite-400 ring-1 ring-inset ring-hairline transition-colors group-hover:text-ember-400">
+                    <Icon size={13} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[0.8125rem] font-medium text-graphite-100">{project.name}</span>
+                    <span className="block text-[0.6875rem] text-graphite-600" data-numeric>
+                      {timeAgo(project.updatedAt)}
+                    </span>
+                  </span>
+                  <ArrowRight size={13} className="shrink-0 text-graphite-600 transition-colors group-hover:text-ember-400" />
+                </Link>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       <div className="mt-7">
         {loading ? (
@@ -219,8 +303,15 @@ export function DashboardPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {visible.map((project) => (
+          <>
+            {recent.length > 0 && (
+              <div className="mb-3 flex items-center gap-3">
+                <h2 className="type-label text-graphite-500">All projects</h2>
+                <div className="hairline-fade flex-1" aria-hidden />
+              </div>
+            )}
+            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {visible.map((project) => (
               <ProjectCard
                 key={project.id}
                 project={project}
@@ -232,8 +323,9 @@ export function DashboardPage() {
                 onExport={handleExport}
                 onManageTeam={setSharingProjectId}
               />
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
 

@@ -9,6 +9,7 @@ import { NewTaskDialog } from '@/features/tasks/NewTaskDialog'
 import { Spinner, EmptyState } from '@/components/ui/misc'
 import { toast } from '@/stores/toastStore'
 import { ActivityService } from '@/services/ActivityService'
+import { describeError } from '@/lib/describeError'
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'done']
 const STATUS_LABEL: Record<TaskStatus, string> = { todo: 'To do', in_progress: 'In progress', done: 'Done' }
@@ -34,7 +35,7 @@ export function TasksPanel() {
     try {
       setTasks(await TaskService.list(project.id))
     } catch (err) {
-      toast.error('Could not load tasks', err instanceof Error ? err.message : undefined)
+      toast.error('Could not load tasks', describeError(err))
       setTasks([])
     }
   }
@@ -50,7 +51,7 @@ export function TasksPanel() {
       void ActivityService.log(project.id, user?.id ?? null, 'task_created', { title: input.title })
       await refresh()
     } catch (err) {
-      toast.error('Could not create task', err instanceof Error ? err.message : undefined)
+      toast.error('Could not create task', describeError(err))
     }
   }
 
@@ -61,7 +62,7 @@ export function TasksPanel() {
       await TaskService.setStatus(project.id, task.id, status)
       if (status === 'done') void ActivityService.log(project.id, user?.id ?? null, 'task_completed', { title: task.title })
     } catch (err) {
-      toast.error('Could not update task', err instanceof Error ? err.message : undefined)
+      toast.error('Could not update task', describeError(err))
       refresh()
     }
   }
@@ -72,7 +73,7 @@ export function TasksPanel() {
     try {
       await TaskService.remove(project.id, task.id)
     } catch (err) {
-      toast.error('Could not delete task', err instanceof Error ? err.message : undefined)
+      toast.error('Could not delete task', describeError(err))
       refresh()
     }
   }

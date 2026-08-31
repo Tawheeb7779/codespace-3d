@@ -15,6 +15,7 @@ import { ActivityService } from '@/services/ActivityService'
 import { toast } from '@/stores/toastStore'
 import { languageForPath } from '@/lib/languageMap'
 import { useResolvedTheme } from '@/app/useThemeEffect'
+import { describeError } from '@/lib/describeError'
 
 const STATUS_LABEL: Record<GitFileStatus['status'], string> = {
   untracked: 'U',
@@ -64,7 +65,7 @@ export function GitPanel() {
       setLog(l)
       setBranches(br)
     } catch (err) {
-      toast.error('Git error', err instanceof Error ? err.message : undefined)
+      toast.error('Git error', describeError(err))
     } finally {
       setBusy(false)
     }
@@ -100,7 +101,7 @@ export function GitPanel() {
       toast.success('Commit created')
       await refresh()
     } catch (err) {
-      toast.error('Commit failed', err instanceof Error ? err.message : undefined)
+      toast.error('Commit failed', describeError(err))
     } finally {
       setBusy(false)
     }
@@ -114,7 +115,7 @@ export function GitPanel() {
       await git.createBranch(name)
       await refresh()
     } catch (err) {
-      toast.error('Could not create branch', err instanceof Error ? err.message : undefined)
+      toast.error('Could not create branch', describeError(err))
     }
   }
 

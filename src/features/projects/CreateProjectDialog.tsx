@@ -20,13 +20,24 @@ export function CreateProjectDialog({
   const [name, setName] = useState('')
   const [templateId, setTemplateId] = useState(PROJECT_TEMPLATES[0].id)
   const [loading, setLoading] = useState(false)
+  const [touched, setTouched] = useState(false)
+
+  const trimmed = name.trim()
+  // Naming it is the one thing only the author can do. Silently falling back
+  // to "Untitled Project" (the previous behaviour) produced real projects
+  // nobody could tell apart in the dashboard list.
+  const nameError = trimmed.length === 0 ? 'Give the project a name.' : null
+  const showError = touched && nameError !== null
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setTouched(true)
+    if (nameError) return
     setLoading(true)
     try {
-      await onCreate({ name: name.trim() || 'Untitled Project', templateId })
+      await onCreate({ name: trimmed, templateId })
       setName('')
+      setTouched(false)
       setTemplateId(PROJECT_TEMPLATES[0].id)
       onOpenChange(false)
     } finally {
@@ -59,7 +70,21 @@ export function CreateProjectDialog({
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Label htmlFor="project-name">Project name</Label>
-              <Input id="project-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="My awesome project" autoFocus />
+              <Input
+                id="project-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => setTouched(true)}
+                placeholder="My awesome project"
+                aria-invalid={showError || undefined}
+                aria-describedby={showError ? 'project-name-error' : undefined}
+                autoFocus
+              />
+              {showError && (
+                <p id="project-name-error" role="alert" className="mt-1.5 text-[0.75rem] text-signal-red">
+                  {nameError}
+                </p>
+              )}
             </div>
 
             <div>
@@ -102,8 +127,11 @@ export function CreateProjectDialog({
                         <Icon size={14} />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2">
-                          <p className="truncate text-[0.875rem] font-medium tracking-[-0.008em] text-graphite-100">
+                        {/* Wraps rather than truncates: "Blank Project" was
+                            rendering as "Blank Proj…" once the badge took its
+                            share of a two-up grid cell. */}
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <p className="text-[0.875rem] font-medium leading-snug tracking-[-0.008em] text-graphite-100">
                             {t.name}
                           </p>
                           {!t.runnable && <Badge>Edit only</Badge>}
@@ -116,7 +144,7 @@ export function CreateProjectDialog({
               </div>
             </div>
 
-            <Button type="submit" variant="primary" size="xl" loading={loading} className="w-full">
+            <Button type="submit" variant="primary" size="xl" loading={loading} disabled={trimmed.length === 0} className="w-full">
               {loading ? 'Creating…' : 'Create project'}
             </Button>
           </form>

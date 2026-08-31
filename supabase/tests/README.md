@@ -23,6 +23,19 @@ psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 04_project_team_sharing.test.sql
 dropdb forge_rls_test
 ```
 
+`05_sql_studio_read_only.test.sql` additionally needs migrations
+`0007` and `0010` applied (it tests `run_readonly_query`, not RLS):
+
+```bash
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0007_sql_studio_readonly_query.sql
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f ../migrations/0010_sql_studio_enforce_read_only.sql
+psql -d forge_rls_test -v ON_ERROR_STOP=1 -f 05_sql_studio_read_only.test.sql
+```
+
+`0008_project_assets_storage.sql` can't be applied to a plain Postgres at
+all — it targets `storage.buckets`, which only exists inside a real Supabase
+project. Skip it locally; it has no bearing on the tests here.
+
 Each `.test.sql` file seeds its own fixture data and is independent — run
 them against separate fresh databases (drop/recreate between files) rather
 than accumulating state from one into the next.

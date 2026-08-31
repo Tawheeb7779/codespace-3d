@@ -483,6 +483,63 @@
     background: linear-gradient(180deg, rgb(155 92 255 / 0.2), rgb(155 92 255 / 0.09));
     box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
   }
+
+  /*
+   * Panels the workspace is actually built from. `.surface-card` is the flat
+   * base; this adds the top-edge light gradient that makes a panel read as a
+   * physical slab catching light rather than a filled rectangle. The
+   * difference is what separates "dark theme" from "obsidian" at a glance,
+   * and it costs one gradient rather than a per-component shadow guess.
+   */
+  .surface-panel {
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0) 92px);
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-hairline);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 12px 32px -18px rgb(0 0 0 / 0.7);
+  }
+  :root[data-theme='light'] .surface-panel {
+    /* On a light ground the same "lit from above" cue has to invert: the
+       highlight becomes a faint warm tint and depth comes from the border
+       plus a soft drop, since a white-on-white highlight is invisible. */
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 92px);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.9),
+      0 1px 2px rgb(24 20 16 / 0.05),
+      0 10px 28px -18px rgb(24 20 16 / 0.22);
+  }
+
+  /*
+   * Accent glow for the one primary action on a screen. Restrained — a
+   * bloom around the button, not a neon outline — and only ever on ember,
+   * so "the glowing thing" and "the thing to press" stay the same thing.
+   */
+  .glow-ember {
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.2),
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 6px 22px -6px rgb(246 84 15 / 0.5);
+  }
+  .glow-violet {
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.16),
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 6px 22px -6px rgb(155 92 255 / 0.45);
+  }
+
+  /*
+   * Section eyebrow inside the rail/sidebar. Grouping the navigation is the
+   * point — eight unlabelled icons in one column is a lookup puzzle, not a
+   * menu — so each group gets a rule and a name.
+   */
+  .rail-divider {
+    height: 1px;
+    width: 1.25rem;
+    background: var(--color-hairline-strong);
+    border-radius: 9999px;
+  }
 }
 
 @layer utilities {
