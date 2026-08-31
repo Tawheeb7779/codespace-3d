@@ -11,7 +11,17 @@ import { languageForPath } from '@/lib/languageMap'
 import { EmptyState } from '@/components/ui/misc'
 import { FileCode } from 'lucide-react'
 
-export function MonacoEditor() {
+/**
+ * `path` lets a second instance of this component show a different open
+ * tab than the primary one (see SplitEditor) — when omitted it follows
+ * the store's `activePath` as before. Two instances can end up pointing
+ * at the *same* file (open it in both the primary pane and the split);
+ * @monaco-editor/react then shares one underlying Monaco model between
+ * them, which is why `keepCurrentModel` is set below — without it,
+ * closing or switching away from either instance disposes that shared
+ * model out from under whichever instance is still showing it.
+ */
+export function MonacoEditor({ path }: { path?: string } = {}) {
   const { fs } = useWorkspace()
   const { tabs, activePath, updateBuffer, save, pendingReveal } = useEditorStore(
     useShallow((s) => ({
@@ -27,7 +37,8 @@ export function MonacoEditor() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const editorRef = useRef<Parameters<OnMount>[0] | null>(null)
 
-  const activeTab = tabs.find((t) => t.path === activePath)
+  const targetPath = path ?? activePath
+  const activeTab = tabs.find((t) => t.path === targetPath)
 
   function revealIfPending() {
     const editor = editorRef.current
@@ -42,10 +53,9 @@ export function MonacoEditor() {
   const handleMount: OnMount = (editor, monaco) => {
     editorRef.current = editor
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-      const path = useEditorStore.getState().activePath
-      if (path) save(fs, path)
+      if (targetPath) save(fs, targetPath)
     })
-    // A fresh mount happens whenever the active file changes (the `key`
+    // A fresh mount happens whenever the shown file changes (the `key`
     // below), so a reveal request that opened this file needs to run here
     // too, not just from the effect — the effect's deps won't change if
     // the same reveal object was already current before Monaco finished
@@ -53,7 +63,7 @@ export function MonacoEditor() {
     revealIfPending()
   }
 
-  // Covers the case where the target file is already open and active
+  // Covers the case where the target file is already open and shown here
   // (no remount, since `key={activeTab.path}` doesn't change) — e.g.
   // clicking a different search hit inside the file already on screen.
   useEffect(() => {
@@ -62,7 +72,7 @@ export function MonacoEditor() {
   }, [pendingReveal])
 
   // Real diagnostics from Monaco's own TS/JS language service — not a
-  // separate analysis pass. Scoped to whichever file is currently open in
+  // separate analysis pass. Scoped to whichever file is currently shown in
   // this editor instance, since Monaco only type-checks files that have a
   // live model (see diagnosticsStore's doc comment for why closed-file
   // entries are kept around rather than pruned immediately).
@@ -71,11 +81,11 @@ export function MonacoEditor() {
   }
 
   function handleChange(value: string | undefined) {
-    if (!activePath) return
-    updateBuffer(activePath, value ?? '')
+    if (!targetPath) return
+    updateBuffer(targetPath, value ?? '')
     if (editorSettings.autosave) {
       if (saveTimer.current) clearTimeout(saveTimer.current)
-      saveTimer.current = setTimeout(() => save(fs, activePath), editorSettings.autosaveDelayMs)
+      saveTimer.current = setTimeout(() => save(fs, targetPath), editorSettings.autosaveDelayMs)
     }
   }
 
@@ -95,6 +105,7 @@ export function MonacoEditor() {
     <Editor
       key={activeTab.path}
       path={activeTab.path}
+      keepCurrentModel
       language={languageForPath(activeTab.path)}
       value={activeTab.buffer}
       onChange={handleChange}

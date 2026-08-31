@@ -24,9 +24,19 @@ function pushClosed(stack: string[], paths: string[]): string[] {
   return [...stack, ...paths].slice(-CLOSED_STACK_LIMIT)
 }
 
+export type SplitDirection = 'vertical' | 'horizontal'
+
 interface EditorState {
   tabs: OpenTab[]
   activePath: string | null
+  /** A second pane showing one of the same shared open tabs — not an
+   *  independent editor group with its own tab set, deliberately: this
+   *  keeps "which files are open" a single source of truth instead of
+   *  two, while still letting two tabs be viewed side by side. `null`
+   *  means no split is active. 'vertical' stacks the divider vertically
+   *  (panes side by side); 'horizontal' stacks it horizontally (panes
+   *  stacked top/bottom). */
+  split: { path: string; direction: SplitDirection } | null
   /** A one-shot "scroll to this line" request — set by anything that opens
    *  a file at a specific line (search results, Problems panel) and
    *  consumed by MonacoEditor once it acts on it. */
@@ -43,6 +53,9 @@ interface EditorState {
   closeAll: () => void
   closeOthers: (path: string) => void
   reopenLastClosed: (fs: FileSystemService) => void
+  openSplit: (path: string, direction: SplitDirection) => void
+  setSplitPath: (path: string) => void
+  closeSplit: () => void
   setActive: (path: string) => void
   updateBuffer: (path: string, content: string) => void
   save: (fs: FileSystemService, path: string) => void
@@ -53,6 +66,7 @@ interface EditorState {
 export const useEditorStore = create<EditorState>((set, get) => ({
   tabs: [],
   activePath: null,
+  split: null,
   pendingReveal: null,
   closedStack: [],
 
@@ -78,7 +92,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const tabs = state.tabs.filter((t) => t.path !== path)
       const wasActive = state.activePath === path
       const activePath = wasActive ? (tabs[tabs.length - 1]?.path ?? null) : state.activePath
-      return { tabs, activePath, closedStack: pushClosed(state.closedStack, [path]) }
+      const split = state.split?.path === path ? null : state.split
+      return { tabs, activePath, split, closedStack: pushClosed(state.closedStack, [path]) }
     })
   },
 
@@ -86,6 +101,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => ({
       tabs: [],
       activePath: null,
+      split: null,
       closedStack: pushClosed(state.closedStack, state.tabs.map((t) => t.path)),
     })),
 
@@ -93,6 +109,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => ({
       tabs: state.tabs.filter((t) => t.path === path),
       activePath: path,
+      split: null,
       closedStack: pushClosed(state.closedStack, state.tabs.filter((t) => t.path !== path).map((t) => t.path)),
     })),
 
@@ -108,6 +125,18 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }
     set({ closedStack: stack })
   },
+
+  openSplit: (path, direction) => {
+    if (!get().tabs.some((t) => t.path === path)) return
+    set({ split: { path, direction } })
+  },
+
+  setSplitPath: (path) => {
+    if (!get().tabs.some((t) => t.path === path)) return
+    set((state) => (state.split ? { split: { ...state.split, path } } : state))
+  },
+
+  closeSplit: () => set({ split: null }),
 
   setActive: (path) => set({ activePath: path }),
 
@@ -127,5 +156,5 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (path) get().save(fs, path)
   },
 
-  reset: () => set({ tabs: [], activePath: null, pendingReveal: null, closedStack: [] }),
+  reset: () => set({ tabs: [], activePath: null, split: null, pendingReveal: null, closedStack: [] }),
 }))

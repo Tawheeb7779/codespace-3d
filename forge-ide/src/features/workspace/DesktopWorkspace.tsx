@@ -6,7 +6,7 @@ import { FileTree } from '@/features/explorer/FileTree'
 import { ProjectSearch } from '@/features/search/ProjectSearch'
 import { GitPanel } from '@/features/git/GitPanel'
 import { EditorTabs } from '@/features/editor/EditorTabs'
-import { MonacoEditor } from '@/features/editor/MonacoEditor'
+import { SplitEditor } from '@/features/editor/SplitEditor'
 import { Preview } from '@/features/preview/Preview'
 import { AiPanel } from '@/features/ai/AiPanel'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
@@ -64,7 +64,7 @@ export function DesktopWorkspace() {
         <div className="surface-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl">
           <EditorTabs />
           <div className="min-h-0 flex-1">
-            <MonacoEditor />
+            <SplitEditor />
           </div>
         </div>
         <BottomPanel />
