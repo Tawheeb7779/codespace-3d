@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { DiffEditor } from '@monaco-editor/react'
-import { GitBranch, History, Plus, RefreshCw } from 'lucide-react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { Check, ChevronDown, GitBranch, History, Plus, RefreshCw } from 'lucide-react'
 import { clsx } from 'clsx'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Input'
 import { Spinner, EmptyState } from '@/components/ui/misc'
+import { menuContentClass, menuItemClass } from '@/components/ui/menu'
 import { GitService } from '@/services/GitService'
 import type { GitCommitInfo, GitFileStatus } from '@/services/GitService'
 import { useWorkspace, useFileList } from '@/features/workspace/WorkspaceContext'
@@ -37,6 +39,7 @@ export function GitPanel() {
   const [status, setStatus] = useState<GitFileStatus[]>([])
   const [log, setLog] = useState<GitCommitInfo[]>([])
   const [branch, setBranch] = useState<string>('')
+  const [branches, setBranches] = useState<string[]>([])
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
@@ -54,10 +57,11 @@ export function GitPanel() {
     if (!service) return
     setBusy(true)
     try {
-      const [s, b, l] = await Promise.all([service.status(), service.currentBranch(), service.log()])
+      const [s, b, l, br] = await Promise.all([service.status(), service.currentBranch(), service.log(), service.listBranches()])
       setStatus(s)
       setBranch(b ?? 'main')
       setLog(l)
+      setBranches(br)
     } catch (err) {
       toast.error('Git error', err instanceof Error ? err.message : undefined)
     } finally {
@@ -103,8 +107,26 @@ export function GitPanel() {
     if (!git) return
     const name = prompt('New branch name')
     if (!name) return
-    await git.createBranch(name)
-    await refresh()
+    try {
+      await git.createBranch(name)
+      await refresh()
+    } catch (err) {
+      toast.error('Could not create branch', err instanceof Error ? err.message : undefined)
+    }
+  }
+
+  async function handleSwitchBranch(name: string) {
+    if (!git || name === branch) return
+    setBusy(true)
+    try {
+      await git.switchBranch(name)
+      toast.success(`Switched to ${name}`)
+      await refresh()
+    } catch (err) {
+      toast.error('Could not switch branch', err instanceof Error ? err.message : 'This usually means uncommitted changes conflict with that branch.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   if (!git) {
@@ -121,9 +143,26 @@ export function GitPanel() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-hairline px-3 py-2">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-graphite-400">
-          <GitBranch size={13} /> {branch}
-        </div>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-xs font-medium text-graphite-400 hover:bg-surface-hover hover:text-graphite-200">
+              <GitBranch size={13} /> {branch}
+              {branches.length > 1 && <ChevronDown size={12} />}
+            </button>
+          </DropdownMenu.Trigger>
+          {branches.length > 1 && (
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content className={menuContentClass} align="start" sideOffset={4}>
+                {branches.map((b) => (
+                  <DropdownMenu.Item key={b} className={menuItemClass} onSelect={() => handleSwitchBranch(b)}>
+                    <Check size={14} className={b === branch ? 'opacity-100' : 'opacity-0'} />
+                    {b}
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          )}
+        </DropdownMenu.Root>
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" onClick={handleNewBranch} aria-label="New branch">
             <Plus size={13} />
