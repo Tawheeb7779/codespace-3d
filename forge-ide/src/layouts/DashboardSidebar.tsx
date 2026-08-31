@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { clsx } from 'clsx'
-import { Flame, Folder, LayoutGrid, LogOut, Plus, Search, Settings, Users } from 'lucide-react'
+import { BookOpen, Flame, Folder, Keyboard, LayoutGrid, LogOut, Plus, Search, Settings, Users } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useAuthStore } from '@/stores/authStore'
 import { toast } from '@/stores/toastStore'
@@ -9,9 +9,29 @@ import { Badge } from '@/components/ui/misc'
 import { ProjectService } from '@/services/ProjectService'
 import type { Project } from '@/types/project'
 
-const NAV = [
-  { to: '/dashboard', label: 'Projects', icon: LayoutGrid },
-  { to: '/teams', label: 'Teams', icon: Users },
+// Grouped by the areas of the app they belong to (spec §2: Workspace /
+// Collaboration / System) rather than one flat list. Development, AI, and
+// Data are per-project concerns — they live inside a project's own
+// workspace (LeftRail, bottom panel, right panel), not here; duplicating
+// them as outer nav links with nothing behind them until a project is
+// open would be exactly the "empty section" the spec rules out.
+const NAV_SECTIONS: Array<{ label: string; items: Array<{ to: string; label: string; icon: typeof LayoutGrid }> }> = [
+  {
+    label: 'Workspace',
+    items: [{ to: '/dashboard', label: 'Projects', icon: LayoutGrid }],
+  },
+  {
+    label: 'Collaboration',
+    items: [{ to: '/teams', label: 'Teams', icon: Users }],
+  },
+  {
+    label: 'System',
+    items: [
+      { to: '/settings', label: 'Settings', icon: Settings },
+      { to: '/shortcuts', label: 'Keyboard Shortcuts', icon: Keyboard },
+      { to: '/docs', label: 'Documentation', icon: BookOpen },
+    ],
+  },
 ]
 
 /**
@@ -111,30 +131,37 @@ export function DashboardSidebar({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </div>
 
-      <nav className="mt-5 flex flex-col gap-0.5 px-3">
-        {NAV.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            onClick={onNavigate}
-            className={({ isActive }) =>
-              clsx(
-                'flex items-center gap-2.5 rounded-lg px-2.5 py-[0.4375rem] text-[0.8125rem] font-medium',
-                'transition-[background-color,color,transform] duration-150 ease-out',
-                'active:scale-[0.97] motion-reduce:active:scale-100',
-                isActive
-                  ? 'nav-pill-active text-graphite-50'
-                  : 'text-graphite-400 hover:bg-surface-raised hover:text-graphite-100',
-              )
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <item.icon size={15} className={isActive ? 'text-ember-400' : ''} />
-                {item.label}
-              </>
-            )}
-          </NavLink>
+      <nav className="mt-5 flex flex-col gap-4 px-3">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label}>
+            <p className="type-label px-2.5 text-graphite-600">{section.label}</p>
+            <div className="mt-1.5 flex flex-col gap-0.5">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    clsx(
+                      'flex items-center gap-2.5 rounded-lg px-2.5 py-[0.4375rem] text-[0.8125rem] font-medium',
+                      'transition-[background-color,color,transform] duration-150 ease-out',
+                      'active:scale-[0.97] motion-reduce:active:scale-100',
+                      isActive
+                        ? 'nav-pill-active text-graphite-50'
+                        : 'text-graphite-400 hover:bg-surface-raised hover:text-graphite-100',
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <item.icon size={15} className={isActive ? 'text-ember-400' : ''} />
+                      {item.label}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 

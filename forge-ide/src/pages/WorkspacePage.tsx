@@ -14,6 +14,7 @@ import { DesktopWorkspace } from '@/features/workspace/DesktopWorkspace'
 import { MobileWorkspace } from '@/features/workspace/MobileWorkspace'
 import { CommandPalette } from '@/features/command-palette/CommandPalette'
 import { useSyncTabsWithFs } from '@/features/editor/useSyncTabsWithFs'
+import { useGlobalShortcuts } from '@/features/workspace/useGlobalShortcuts'
 import { useEditorStore } from '@/stores/editorStore'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useAuthStore } from '@/stores/authStore'
@@ -88,6 +89,7 @@ export function WorkspacePage() {
 
 function WorkspaceContent({ project, fs }: { project: Project; fs: FileSystemService }) {
   useSyncTabsWithFs(fs)
+  useGlobalShortcuts()
   const [changeTracker] = useState(() => createChangeTracker())
 
   useEffect(() => {

@@ -19,6 +19,7 @@ import { DashboardLayout } from '@/layouts/DashboardLayout'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { TeamsPage } from '@/pages/TeamsPage'
+import { KeyboardShortcutsPage } from '@/pages/KeyboardShortcutsPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
 // The workspace pulls in Monaco, xterm, WebContainer, and isomorphic-git —
@@ -71,6 +72,7 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/shortcuts" element={<KeyboardShortcutsPage />} />
           </Route>
 
           <Route

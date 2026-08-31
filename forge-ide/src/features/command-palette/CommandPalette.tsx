@@ -48,22 +48,10 @@ export function CommandPalette() {
   const [query, setQuery] = useState('')
   const isRunning = useRuntimeStore((s) => s.status === 'running' || s.status === 'installing' || s.status === 'starting')
 
-  useEffect(() => {
-    function handler(e: KeyboardEvent) {
-      // Cmd/Ctrl+K opens straight to file search; Cmd/Ctrl+Shift+P opens
-      // the same palette for its VS Code-familiar name ("Command
-      // Palette") — both are the one surface, not two competing UIs.
-      const isK = !e.shiftKey && e.key.toLowerCase() === 'k'
-      const isShiftP = e.shiftKey && e.key.toLowerCase() === 'p'
-      if ((e.metaKey || e.ctrlKey) && (isK || isShiftP)) {
-        e.preventDefault()
-        setOpen(true)
-      }
-      if (e.key === 'Escape') setOpen(false)
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [setOpen])
+  // Opening this palette (Cmd/Ctrl+K, +P, +Shift+P) is registered once,
+  // app-wide, in useGlobalShortcuts — not here, so there's a single place
+  // that owns every keybinding instead of two. Radix's Dialog already
+  // closes on Escape via onOpenChange below.
 
   useEffect(() => {
     if (open) setQuery('')
