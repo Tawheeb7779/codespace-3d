@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { X } from 'lucide-react'
 import { TerminalTabs } from '@/features/terminal/TerminalTabs'
 import { ProblemsPanel } from '@/features/runtime/ProblemsPanel'
+import { RuntimeLogsPanel } from '@/features/runtime/RuntimeLogsPanel'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { useDiagnosticsStore } from '@/stores/diagnosticsStore'
@@ -28,7 +29,7 @@ export function BottomPanel() {
           rule, and it matches the pill language used elsewhere. */}
       <div className="flex items-center justify-between gap-2 border-b border-hairline bg-surface-raised px-2 py-1.5">
         <div className="flex gap-0.5 rounded-lg bg-surface-sunken p-0.5">
-          {(['terminal', 'problems'] as const).map((tab) => (
+          {(['terminal', 'logs', 'problems'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setBottomPanel(tab)}
@@ -62,6 +63,7 @@ export function BottomPanel() {
         <div className={bottomPanel === 'terminal' ? 'h-full' : 'hidden'}>
           <TerminalTabs active={bottomPanel === 'terminal'} />
         </div>
+        {bottomPanel === 'logs' && <RuntimeLogsPanel />}
         {bottomPanel === 'problems' && <ProblemsPanel />}
       </div>
     </div>

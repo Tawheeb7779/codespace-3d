@@ -9,6 +9,7 @@ import {
   Moon,
   Package,
   Play,
+  ScrollText,
   RotateCw,
   Save,
   Search,
@@ -129,6 +130,7 @@ export function CommandPalette() {
       },
       { id: 'search', label: 'Search Project', icon: Search, run: () => ui.setLeftPanel('search') },
       { id: 'toggle-terminal', label: 'Toggle Terminal', icon: TerminalIcon, run: () => ui.toggleBottomPanel('terminal') },
+      { id: 'toggle-logs', label: 'Toggle Runtime Logs', icon: ScrollText, run: () => ui.toggleBottomPanel('logs') },
       { id: 'toggle-explorer', label: 'Toggle Explorer', icon: FolderOpen, run: () => ui.toggleLeftPanel('explorer') },
       {
         id: 'run',
