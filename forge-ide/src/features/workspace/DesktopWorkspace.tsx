@@ -5,6 +5,7 @@ import { SidebarDrawer } from '@/features/workspace/SidebarDrawer'
 import { FileTree } from '@/features/explorer/FileTree'
 import { ProjectSearch } from '@/features/search/ProjectSearch'
 import { GitPanel } from '@/features/git/GitPanel'
+import { PackagesPanel } from '@/features/packages/PackagesPanel'
 import { EditorTabs } from '@/features/editor/EditorTabs'
 import { SplitEditor } from '@/features/editor/SplitEditor'
 import { Preview } from '@/features/preview/Preview'
@@ -101,6 +102,7 @@ function SidebarPanelBody({ panel }: { panel: LeftPanel }) {
   if (panel === 'explorer') return <FileTree />
   if (panel === 'search') return <ProjectSearch />
   if (panel === 'git') return <GitPanel />
+  if (panel === 'packages') return <PackagesPanel />
   return null
 }
 

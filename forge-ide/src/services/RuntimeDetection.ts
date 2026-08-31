@@ -54,6 +54,42 @@ export function runScriptCommand(manager: PackageManager, script: string): strin
   }
 }
 
+/** The lockfile each manager writes/reads — used to read it back out of
+ *  WebContainer's fs after an install/uninstall so the project's own
+ *  virtual fs (Explorer, Git, ...) picks up the change too. */
+export function lockfileFor(manager: PackageManager): string {
+  switch (manager) {
+    case 'pnpm':
+      return 'pnpm-lock.yaml'
+    case 'yarn':
+      return 'yarn.lock'
+    default:
+      return 'package-lock.json'
+  }
+}
+
+export function addPackageCommand(manager: PackageManager, pkg: string, dev: boolean): string[] {
+  switch (manager) {
+    case 'pnpm':
+      return dev ? ['pnpm', 'add', '-D', pkg] : ['pnpm', 'add', pkg]
+    case 'yarn':
+      return dev ? ['yarn', 'add', '--dev', pkg] : ['yarn', 'add', pkg]
+    default:
+      return dev ? ['npm', 'install', '--save-dev', pkg] : ['npm', 'install', pkg]
+  }
+}
+
+export function removePackageCommand(manager: PackageManager, pkg: string): string[] {
+  switch (manager) {
+    case 'pnpm':
+      return ['pnpm', 'remove', pkg]
+    case 'yarn':
+      return ['yarn', 'remove', pkg]
+    default:
+      return ['npm', 'uninstall', pkg]
+  }
+}
+
 export interface RunConfig {
   /** Human-readable reason, shown in the UI so the choice is never a black box. */
   reason: string

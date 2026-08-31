@@ -63,6 +63,24 @@ class WebContainerServiceImpl {
     await instance.fs.writeFile(path, content)
   }
 
+  /** Reads a file back out of WebContainer's own fs — e.g. package.json
+   *  and its lockfile after `npm install` changes them there, so the
+   *  change can be copied into the project's own virtual fs. */
+  async readFile(path: string): Promise<string> {
+    const instance = await this.getInstance()
+    return instance.fs.readFile(path, 'utf-8')
+  }
+
+  async fileExists(path: string): Promise<boolean> {
+    const instance = await this.getInstance()
+    try {
+      await instance.fs.readFile(path, 'utf-8')
+      return true
+    } catch {
+      return false
+    }
+  }
+
   onServerReady(listener: ServerReadyListener): () => void {
     let unsubscribe = () => {}
     let cancelled = false
