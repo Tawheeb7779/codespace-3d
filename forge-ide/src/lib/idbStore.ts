@@ -5,14 +5,14 @@
  */
 
 const DB_NAME = 'forge-ide'
-const DB_VERSION = 1
+const DB_VERSION = 2
 
 function openDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION)
     req.onupgradeneeded = () => {
       const db = req.result
-      for (const store of ['projects', 'settings', 'ai-sessions']) {
+      for (const store of ['projects', 'settings', 'ai-sessions', 'tasks']) {
         if (!db.objectStoreNames.contains(store)) {
           db.createObjectStore(store)
         }
@@ -23,7 +23,7 @@ function openDb(): Promise<IDBDatabase> {
   })
 }
 
-export type StoreName = 'projects' | 'settings' | 'ai-sessions'
+export type StoreName = 'projects' | 'settings' | 'ai-sessions' | 'tasks'
 
 export async function idbGet<T>(store: StoreName, key: string): Promise<T | undefined> {
   const db = await openDb()

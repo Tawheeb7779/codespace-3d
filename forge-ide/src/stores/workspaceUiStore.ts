@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type LeftPanel = 'explorer' | 'search' | 'git' | 'packages' | 'hidden'
+export type LeftPanel = 'explorer' | 'search' | 'git' | 'packages' | 'tasks' | 'hidden'
 export type BottomPanel = 'terminal' | 'problems' | 'logs' | 'hidden'
 export type MobileScreen = 'editor' | 'explorer' | 'terminal' | 'preview' | 'ai'
 
