@@ -17,6 +17,7 @@ import { useSyncTabsWithFs } from '@/features/editor/useSyncTabsWithFs'
 import { useGlobalShortcuts } from '@/features/workspace/useGlobalShortcuts'
 import { useEditorStore } from '@/stores/editorStore'
 import { useDiagnosticsStore } from '@/stores/diagnosticsStore'
+import { useTerminalTabsStore } from '@/stores/terminalTabsStore'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -49,6 +50,7 @@ export function WorkspacePage() {
       disposeSync?.()
       useEditorStore.getState().reset()
       useDiagnosticsStore.getState().reset()
+      useTerminalTabsStore.getState().reset()
       useRuntimeStore.getState().stop()
     }
   }, [projectId, user?.id])

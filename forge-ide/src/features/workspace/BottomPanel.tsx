@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import { X } from 'lucide-react'
-import { Terminal } from '@/features/terminal/Terminal'
+import { TerminalTabs } from '@/features/terminal/TerminalTabs'
 import { ProblemsPanel } from '@/features/runtime/ProblemsPanel'
 import { useRuntimeStore } from '@/stores/runtimeStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
@@ -60,7 +60,7 @@ export function BottomPanel() {
       </div>
       <div className="flex-1 overflow-hidden bg-surface-sunken">
         <div className={bottomPanel === 'terminal' ? 'h-full' : 'hidden'}>
-          <Terminal active={bottomPanel === 'terminal'} />
+          <TerminalTabs active={bottomPanel === 'terminal'} />
         </div>
         {bottomPanel === 'problems' && <ProblemsPanel />}
       </div>
