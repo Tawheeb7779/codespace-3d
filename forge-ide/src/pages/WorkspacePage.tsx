@@ -91,7 +91,7 @@ export function WorkspacePage() {
 
 function WorkspaceContent({ project, fs }: { project: Project; fs: FileSystemService }) {
   useSyncTabsWithFs(fs)
-  useGlobalShortcuts()
+  useGlobalShortcuts(fs)
   const [changeTracker] = useState(() => createChangeTracker())
 
   useEffect(() => {

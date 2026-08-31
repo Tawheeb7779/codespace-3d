@@ -1,19 +1,34 @@
-import { X } from 'lucide-react'
+import { useState } from 'react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
+import { History, Rows3, X, XSquare } from 'lucide-react'
 import { clsx } from 'clsx'
 import { useShallow } from 'zustand/react/shallow'
 import { useEditorStore } from '@/stores/editorStore'
+import { useWorkspace } from '@/features/workspace/WorkspaceContext'
 import { basename } from '@/lib/paths'
 import { FileIcon } from '@/lib/fileIcon'
+import { menuContentClass, menuItemClass, menuSeparatorClass } from '@/components/ui/menu'
 
 export function EditorTabs() {
-  const { tabs, activePath, setActive, close } = useEditorStore(
+  const { tabs, activePath, setActive, close, closeAll, closeOthers, reopenLastClosed, closedStack } = useEditorStore(
     useShallow((s) => ({
       tabs: s.tabs,
       activePath: s.activePath,
       setActive: s.setActive,
       close: s.close,
+      closeAll: s.closeAll,
+      closeOthers: s.closeOthers,
+      reopenLastClosed: s.reopenLastClosed,
+      closedStack: s.closedStack,
     })),
   )
+  const { fs } = useWorkspace()
+  const [menuFor, setMenuFor] = useState<string | null>(null)
+
+  function requestClose(path: string, dirty: boolean) {
+    if (dirty && !confirm(`Discard unsaved changes to ${basename(path)}?`)) return
+    close(path)
+  }
 
   if (tabs.length === 0) return null
 
@@ -22,42 +37,73 @@ export function EditorTabs() {
       {tabs.map((tab) => {
         const active = tab.path === activePath
         return (
-          // The active tab drops to the editor's own surface and carries a
-          // top accent, so it reads as physically connected to the content
-          // below it rather than as a highlighted list row.
-          <div
-            key={tab.path}
-            onClick={() => setActive(tab.path)}
-            className={clsx(
-              'group relative flex shrink-0 cursor-pointer items-center gap-2 border-r border-hairline px-3.5 py-2.5 text-[0.8125rem]',
-              'transition-colors duration-150',
-              active
-                ? 'bg-surface-base text-graphite-50 before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-ember-500'
-                : 'text-graphite-500 hover:bg-surface-hover hover:text-graphite-200',
-            )}
-          >
-            <FileIcon path={tab.path} size={13} />
-            <span className="max-w-40 truncate">{basename(tab.path)}</span>
-            <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
-              {tab.dirty && (
-                <span className="h-1.5 w-1.5 rounded-full bg-ember-400 group-hover:hidden" aria-label="Unsaved changes" />
-              )}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  if (tab.dirty && !confirm(`Discard unsaved changes to ${basename(tab.path)}?`)) return
-                  close(tab.path)
+          <DropdownMenu.Root key={tab.path} open={menuFor === tab.path} onOpenChange={(open) => setMenuFor(open ? tab.path : null)}>
+            <DropdownMenu.Trigger asChild>
+              {/* The active tab drops to the editor's own surface and carries a
+                  top accent, so it reads as physically connected to the content
+                  below it rather than as a highlighted list row. */}
+              <div
+                onClick={() => setActive(tab.path)}
+                onContextMenu={(e) => {
+                  e.preventDefault()
+                  setMenuFor(tab.path)
                 }}
                 className={clsx(
-                  'reveal-on-hover-flex absolute inset-0 hidden items-center justify-center rounded transition-colors hover:bg-surface-overlay group-hover:flex',
-                  !tab.dirty && 'flex',
+                  'group relative flex shrink-0 cursor-pointer items-center gap-2 border-r border-hairline px-3.5 py-2.5 text-[0.8125rem]',
+                  'transition-colors duration-150',
+                  active
+                    ? 'bg-surface-base text-graphite-50 before:absolute before:inset-x-0 before:top-0 before:h-[2px] before:bg-ember-500'
+                    : 'text-graphite-500 hover:bg-surface-hover hover:text-graphite-200',
                 )}
-                aria-label={`Close ${basename(tab.path)}`}
               >
-                <X size={12} />
-              </button>
-            </span>
-          </div>
+                <FileIcon path={tab.path} size={13} />
+                <span className="max-w-40 truncate">{basename(tab.path)}</span>
+                <span className="relative flex h-4 w-4 shrink-0 items-center justify-center">
+                  {tab.dirty && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-ember-400 group-hover:hidden" aria-label="Unsaved changes" />
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      requestClose(tab.path, tab.dirty)
+                    }}
+                    className={clsx(
+                      'reveal-on-hover-flex absolute inset-0 hidden items-center justify-center rounded transition-colors hover:bg-surface-overlay group-hover:flex',
+                      !tab.dirty && 'flex',
+                    )}
+                    aria-label={`Close ${basename(tab.path)}`}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              </div>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content className={menuContentClass} align="start" sideOffset={4}>
+                <DropdownMenu.Item className={menuItemClass} onSelect={() => requestClose(tab.path, tab.dirty)}>
+                  <X size={14} /> Close
+                </DropdownMenu.Item>
+                <DropdownMenu.Item
+                  className={menuItemClass}
+                  disabled={tabs.length <= 1}
+                  onSelect={() => closeOthers(tab.path)}
+                >
+                  <Rows3 size={14} /> Close others
+                </DropdownMenu.Item>
+                <DropdownMenu.Item className={menuItemClass} onSelect={() => closeAll()}>
+                  <XSquare size={14} /> Close all
+                </DropdownMenu.Item>
+                <div className={menuSeparatorClass} />
+                <DropdownMenu.Item
+                  className={menuItemClass}
+                  disabled={closedStack.length === 0}
+                  onSelect={() => reopenLastClosed(fs)}
+                >
+                  <History size={14} /> Reopen closed tab
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         )
       })}
     </div>

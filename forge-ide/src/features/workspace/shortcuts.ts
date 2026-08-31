@@ -37,6 +37,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     category: 'Editor',
     items: [
       { keys: [MOD, 'S'], description: 'Save the active file' },
+      { keys: [MOD, 'Shift', 'T'], description: 'Reopen the last closed tab' },
       { keys: ['Esc'], description: 'Close the command palette or an open dialog' },
     ],
   },

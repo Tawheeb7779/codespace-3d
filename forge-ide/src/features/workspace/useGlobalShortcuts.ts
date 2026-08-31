@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
+import { useEditorStore } from '@/stores/editorStore'
+import type { FileSystemService } from '@/services/FileSystemService'
 
 /**
  * The one place workspace-wide keyboard shortcuts are registered, so the
@@ -13,7 +15,7 @@ import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
  * that layer; duplicating them here would just create two sources of
  * truth for the same key.
  */
-export function useGlobalShortcuts() {
+export function useGlobalShortcuts(fs: FileSystemService) {
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       const mod = e.metaKey || e.ctrlKey
@@ -49,9 +51,14 @@ export function useGlobalShortcuts() {
       if (!e.shiftKey && key === '`') {
         e.preventDefault()
         ui.toggleBottomPanel('terminal')
+        return
+      }
+      if (e.shiftKey && key === 't') {
+        e.preventDefault()
+        useEditorStore.getState().reopenLastClosed(fs)
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
+  }, [fs])
 }

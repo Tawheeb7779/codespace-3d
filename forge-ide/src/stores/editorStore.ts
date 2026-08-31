@@ -16,6 +16,14 @@ interface PendingReveal {
   nonce: number
 }
 
+/** How many recently-closed tabs "Reopen Closed Tab" can step back through. */
+const CLOSED_STACK_LIMIT = 20
+
+function pushClosed(stack: string[], paths: string[]): string[] {
+  if (paths.length === 0) return stack
+  return [...stack, ...paths].slice(-CLOSED_STACK_LIMIT)
+}
+
 interface EditorState {
   tabs: OpenTab[]
   activePath: string | null
@@ -23,12 +31,18 @@ interface EditorState {
    *  a file at a specific line (search results, Problems panel) and
    *  consumed by MonacoEditor once it acts on it. */
   pendingReveal: PendingReveal | null
+  /** Paths of recently closed tabs, most recent last. Only the path is
+   *  kept — reopening re-reads the file from disk rather than restoring
+   *  whatever buffer was open, since a dirty tab's close already asked
+   *  the user to confirm discarding those edits. */
+  closedStack: string[]
   open: (fs: FileSystemService, path: string) => void
   openAtLine: (fs: FileSystemService, path: string, line: number, column?: number) => void
   clearPendingReveal: () => void
   close: (path: string) => void
   closeAll: () => void
   closeOthers: (path: string) => void
+  reopenLastClosed: (fs: FileSystemService) => void
   setActive: (path: string) => void
   updateBuffer: (path: string, content: string) => void
   save: (fs: FileSystemService, path: string) => void
@@ -40,6 +54,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   tabs: [],
   activePath: null,
   pendingReveal: null,
+  closedStack: [],
 
   open: (fs, path) => {
     const existing = get().tabs.find((t) => t.path === path)
@@ -63,13 +78,36 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       const tabs = state.tabs.filter((t) => t.path !== path)
       const wasActive = state.activePath === path
       const activePath = wasActive ? (tabs[tabs.length - 1]?.path ?? null) : state.activePath
-      return { tabs, activePath }
+      return { tabs, activePath, closedStack: pushClosed(state.closedStack, [path]) }
     })
   },
 
-  closeAll: () => set({ tabs: [], activePath: null }),
+  closeAll: () =>
+    set((state) => ({
+      tabs: [],
+      activePath: null,
+      closedStack: pushClosed(state.closedStack, state.tabs.map((t) => t.path)),
+    })),
 
-  closeOthers: (path) => set((state) => ({ tabs: state.tabs.filter((t) => t.path === path), activePath: path })),
+  closeOthers: (path) =>
+    set((state) => ({
+      tabs: state.tabs.filter((t) => t.path === path),
+      activePath: path,
+      closedStack: pushClosed(state.closedStack, state.tabs.filter((t) => t.path !== path).map((t) => t.path)),
+    })),
+
+  reopenLastClosed: (fs) => {
+    const stack = [...get().closedStack]
+    while (stack.length > 0) {
+      const path = stack.pop()!
+      if (fs.exists(path) && !get().tabs.some((t) => t.path === path)) {
+        set({ closedStack: stack })
+        get().open(fs, path)
+        return
+      }
+    }
+    set({ closedStack: stack })
+  },
 
   setActive: (path) => set({ activePath: path }),
 
@@ -89,5 +127,5 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (path) get().save(fs, path)
   },
 
-  reset: () => set({ tabs: [], activePath: null, pendingReveal: null }),
+  reset: () => set({ tabs: [], activePath: null, pendingReveal: null, closedStack: [] }),
 }))

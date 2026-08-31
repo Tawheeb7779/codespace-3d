@@ -5,6 +5,7 @@ import {
   FolderOpen,
   GitCommit,
   Hammer,
+  History,
   Moon,
   Play,
   RotateCw,
@@ -95,6 +96,16 @@ export function CommandPalette() {
         },
       },
       { id: 'close-all', label: 'Close All Tabs', icon: X, run: () => editor.closeAll() },
+      {
+        id: 'close-others',
+        label: 'Close Other Tabs',
+        icon: X,
+        run: () => {
+          const path = useEditorStore.getState().activePath
+          if (path) editor.closeOthers(path)
+        },
+      },
+      { id: 'reopen-closed-tab', label: 'Reopen Closed Tab', icon: History, run: () => editor.reopenLastClosed(fs) },
       {
         id: 'delete-active-file',
         label: 'Delete Active File',
