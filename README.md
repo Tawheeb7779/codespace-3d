@@ -114,6 +114,18 @@ show a clear "needs setup" notice instead of pretending to work.
    explains exactly what it changes, what it backs up, and what it refuses
    to guess at (it stops with a clear error rather than silently dropping
    or misplacing data it can't safely resolve on its own).
+
+   **Already partway through that migration by hand** — `projects.id`/
+   `.owner_id`/`.team_id`/`.template_id` already renamed and correctly
+   typed, `project_files.project_id`/`project_members.project_id` already
+   `uuid` and FK'd to `projects.id`, but `teams`/`team_members`/
+   `project_tasks`/etc. still missing? Don't run 0011/0012 against this
+   state — they assume the earlier, untouched starting point and won't
+   match. Run `0013_complete_forge_schema.sql` instead: it verifies/
+   completes the 4 existing tables without assuming exactly how far your
+   manual edits went (every change is existence-checked first), then
+   creates everything still missing. Read its header comment first, same
+   reason as above.
 5. Enable Realtime for the project (Database → Replication) if not already
    on — the migration adds `comments` and `activities` to the
    `supabase_realtime` publication.
