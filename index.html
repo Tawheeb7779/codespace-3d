@@ -1,109 +1,14 @@
-<!DOCTYPE html>
-<html class="dark" lang="en">
-<head>
-    <meta charset="utf-8" />
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CodeSpace 3D - Production Web IDE</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    
-    <!-- Material Design Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
-    
-    <!-- Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-    
-    <!-- Three.js for 3D visualization -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- Tailwind Configuration -->
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "surface-container-lowest": "#090e18",
-                        "on-error-container": "#ffdad6",
-                        "on-surface-variant": "#c2c6d6",
-                        "primary-fixed-dim": "#adc6ff",
-                        "surface-bright": "#343944",
-                        "error-container": "#93000a",
-                        "inverse-surface": "#dee2f1",
-                        "secondary-container": "#0267b8",
-                        "on-secondary-container": "#d6e5ff",
-                        "background": "#0e131d",
-                        "primary-fixed": "#d8e2ff",
-                        "inverse-primary": "#005ac2",
-                        "inverse-on-surface": "#2b303b",
-                        "outline-variant": "#424754",
-                        "on-tertiary-fixed": "#311400",
-                        "tertiary-container": "#df7412",
-                        "error": "#ffb4ab",
-                        "surface-container-highest": "#303540",
-                        "on-surface": "#dee2f1",
-                        "primary-container": "#4d8eff",
-                        "surface-dim": "#0e131d",
-                        "secondary": "#a4c9ff",
-                        "surface-tint": "#adc6ff",
-                        "secondary-fixed-dim": "#a4c9ff",
-                        "primary": "#adc6ff",
-                        "secondary-fixed": "#d4e3ff",
-                        "surface-container-low": "#171c26",
-                        "on-secondary-fixed-variant": "#004883",
-                        "tertiary-fixed": "#ffdcc6",
-                        "on-tertiary": "#502400",
-                        "on-tertiary-container": "#461f00",
-                        "on-primary-container": "#00285d",
-                        "surface-container-high": "#252a35",
-                        "tertiary-fixed-dim": "#ffb786",
-                        "on-background": "#dee2f1",
-                        "on-tertiary-fixed-variant": "#723600",
-                        "on-primary-fixed-variant": "#004395",
-                        "on-error": "#690005",
-                        "tertiary": "#ffb786",
-                        "outline": "#8c909f",
-                        "on-primary-fixed": "#001a42",
-                        "on-secondary-fixed": "#001c39",
-                        "on-secondary": "#00315d",
-                        "surface": "#0e131d",
-                        "surface-variant": "#303540",
-                        "surface-container": "#1b202a",
-                        "on-primary": "#002e6a"
-                    },
-                    borderRadius: {
-                        DEFAULT: "0.125rem",
-                        lg: "0.25rem",
-                        xl: "0.5rem",
-                        full: "0.75rem"
-                    },
-                    spacing: {
-                        gutter: "20px",
-                        unit: "4px",
-                        xs: "4px",
-                        "container-max": "1440px",
-                        md: "16px",
-                        sm: "8px",
-                        lg: "24px",
-                        xl: "40px"
-                    },
-                    fontFamily: {
-                        "headline-md": ["Inter"],
-                        "label-caps": ["Inter"],
-                        "body-md": ["Inter"],
-                        "headline-lg-mobile": ["Inter"],
-                        "body-lg": ["Inter"],
-                        "headline-lg": ["Inter"],
-                        "code-sm": ["JetBrains Mono"],
-                        "display-lg": ["Inter"]
-                    },
-                    fontSize: {
-                        "headline-md": ["24px", { lineHeight: "32px", fontWeight: "600" }],
-                        "label-caps": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
-                        "body-md": ["16px", { lineHeight: "24px", fontWeight: "400" }],
-                        "headline-lg-mobile": ["24px", { lineHeight: "32px", fontWeight: "600" }],
-                        "body-lg": ["18px", { lineHeight: "28px", fontWeight: "400" }],
-                        "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600" }],
-                        "code-sm": ["14px", { lineHeight: "20px", fontWeight: "400" }],
-                        "display-lg": ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }]\n                    }\n                }\n            }\n        };\n    </script>\n    \n    <!-- Global Styles -->\n    <style>\n        body {\n            background-color: #05070D;\n            color: #dee2f1;\n        }\n        \n        .glass-panel {\n            background-color: #090D16;\n            border: 1px solid rgba(140, 144, 159, 0.08);\n        }\n        \n        .glass-elevated {\n            background-color: #111827;\n            border: 1px solid rgba(140, 144, 159, 0.12);\n            backdrop-filter: blur(12px);\n        }\n        \n        .glow-active:hover {\n            box-shadow: 0 0 8px 0px rgba(173, 198, 255, 0.4);\n            border-color: rgba(173, 198, 255, 0.3);\n        }\n        \n        .progress-ring__circle {\n            transition: stroke-dashoffset 0.35s;\n            transform: rotate(-90deg);\n            transform-origin: 50% 50%;\n        }\n        \n        html {\n            scroll-behavior: smooth;\n        }\n        \n        .hide-scrollbar::-webkit-scrollbar {\n            display: none;\n        }\n        \n        .hide-scrollbar {\n            -ms-overflow-style: none;\n            scrollbar-width: none;\n        }\n        \n        button:focus-visible,\n        a:focus-visible,\n        input:focus-visible {\n            outline: 2px solid #adc6ff;\n            outline-offset: 2px;\n        }\n        \n        * {\n            transition-duration: 150ms;\n            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);\n            transition-property: background-color, border-color, color, fill, stroke;\n        }\n\n        .line-clamp-2 {\n            display: -webkit-box;\n            -webkit-line-clamp: 2;\n            -webkit-box-orient: vertical;\n            overflow: hidden;\n        }\n    </style>\n</head>\n<body class="font-body-md text-body-md bg-background text-on-background min-h-screen flex flex-col">\n    \n    <!-- App Container -->\n    <div id="app" class="flex flex-col min-h-screen">\n        <!-- Top App Bar -->\n        <header id="header" class="fixed top-0 w-full h-14 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/10 flex justify-between items-center px-lg z-50 transition-all duration-200 ease-in-out">\n            <div class="flex items-center gap-lg">\n                <span class="font-headline-md text-headline-md font-bold tracking-tighter text-on-surface">CodeSpace 3D</span>\n                <nav id="main-nav\" class=\"hidden md:flex gap-md\">\n                    <!-- Navigation populated by router -->\n                </nav>\n            </div>\n            <div id=\"header-actions\" class=\"flex items-center gap-sm\">\n                <!-- Header actions populated by router -->\n            </div>\n        </header>\n        \n        <!-- Main Content Area -->\n        <div class=\"flex flex-1 mt-14\">\n            <!-- Sidebar -->\n            <aside id=\"sidebar\" class=\"fixed left-0 top-14 bottom-0 w-16 md:w-20 bg-surface-container-low border-r border-outline-variant/10 flex flex-col items-center py-md z-40 transition-all duration-200 ease-in-out\">\n                <!-- Sidebar content populated by router -->\n            </aside>\n            \n            <!-- View Container -->\n            <main id=\"view-container\" class=\"flex-1 ml-16 md:ml-20 mb-6 overflow-y-auto\">\n                <!-- Current view rendered here -->\n            </main>\n        </div>\n        \n        <!-- Footer -->\n        <footer id=\"footer\" class=\"fixed bottom-0 w-full h-6 bg-surface-container-lowest border-t border-outline-variant/10 flex justify-between items-center px-md z-50 overflow-hidden font-code-sm text-code-sm text-outline\">\n            <div>© 2024 CodeSpace 3D | System: Ready</div>\n            <div class=\"flex gap-md\">\n                <a class=\"hover:text-primary transition-colors cursor-pointer\">Logs</a>\n                <a class=\"hover:text-primary transition-colors cursor-pointer\">Status</a>\n                <a class=\"hover:text-primary transition-colors cursor-pointer\">UTF-8</a>\n            </div>\n        </footer>\n    </div>\n    \n    <!-- Application JavaScript -->\n    <script type=\"module\" src=\"js/app.js\"></script>\n</body>\n</html>\n
+    <meta name="description" content="Forge IDE — a browser-based development platform with a real editor, runtime, terminal, and AI coding agent." />
+    <title>Forge IDE</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
