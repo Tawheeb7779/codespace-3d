@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabaseClient'
 import { FileSystemService } from '@/services/FileSystemService'
+import { useEditorStore } from '@/stores/editorStore'
 import type { Project } from '@/types/project'
 
 interface RemoteFileRow {
@@ -89,4 +90,62 @@ export async function openProjectFileSystem(project: Project): Promise<{ fs: Fil
       if (syncTimer) clearTimeout(syncTimer)
     },
   }
+}
+
+export interface RefreshResult {
+  /** Local mode has nothing external to pull from — there's only ever
+   *  this one copy of the files. */
+  local: boolean
+  pulled: number
+  updated: number
+  /** Files where the remote copy differs but a tab has unsaved local
+   *  edits — never silently overwritten. */
+  skipped: number
+}
+
+/**
+ * Explorer's "Refresh" — pulls whatever changed in Supabase's
+ * `project_files` since this workspace was opened (another device, a
+ * collaborator, an edit made elsewhere) into the local, editable copy.
+ * There's no realtime subscription for this (spec keeps sync push-based
+ * and debounced, see openProjectFileSystem above), so without a manual
+ * refresh a long-lived session would never see anyone else's changes.
+ * Never overwrites a file with unsaved local edits — those are skipped
+ * and reported, not silently clobbered.
+ */
+export async function refreshFromCloud(project: Project, fs: FileSystemService): Promise<RefreshResult> {
+  if (!supabase || project.ownerId === 'local') {
+    return { local: true, pulled: 0, updated: 0, skipped: 0 }
+  }
+
+  const { data, error } = await supabase
+    .from('project_files')
+    .select('path, kind, content')
+    .eq('project_id', project.id)
+  if (error) throw error
+
+  const dirtyPaths = new Set(useEditorStore.getState().tabs.filter((t) => t.dirty).map((t) => t.path))
+  let pulled = 0
+  let updated = 0
+  let skipped = 0
+
+  for (const row of data ?? []) {
+    if (row.kind !== 'file') continue
+    const remoteContent = row.content ?? ''
+    const existsLocally = fs.exists(row.path)
+    if (!existsLocally) {
+      fs.write(row.path, remoteContent)
+      pulled++
+      continue
+    }
+    if (fs.read(row.path) === remoteContent) continue
+    if (dirtyPaths.has(row.path)) {
+      skipped++
+      continue
+    }
+    fs.write(row.path, remoteContent)
+    updated++
+  }
+
+  return { local: false, pulled, updated, skipped }
 }

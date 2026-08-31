@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
-import { ChevronDown, ChevronRight, Copy, FilePlus, FolderPlus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { ChevronDown, ChevronsDownUp, ChevronRight, Copy, FilePlus, FolderPlus, MoreHorizontal, Pencil, RefreshCw, Trash2 } from 'lucide-react'
 import { clsx } from 'clsx'
 import { buildTree } from '@/features/explorer/buildTree'
 import type { TreeNode } from '@/features/explorer/buildTree'
@@ -11,14 +11,49 @@ import { useDiagnosticsStore } from '@/stores/diagnosticsStore'
 import { useWorkspaceUiStore } from '@/stores/workspaceUiStore'
 import { toast } from '@/stores/toastStore'
 import { InvalidPathError } from '@/lib/paths'
+import { refreshFromCloud } from '@/services/CloudProjectSync'
 import { menuContentClass, menuItemClass, menuItemDangerClass, menuSeparatorClass } from '@/components/ui/menu'
 
 export function FileTree() {
-  const { fs } = useWorkspace()
+  const { fs, project } = useWorkspace()
   const nodes = useFileList()
   const openTab = useEditorStore((s) => s.open)
   const tree = buildTree(nodes)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [refreshing, setRefreshing] = useState(false)
+
+  function collapseAll() {
+    setExpanded(new Set())
+  }
+
+  async function refresh() {
+    setRefreshing(true)
+    try {
+      const result = await refreshFromCloud(project, fs)
+      if (result.local) {
+        toast.info('Nothing to refresh', 'This is a local-only project — there is no remote copy to pull from.')
+        return
+      }
+      if (result.pulled === 0 && result.updated === 0 && result.skipped === 0) {
+        toast.success('Up to date')
+        return
+      }
+      const parts = []
+      if (result.pulled > 0) parts.push(`${result.pulled} new`)
+      if (result.updated > 0) parts.push(`${result.updated} updated`)
+      toast.success(parts.length > 0 ? `Refreshed: ${parts.join(', ')}` : 'Refreshed')
+      if (result.skipped > 0) {
+        toast.info(
+          `${result.skipped} file${result.skipped === 1 ? '' : 's'} not refreshed`,
+          'They have unsaved local edits — save or discard them, then refresh again.',
+        )
+      }
+    } catch (err) {
+      toast.error('Could not refresh from the cloud', err instanceof Error ? err.message : undefined)
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   function toggle(path: string) {
     setExpanded((prev) => {
@@ -101,6 +136,23 @@ export function FileTree() {
             aria-label="New folder"
           >
             <FolderPlus size={14} />
+          </button>
+          <button
+            className="rounded-md p-1.5 text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100"
+            onClick={collapseAll}
+            aria-label="Collapse all folders"
+            title="Collapse all folders"
+          >
+            <ChevronsDownUp size={14} />
+          </button>
+          <button
+            className="rounded-md p-1.5 text-graphite-500 transition-colors duration-150 hover:bg-surface-hover hover:text-graphite-100 disabled:opacity-50"
+            onClick={refresh}
+            disabled={refreshing}
+            aria-label="Refresh"
+            title="Refresh — pull in changes made elsewhere"
+          >
+            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
           </button>
         </div>
       </div>
