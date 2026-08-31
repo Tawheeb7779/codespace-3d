@@ -7,10 +7,24 @@ interface OpenTab {
   dirty: boolean
 }
 
+interface PendingReveal {
+  path: string
+  line: number
+  /** Distinguishes two requests for the same path+line (e.g. re-clicking
+   *  the same search hit twice) so MonacoEditor's effect fires again. */
+  nonce: number
+}
+
 interface EditorState {
   tabs: OpenTab[]
   activePath: string | null
+  /** A one-shot "scroll to this line" request — set by anything that opens
+   *  a file at a specific line (search results, Problems panel) and
+   *  consumed by MonacoEditor once it acts on it. */
+  pendingReveal: PendingReveal | null
   open: (fs: FileSystemService, path: string) => void
+  openAtLine: (fs: FileSystemService, path: string, line: number) => void
+  clearPendingReveal: () => void
   close: (path: string) => void
   closeAll: () => void
   closeOthers: (path: string) => void
@@ -24,6 +38,7 @@ interface EditorState {
 export const useEditorStore = create<EditorState>((set, get) => ({
   tabs: [],
   activePath: null,
+  pendingReveal: null,
 
   open: (fs, path) => {
     const existing = get().tabs.find((t) => t.path === path)
@@ -34,6 +49,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     const buffer = fs.exists(path) ? fs.read(path) : ''
     set((state) => ({ tabs: [...state.tabs, { path, buffer, dirty: false }], activePath: path }))
   },
+
+  openAtLine: (fs, path, line) => {
+    get().open(fs, path)
+    set({ pendingReveal: { path, line, nonce: Date.now() + Math.random() } })
+  },
+
+  clearPendingReveal: () => set({ pendingReveal: null }),
 
   close: (path) => {
     set((state) => {
@@ -66,5 +88,5 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     if (path) get().save(fs, path)
   },
 
-  reset: () => set({ tabs: [], activePath: null }),
+  reset: () => set({ tabs: [], activePath: null, pendingReveal: null }),
 }))

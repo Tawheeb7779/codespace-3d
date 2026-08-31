@@ -26,7 +26,7 @@ function buildGlobalMatcher(query: string, regex: boolean, caseSensitive: boolea
 export function ProjectSearch() {
   const nodes = useFileList()
   const { fs } = useWorkspace()
-  const openTab = useEditorStore((s) => s.open)
+  const openTabAtLine = useEditorStore((s) => s.openAtLine)
   const [query, setQuery] = useState('')
   const [replaceValue, setReplaceValue] = useState('')
   const [showReplace, setShowReplace] = useState(false)
@@ -173,7 +173,7 @@ export function ProjectSearch() {
               <button
                 key={i}
                 onClick={() => {
-                  openTab(fs, hit.path)
+                  openTabAtLine(fs, hit.path, hit.line)
                 }}
                 className="block w-full truncate px-3 py-1 text-left text-xs text-graphite-500 hover:bg-surface-raised hover:text-graphite-300"
               >
