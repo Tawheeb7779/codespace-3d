@@ -1,0 +1,132 @@
+/* ===========================================================================
+   Plate rendering
+
+   A plate is brass line work that warms into candlelight. The unlit and lit
+   states are two sets of custom properties; `.plate` interpolates between
+   them on hover, on focus-within, or when JS marks it [data-lit] after it
+   scrolls into view. Nothing here animates layout — only colour and opacity,
+   so a page full of plates stays cheap to paint.
+   =========================================================================== */
+
+.plate {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+
+  /* Unlit: the drawing as it sits on the table. */
+  --plate-ink: var(--color-brass);
+  --plate-ink-opacity: 0.62;
+  --plate-glow-opacity: 0;
+  --plate-halo-opacity: 0;
+  --plate-wick-opacity: 0.5;
+  --plate-scale: 1;
+}
+
+.plate > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--plate-ink);
+  opacity: var(--plate-ink-opacity);
+  transform: scale(var(--plate-scale));
+  transform-origin: center;
+  transition:
+    color 900ms var(--ease-settle),
+    opacity 900ms var(--ease-settle),
+    transform 1400ms var(--ease-drape);
+}
+
+.plate .plate-glow {
+  opacity: var(--plate-glow-opacity);
+  transition: opacity 1100ms var(--ease-settle);
+}
+
+.plate .plate-halo {
+  opacity: var(--plate-halo-opacity);
+  transition: opacity 1100ms var(--ease-settle);
+}
+
+.plate .plate-wick {
+  opacity: var(--plate-wick-opacity);
+  transition: opacity 900ms var(--ease-settle);
+}
+
+/* Belt and braces: an SVG <title> is an accessible name, never content. */
+.plate svg > title {
+  display: none;
+}
+
+/* Annotations sit quieter than the geometry they label. */
+.plate .plate-note {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  opacity: 0.62;
+}
+
+.plate .plate-dim {
+  stroke-opacity: 0.5;
+}
+
+.plate .plate-centre {
+  stroke-opacity: 0.34;
+}
+
+/* Lit: the room, half an hour before guests arrive. */
+.plate:hover,
+.plate:focus-within,
+.plate[data-lit] {
+  --plate-ink: var(--color-brass-bright);
+  --plate-ink-opacity: 0.95;
+  --plate-glow-opacity: 1;
+  --plate-halo-opacity: 0.9;
+  --plate-wick-opacity: 1;
+}
+
+/* Only pointer interaction earns the scale — a plate that grows purely from
+   scrolling into view would fight the reveal animation. */
+.plate:hover,
+.plate:focus-within {
+  --plate-scale: 1.028;
+}
+
+/* On paper the brass needs less lift to read, and the glow must not bleach
+   the sheet. */
+[data-ground='vellum'] .plate {
+  --plate-ink-opacity: 0.72;
+}
+
+[data-ground='vellum'] .plate:hover,
+[data-ground='vellum'] .plate:focus-within,
+[data-ground='vellum'] .plate[data-lit] {
+  --plate-ink: #8f7444;
+  --plate-ink-opacity: 1;
+  --plate-glow-opacity: 0.62;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plate > svg,
+  .plate .plate-glow,
+  .plate .plate-halo,
+  .plate .plate-wick {
+    transition: none;
+  }
+
+  .plate:hover,
+  .plate:focus-within {
+    --plate-scale: 1;
+  }
+}
+
+/* When a real photograph exists, it replaces the drawing entirely and the
+   plate becomes a straightforward image frame. */
+.plate > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: var(--plate-focal, 50% 50%);
+  transform: scale(var(--plate-scale));
+  transition: transform 1400ms var(--ease-drape);
+}

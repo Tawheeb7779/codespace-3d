@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "unicorn"],
+  "env": { "browser": true, "es2024": true },
+  "ignorePatterns": ["dist/**", "node_modules/**"],
+  "rules": {
+    "no-unused-vars": "warn",
+    "react/jsx-key": "error",
+    "react/no-danger": "error"
+  }
+}

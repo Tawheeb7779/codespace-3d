@@ -1,0 +1,612 @@
+@import "tailwindcss";
+
+/* Self-hosted rather than CDN-linked: this is a local-first IDE that must
+   render correctly offline, and a third-party font request is one more
+   thing that can fail between a developer and their editor. */
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource-variable/jetbrains-mono";
+
+@theme {
+  /* Brand: "Forge" — molten ember accent on graphite. Distinct from the
+     typical blue/purple dev-tool palette. */
+  --color-ember-50: #fff4ed;
+  --color-ember-100: #ffe6d5;
+  --color-ember-200: #fec7a4;
+  --color-ember-300: #fda06c;
+  --color-ember-400: #fb7332;
+  --color-ember-500: #f6540f;
+  --color-ember-600: #e13d05;
+  --color-ember-700: #ba2c08;
+  --color-ember-800: #94240e;
+  --color-ember-900: #78200f;
+
+  --color-graphite-50: #f6f7f8;
+  --color-graphite-100: #eceef0;
+  --color-graphite-200: #d5d9de;
+  --color-graphite-300: #adb4bd;
+  --color-graphite-400: #7f8a96;
+  --color-graphite-500: #5f6b78;
+  --color-graphite-600: #4a5560;
+  --color-graphite-700: #3b434c;
+  --color-graphite-800: #262b31;
+  --color-graphite-850: #1c2025;
+  --color-graphite-900: #14171a;
+  --color-graphite-950: #0b0d0f;
+
+  /*
+   * "Forge Obsidian" signal colors. Violet is the SECONDARY accent — used
+   * deliberately (AI/assistant surfaces, secondary actions, selected-tab
+   * indicators) rather than sprinkled everywhere — pushed to a genuinely
+   * electric saturation so it reads as a real second color, not a muted
+   * afterthought next to the orange primary.
+   */
+  --color-signal-violet: #9b5cff;
+  --color-signal-green: #22c55e;
+  --color-signal-amber: #f5b93d;
+  --color-signal-red: #f2495c;
+  --color-signal-blue: #3b9eff;
+
+  /*
+   * Surfaces form an elevation ladder instead of every panel being the same
+   * value fenced off by a visible border. In dark mode a surface gets
+   * lighter as it comes forward — page, then panels, then the things that
+   * float above them — so depth is carried by value and shadow, and borders
+   * can drop back to a hairline that separates without drawing attention.
+   * Obsidian: the page sits at true near-black, and each rung above it
+   * steps up by a wider margin than before so the ladder is visible at a
+   * glance instead of reading as one flat dark mass.
+   */
+  --color-surface-base: #060708;    /* page */
+  --color-surface-sunken: #020303;  /* wells: inputs, editor gutter, terminal */
+  --color-surface-raised: #1b1f25;  /* panels, cards, headers */
+  --color-surface-overlay: #272c33; /* dialogs, menus, popovers */
+  --color-surface-hover: #333941;   /* transient control fills */
+
+  /* Hairlines: low-alpha white rather than a solid grey, so a border reads
+     as the edge of a surface instead of a drawn line on top of it. Alpha
+     is high enough to actually register in a screenshot, not just in
+     theory — a border that only "exists" in the token value and not on
+     screen doesn't do its job. */
+  --color-hairline: rgb(255 255 255 / 0.12);
+  --color-hairline-strong: rgb(255 255 255 / 0.22);
+
+  /*
+   * Three roles, not two. Display carries the personality and is rationed
+   * to headings; body is the dense-UI workhorse; mono does double duty as
+   * both code and *structure* — labels, readouts, metadata — because an
+   * instrument panel is this product's own vernacular, not a borrowed one.
+   * (Previously these named Inter/JetBrains without ever loading either,
+   * so every screen has actually been rendering in system-ui.)
+   */
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /*
+   * Forge temperature scale. Steel glows through real colors as it heats —
+   * dull red around 500°C, orange near 900°C, yellow past 1100°C, white at
+   * forging heat. Runtime status is mapped onto that ramp (see RuntimeHeat),
+   * which is why the accent is a *range* rather than one flat vermilion.
+   */
+  --color-heat-cold: #4a5560;
+  --color-heat-dull: #b8321a;
+  --color-heat-orange: #f6540f;
+  --color-heat-yellow: #f5a623;
+  --color-heat-white: #ffd9a0;
+
+  /* Radii scale up with the size of the surface they belong to, so a
+     control, a card and a dialog stay in proportion to one another. */
+  --radius-control: 0.625rem; /* 10px — buttons, inputs */
+  --radius-card: 0.875rem;    /* 14px — cards, panels */
+  --radius-modal: 1.125rem;   /* 18px — dialogs, sheets */
+
+  /*
+   * Motion: one decelerating curve for anything entering the screen and a
+   * shorter symmetric one for anything leaving, so transitions across the
+   * app feel like one system rather than per-component guesses. Durations
+   * stay short enough that motion never sits between the user and the work.
+   */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quad: cubic-bezier(0.45, 0, 0.55, 1);
+
+  --animate-fade-in: fade-in 0.16s var(--ease-out-quint);
+  --animate-fade-out: fade-out 0.12s var(--ease-in-out-quad);
+  --animate-slide-up: slide-up 0.22s var(--ease-out-quint);
+  --animate-scale-in: scale-in 0.18s var(--ease-out-quint);
+  --animate-scale-out: scale-out 0.12s var(--ease-in-out-quad);
+  --animate-toast-in: toast-in 0.26s var(--ease-out-quint);
+  --animate-toast-out: toast-out 0.18s var(--ease-in-out-quad);
+  --animate-screen-from-right: screen-from-right 0.22s var(--ease-out-quint);
+  --animate-screen-from-left: screen-from-left 0.22s var(--ease-out-quint);
+  --animate-panel-in-right: panel-in-right 0.22s var(--ease-out-quint);
+  --animate-panel-out-right: panel-out-right 0.16s var(--ease-in-out-quad);
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
+    to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes scale-out {
+    from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    to { opacity: 0; transform: translate(-50%, -50%) scale(0.97); }
+  }
+  /*
+   * Mobile screen switches move in from the side the destination sits on
+   * in the bottom nav (spatial consistency — motion should point at where
+   * a thing conceptually lives, not just fade). A few px, not a full-width
+   * slide: this is a tab switch, not a navigation push.
+   */
+  @keyframes screen-from-right {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes screen-from-left {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes toast-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes toast-out {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(4px) scale(0.98); }
+  }
+  /* The right status panel enters/leaves from the edge it's anchored to,
+     symmetrically — the same "spatial consistency" rule the mobile screen
+     transitions follow, so nothing on screen ever only fades in but slides
+     out, or vice versa. */
+  @keyframes panel-in-right {
+    from { opacity: 0; transform: translateX(14px) scale(0.98); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  @keyframes panel-out-right {
+    from { opacity: 1; transform: translateX(0) scale(1); }
+    to { opacity: 0; transform: translateX(14px) scale(0.98); }
+  }
+
+  /*
+   * Semantic aliases onto the palette above, under the exact names the
+   * design spec calls for. Declared as var() indirection (not copied
+   * values) so they track the light-theme override below automatically —
+   * one definition, both themes. These also register as Tailwind color
+   * utilities (bg-background, text-text-primary, border-border, bg-accent,
+   * bg-accent-secondary, bg-success/warning/error/info, …) so new or
+   * touched code can reach the design system without a hardcoded value.
+   */
+  --color-background: var(--color-surface-base);
+  --color-surface: var(--color-surface-raised);
+  --color-surface-elevated: var(--color-surface-overlay);
+  --color-border: var(--color-hairline);
+  --color-text-primary: var(--color-graphite-100);
+  --color-text-secondary: var(--color-graphite-300);
+  --color-text-muted: var(--color-graphite-500);
+  --color-accent: var(--color-ember-500);
+  --color-accent-secondary: var(--color-signal-violet);
+  --color-success: var(--color-signal-green);
+  --color-warning: var(--color-signal-amber);
+  --color-error: var(--color-signal-red);
+  --color-info: var(--color-signal-blue);
+}
+
+/*
+ * Light theme: an independently-designed palette under the same token
+ * names — not a mechanical inversion of the dark ramp. Warm off-white
+ * surfaces (not the cool blue-grey a flat invert would produce), near-black
+ * warm-neutral text, and hairlines dark enough to actually read as borders
+ * on white rather than disappearing into it. Every component references
+ * these tokens by name only, so no component-level styling changes with
+ * the theme.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-graphite-50: #050607;
+  --color-graphite-100: #191c1f;
+  --color-graphite-200: #2e3237;
+  --color-graphite-300: #484d53;
+  --color-graphite-400: #63696f;
+  --color-graphite-500: #7a8087;
+  --color-graphite-600: #979da3;
+  --color-graphite-700: #b7bbc0;
+  --color-graphite-800: #d8dade;
+  --color-graphite-850: #e6e7ea;
+  --color-graphite-900: #f1f1ef;
+  --color-graphite-950: #f9f8f6;
+
+  /* The page sits at a warm off-white (not pure white) so raised white
+     cards and panels have something to visibly separate from — the same
+     "elevation ladder" idea as dark mode, just compressed into a lighter
+     range, with real borders doing more of the separation work than
+     shadows since a light surface can't rely on a glow to read as raised. */
+  --color-surface-base: #f6f5f2;
+  --color-surface-sunken: #ececea;
+  --color-surface-raised: #ffffff;
+  --color-surface-overlay: #ffffff;
+  --color-surface-hover: #efeee9;
+  --color-hairline: rgb(20 18 15 / 0.12);
+  --color-hairline-strong: rgb(20 18 15 / 0.22);
+
+  /*
+   * The heat ramp inverts for light mode. On a dark ground hotter metal
+   * reads as *brighter* (up to pale white-hot); against a near-white page
+   * that same pale end has almost no contrast, so here hotter reads as
+   * deeper and more saturated instead. Same ordering, same meaning,
+   * legible on both grounds.
+   */
+  --color-heat-cold: #7c8590;
+  --color-heat-dull: #a82d17;
+  --color-heat-orange: #cf440b;
+  --color-heat-yellow: #a76a08;
+  --color-heat-white: #8a2b00;
+
+  /*
+   * The dark-theme signal-red (#f2495c) drops to ~3:1 against a light
+   * page — fails WCAG AA for text. Deepened for light mode only, matching
+   * the red already used for light-theme terminal output (Terminal.tsx);
+   * same hue, same meaning, ≥4.85:1 on every light surface it appears on.
+   */
+  --color-signal-red: #c8203a;
+
+  /* Same problem, same fix, for the info/blue signal: the dark-theme value
+     (#3b9eff) is too light on white. Deepened here to ~5.8:1, same hue. */
+  --color-signal-blue: #0f62c9;
+
+  /* Electric violet (#9b5cff) reads at ~3.9:1 on white — fine for a badge
+     fill or icon, not for text. Deepened to violet-600 for ~5.7:1. */
+  --color-signal-violet: #7c3aed;
+
+  /* The dark-theme green (#22c55e) is ~2.3:1 on white — well short of AA.
+     Deepened to a forest green for ~5:1, same hue family. */
+  --color-signal-green: #15803d;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    /* Keep long-press/drag from selecting UI chrome on touch devices. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface-base text-graphite-100 font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * Display type: large text reads as loose at default tracking, so
+   * headings tighten progressively with size while body copy keeps its
+   * natural spacing. Applied by element so every heading inherits the
+   * same rules instead of each screen re-deciding.
+   */
+  h1 { letter-spacing: -0.024em; }
+  h2 { letter-spacing: -0.021em; }
+  h3 { letter-spacing: -0.015em; }
+
+  /* Tabular figures wherever numbers sit in a column or update in place
+     (counts, timestamps, line numbers) so they don't jitter. */
+  time, [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    @apply bg-ember-500/30 text-white;
+  }
+
+  /*
+   * A single focus treatment everywhere: a ring rather than a hard
+   * outline, offset from the control so it reads on both themes and
+   * never clips against adjacent elements. Only keyboard focus shows it.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-ember-400);
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
+
+  /*
+   * iOS zooms the viewport when a focused input's text is under 16px.
+   * Form controls get 16px up to the tablet breakpoint, then fall back to
+   * the denser desktop size.
+   */
+  @media (max-width: 767px) {
+    input, select, textarea {
+      font-size: 16px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * Named type roles rather than ad-hoc size/weight/tracking triplets on
+   * each screen. Sizes step by a consistent ratio and line-height tightens
+   * as size grows, which is what keeps headings compact and body copy
+   * readable at the same time.
+   */
+  /* The display face is rationed to these two largest roles. Space Grotesk
+     has enough character that using it at panel-header size would turn
+     every surface noisy; below 22px the body face takes over. Its own
+     sidebearings are already tight, so it needs less negative tracking
+     than the previous system-ui fallback did. */
+  .type-display {
+    font-family: var(--font-display);
+    font-size: 1.875rem;   /* 30px */
+    line-height: 1.14;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .type-title {
+    font-family: var(--font-display);
+    font-size: 1.375rem;   /* 22px */
+    line-height: 1.24;
+    font-weight: 600;
+    letter-spacing: -0.014em;
+  }
+  .type-heading {
+    font-size: 1rem;       /* 16px */
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+  .type-body {
+    font-size: 0.875rem;   /* 14px */
+    line-height: 1.55;
+  }
+  .type-secondary {
+    font-size: 0.8125rem;  /* 13px */
+    line-height: 1.5;
+  }
+  /*
+   * Section labels above groups of controls — set in mono, not the body
+   * face. Every eyebrow in the app ("EXPLORER", "RECENT PROJECTS",
+   * "RUNTIME") then reads as a panel readout rather than as small caps,
+   * which is the vernacular this product actually comes from. Mono is
+   * already wide, so it needs far less tracking and one less weight step
+   * than the proportional version did.
+   */
+  .type-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;  /* 11px */
+    line-height: 1.3;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /*
+   * A raised surface. The inset top highlight is what makes a panel read as
+   * catching light from above rather than as a flat rectangle — it does the
+   * work a heavy border used to do, without the noise.
+   */
+  .surface-card {
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-hairline);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.04),
+      0 1px 2px rgb(0 0 0 / 0.2);
+  }
+
+  .surface-overlay {
+    background-color: var(--color-surface-overlay);
+    border: 1px solid var(--color-hairline-strong);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.05),
+      0 16px 48px -12px rgb(0 0 0 / 0.6),
+      0 4px 12px rgb(0 0 0 / 0.3);
+  }
+
+  :root[data-theme='light'] .surface-card,
+  :root[data-theme='light'] .surface-overlay {
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.06),
+      0 8px 24px -8px rgb(0 0 0 / 0.1);
+  }
+
+  /*
+   * A translucent, blurred version of a raised surface for the shell's
+   * large fixed panels (sidebar, topbar) — enough see-through to feel like
+   * a pane of glass over the workspace rather than an opaque wall, without
+   * going full glassmorphism (no heavy blur, no saturation boost, no border
+   * glow). Depth comes from the ambient glow behind it, not from the panel
+   * itself.
+   */
+  .surface-shell {
+    background-color: rgb(9 10 12 / 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  :root[data-theme='light'] .surface-shell {
+    background-color: rgb(255 255 255 / 0.88);
+  }
+
+  /*
+   * The premium floating counterpart to `.surface-shell`: a standalone
+   * translucent card (the auth composition) rather than a fixed panel over
+   * scrolling content. Same restrained blur, but with its own elevation —
+   * the strongest shadow tier in the system, since nothing sits above it.
+   */
+  .surface-glass {
+    background-color: rgb(24 28 30 / 0.74);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid var(--color-hairline-strong);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+      0 24px 64px -20px rgb(0 0 0 / 0.65),
+      0 8px 20px -4px rgb(0 0 0 / 0.35);
+  }
+  :root[data-theme='light'] .surface-glass {
+    background-color: rgb(255 255 255 / 0.8);
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.05),
+      0 24px 56px -18px rgb(0 0 0 / 0.16),
+      0 6px 16px -4px rgb(0 0 0 / 0.06);
+  }
+
+  /* Active nav state: a soft filled pill rather than a hard-edged
+     selection, with the faintest lift so it reads as raised, not painted. */
+  .nav-pill-active {
+    background: linear-gradient(180deg, rgb(246 84 15 / 0.22), rgb(246 84 15 / 0.1));
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  }
+
+  /* Secondary accent counterpart — reserved for AI/assistant surfaces so
+     the violet accent has one clear, consistent home instead of never
+     appearing anywhere in real UI. */
+  .nav-pill-accent {
+    background: linear-gradient(180deg, rgb(155 92 255 / 0.2), rgb(155 92 255 / 0.09));
+    box-shadow: inset 0 1px 0 0 rgb(255 255 255 / 0.06);
+  }
+
+  /*
+   * Panels the workspace is actually built from. `.surface-card` is the flat
+   * base; this adds the top-edge light gradient that makes a panel read as a
+   * physical slab catching light rather than a filled rectangle. The
+   * difference is what separates "dark theme" from "obsidian" at a glance,
+   * and it costs one gradient rather than a per-component shadow guess.
+   */
+  .surface-panel {
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0) 92px);
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--color-hairline);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.06),
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 12px 32px -18px rgb(0 0 0 / 0.7);
+  }
+  :root[data-theme='light'] .surface-panel {
+    /* On a light ground the same "lit from above" cue has to invert: the
+       highlight becomes a faint warm tint and depth comes from the border
+       plus a soft drop, since a white-on-white highlight is invisible. */
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.9), rgb(255 255 255 / 0) 92px);
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.9),
+      0 1px 2px rgb(24 20 16 / 0.05),
+      0 10px 28px -18px rgb(24 20 16 / 0.22);
+  }
+
+  /*
+   * Accent glow for the one primary action on a screen. Restrained — a
+   * bloom around the button, not a neon outline — and only ever on ember,
+   * so "the glowing thing" and "the thing to press" stay the same thing.
+   */
+  .glow-ember {
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.2),
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 6px 22px -6px rgb(246 84 15 / 0.5);
+  }
+  .glow-violet {
+    box-shadow:
+      inset 0 1px 0 0 rgb(255 255 255 / 0.16),
+      0 1px 2px rgb(0 0 0 / 0.35),
+      0 6px 22px -6px rgb(155 92 255 / 0.45);
+  }
+
+  /*
+   * Section eyebrow inside the rail/sidebar. Grouping the navigation is the
+   * point — eight unlabelled icons in one column is a lookup puzzle, not a
+   * menu — so each group gets a rule and a name.
+   */
+  .rail-divider {
+    height: 1px;
+    width: 1.25rem;
+    background: var(--color-hairline-strong);
+    border-radius: 9999px;
+  }
+}
+
+@layer utilities {
+  /*
+   * Controls that fade in on hover (row actions, tab close buttons) have no
+   * way to appear on a touch device, where there is no hover state — which
+   * made them unreachable on tablet and mobile. Pair this class with the
+   * `opacity-0 group-hover:opacity-100` treatment so those same controls are
+   * simply always visible wherever hover doesn't exist.
+   */
+  /* The doubled class raises specificity above the single-class
+     `opacity-0` / `hidden` utilities these pair with, so the override wins
+     regardless of the order Tailwind emits them in. */
+  @media (hover: none) {
+    .reveal-on-hover.reveal-on-hover {
+      opacity: 1;
+    }
+    /* Same idea for controls revealed by toggling display rather than opacity. */
+    .reveal-on-hover-flex.reveal-on-hover-flex {
+      display: flex;
+    }
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-graphite-600) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-graphite-700);
+    border-radius: 9999px;
+  }
+
+  /*
+   * A single soft light source bleeding in from the top of the shell,
+   * behind the sidebar/topbar/workspace surfaces — what reads as "depth"
+   * and "premium lighting" in the reference without being an actual glow
+   * *on* any element. Warm (ember) rather than the reference's violet, to
+   * stay on this product's own palette, and restrained: this is the
+   * faintest wash, not a visible spotlight. Absolutely positioned behind
+   * everything in its containing block; the container needs `relative`.
+   */
+  .ambient-glow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    /* Centered over the main content rather than the far corner: the
+       sidebar is an opaque-ish panel, so a glow placed behind it would be
+       nearly invisible — this needs to land where it's actually seen. */
+    background:
+      radial-gradient(1200px 620px at 58% -18%, rgb(246 84 15 / 0.14), transparent 60%),
+      radial-gradient(900px 480px at 102% -10%, rgb(255 255 255 / 0.05), transparent 65%);
+  }
+  :root[data-theme='light'] .ambient-glow {
+    background:
+      radial-gradient(1200px 620px at 58% -18%, rgb(246 84 15 / 0.08), transparent 60%),
+      radial-gradient(900px 480px at 102% -10%, rgb(11 13 15 / 0.03), transparent 65%);
+  }
+
+  /* A separator that fades at its ends instead of drawing a hard line edge
+     to edge — reads as a break between sections, not a ruled boundary. */
+  .hairline-fade {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-hairline-strong) 18%, var(--color-hairline-strong) 82%, transparent);
+  }
+}
