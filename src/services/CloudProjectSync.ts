@@ -5,9 +5,30 @@ import type { Project } from '@/types/project'
 
 interface RemoteFileRow {
   path: string
-  kind: 'file' | 'directory'
   content: string | null
-  updated_at: string
+  // Both of these are absent on a `project_files` table that hasn't run
+  // migration 0013 yet — that migration is exactly what adds `kind`
+  // (derived from the legacy `is_folder` boolean) and `updated_at` to a
+  // pre-existing table. Querying an explicit column list (the previous
+  // `.select('path, kind, content, updated_at')`) makes PostgREST reject
+  // the whole request with a schema-cache "column does not exist" error
+  // the moment either is missing — which is exactly what silently blanked
+  // "Could not open project" for a database still on that older shape.
+  // select('*') below never has that failure mode; these two are read
+  // defensively instead, falling back to the legacy columns.
+  kind?: 'file' | 'directory' | null
+  is_folder?: boolean | null
+  updated_at?: string | null
+  created_at?: string | null
+}
+
+function normalizedKind(row: RemoteFileRow): 'file' | 'directory' {
+  if (row.kind === 'file' || row.kind === 'directory') return row.kind
+  return row.is_folder ? 'directory' : 'file'
+}
+
+function normalizedUpdatedAt(row: RemoteFileRow): string {
+  return row.updated_at ?? row.created_at ?? new Date(0).toISOString()
 }
 
 /**
@@ -26,7 +47,7 @@ export async function openProjectFileSystem(project: Project): Promise<{ fs: Fil
 
   const { data, error } = await supabase
     .from('project_files')
-    .select('path, kind, content, updated_at')
+    .select('*')
     .eq('project_id', project.id)
   if (error) throw error
 
@@ -40,11 +61,11 @@ export async function openProjectFileSystem(project: Project): Promise<{ fs: Fil
     // that already exists locally when it is verifiably newer.
     const localByPath = new Map(fs.list().filter((n) => n.kind === 'file').map((n) => [n.path, n]))
     const toSeed: Array<{ path: string; content: string }> = []
-    for (const row of data) {
+    for (const row of data as RemoteFileRow[]) {
       remoteSnapshot.set(row.path, row)
-      if (row.kind !== 'file') continue
+      if (normalizedKind(row) !== 'file') continue
       const local = localByPath.get(row.path)
-      if (!local || new Date(row.updated_at).getTime() > new Date(local.updatedAt).getTime()) {
+      if (!local || new Date(normalizedUpdatedAt(row)).getTime() > new Date(local.updatedAt).getTime()) {
         toSeed.push({ path: row.path, content: row.content ?? '' })
       }
     }
@@ -146,7 +167,7 @@ export async function refreshFromCloud(project: Project, fs: FileSystemService):
 
   const { data, error } = await supabase
     .from('project_files')
-    .select('path, kind, content')
+    .select('*')
     .eq('project_id', project.id)
   if (error) throw error
 
@@ -155,8 +176,8 @@ export async function refreshFromCloud(project: Project, fs: FileSystemService):
   let updated = 0
   let skipped = 0
 
-  for (const row of data ?? []) {
-    if (row.kind !== 'file') continue
+  for (const row of (data ?? []) as RemoteFileRow[]) {
+    if (normalizedKind(row) !== 'file') continue
     const remoteContent = row.content ?? ''
     const existsLocally = fs.exists(row.path)
     if (!existsLocally) {

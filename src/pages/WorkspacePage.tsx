@@ -30,6 +30,10 @@ export function WorkspacePage() {
     if (!projectId) return
     let disposeSync: (() => void) | null = null
     let cancelled = false
+    // Which step was in flight when/if this fails — narrows "Could not open
+    // project" (the UI's necessarily generic message) down to an actual
+    // cause in the console: fetching the project row vs. loading its files.
+    let stage: 'load-project' | 'open-filesystem' = 'load-project'
 
     ProjectService.get(projectId)
       .then(async (project) => {
@@ -37,11 +41,16 @@ export function WorkspacePage() {
           if (!cancelled) setState('not-found')
           return
         }
+        stage = 'open-filesystem'
         const { fs, dispose } = await openProjectFileSystem(project)
         disposeSync = dispose
         if (!cancelled) setState({ project, fs })
       })
-      .catch(() => {
+      .catch((err) => {
+        // Never swallowed silently — this is a real PostgrestError/Error
+        // object (schema mismatch, RLS rejection, network failure, etc.),
+        // safe to log in full: it never carries API keys or tokens.
+        console.error(`[WorkspacePage] Failed to open project (projectId=${projectId}, stage=${stage}):`, err)
         if (!cancelled) setState('error')
       })
 
